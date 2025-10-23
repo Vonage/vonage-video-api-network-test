@@ -1,4 +1,4 @@
-import NetworkTest, { ErrorNames } from 'opentok-network-test-js';
+import NetworkTest, {ErrorNames} from '@vonage/video-client-network-test';
 import createChart from './chart.js';
 import * as ConnectivityUI from './connectivity-ui.js';
 import config from './config.js';
