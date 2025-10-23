@@ -6,7 +6,7 @@
  * Define errors returned by OpenTok.js
  */
 
-import { OTError } from '@vonage/video-client-network-test';
+import { OTError } from '@vonage/client-sdk-video';
 import { get } from '../util';
 
 export enum ErrorNames {
