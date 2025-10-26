@@ -460,7 +460,7 @@ export function testQuality(
             sessionOptions.proxyUrl = options.proxyServerUrl;
           }
         }
-        const session = OTInstance.initSession(credentials.apiKey, credentials.sessionId, sessionOptions);
+        const session = OTInstance.initSession(credentials.applicationId, credentials.sessionId, sessionOptions);
         checkSubscriberQuality(OTInstance, session, credentials, options, onUpdate)
           .then(onSuccess)
           .catch(onError);

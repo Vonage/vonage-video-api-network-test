@@ -58,7 +58,11 @@ const calculateVideoBitrate = (
 };
 
 const extractOutboundRtpStats = (
-  outboundRtpStats: (RTCOutboundRtpStreamStats & { mediaType?: 'video' | 'audio' })[],
+  outboundRtpStats: (RTCOutboundRtpStreamStats & {
+    mediaType?: 'video' | 'audio';
+    qualityLimitationReason?: string;
+    active?: boolean;
+  })[],
   previousStats?: PublisherStats,
 ) => {
   const videoStats = [];

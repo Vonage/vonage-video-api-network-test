@@ -83,7 +83,7 @@ function cleanPublisher(publisher: OT.Publisher) {
  */
 function connectToSession(
   OTInstance: typeof OT,
-  { apiKey, sessionId, token }: SessionCredentials,
+  { applicationId, sessionId, token }: SessionCredentials,
   options?: NetworkTestOptions,
 ): Promise<OT.Session> {
   return new Promise((resolve, reject) => {
@@ -97,7 +97,7 @@ function connectToSession(
         sessionOptions.proxyUrl = options.proxyServerUrl;
       }
     }
-    const session = OTInstance.initSession(apiKey, sessionId, sessionOptions);
+    const session = OTInstance.initSession(applicationId, sessionId, sessionOptions);
     session.connect(token, (error?: OT.OTError) => {
       if (errorHasName(error, OTErrorType.OT_AUTHENTICATION_ERROR)) {
         reject(new e.ConnectToSessionTokenError());
