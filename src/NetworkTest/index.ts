@@ -27,6 +27,8 @@ import {
 } from './errors';
 import OTKAnalytics = require('opentok-solutions-logging');
 
+export { QualityTestResults } from './testQuality';
+export { ConnectivityTestResults } from './testConnectivity';
 export interface NetworkTestOptions {
   audioOnly?: boolean;
   timeout?: number;
@@ -37,7 +39,6 @@ export interface NetworkTestOptions {
   scalableVideo?: boolean;
   fullHd?: boolean;
 }
-
 export default class NetworkTest {
   credentials: SessionCredentials;
   OTInstance: typeof OT;
@@ -52,7 +53,7 @@ export default class NetworkTest {
     this.validateOT(OTInstance);
     this.validateCredentials(credentials);
     const proxyServerUrl = this.validateProxyUrl(options);
-    this.otLogging = this.startLoggingEngine(credentials.apiKey, credentials.sessionId, proxyServerUrl);
+    this.otLogging = this.startLoggingEngine(credentials.applicationId, credentials.sessionId, proxyServerUrl);
     this.OTInstance = OTInstance;
     this.credentials = credentials;
     this.options = options;
