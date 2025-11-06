@@ -208,6 +208,12 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
               });
             }
           });
+
+
+          publisher.on('mediaStopped', () => {
+            disconnectAndReject(new e.MediaAccessRevokedError());
+          });
+
           publisher.on('streamCreated', (event: StreamCreatedEvent) => {
             const subscriber =
               session.subscribe(event.stream,
@@ -352,6 +358,11 @@ function checkSubscriberQuality(
                 onUpdate(updateStats);
               }
             };
+
+            publisher.on('streamDestroyed', () => {
+              clearTimeout(mosEstimatorTimeoutId);
+              disconnectAndReject(new e.MediaAccessRevokedError());
+            });
 
             const processResults = () => {
               const audioVideoResults: QualityTestResults = buildResults(builder);
