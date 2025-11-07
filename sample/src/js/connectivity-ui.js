@@ -166,6 +166,15 @@ export function displayTestQualityResults(error, results) {
     results.video.recommendedResolution || '--';
   resultsEl.querySelector('#video-recommendedFrameRate').textContent =
     results.video.recommendedFrameRate ? results.video.recommendedFrameRate + ' fps' : '--';
+  
+  const routingResolutionEl = resultsEl.querySelector('#video-routingResolution');
+  if (routingResolutionEl && results.video.routingResolution) {
+    routingResolutionEl.textContent = results.video.routingResolution;
+    routingResolutionEl.className = getRoutingResolutionClass(results.video.routingResolution);
+  } else if (routingResolutionEl) {
+    routingResolutionEl.textContent = '--';
+  }
+  
   if (results.audio.supported) {
     if (results.video.supported || audioOnlyTest) {
       statusIconEl.src = 'assets/icon_pass.svg';
@@ -196,4 +205,38 @@ export function graphIntermediateStats(mediaType, stats) {
    'Bitrate over ' + resultCount[mediaType] + 'sec';
   charts[mediaType].setTitle(null, { text: chartTitle});
   prevBitsReceived[mediaType] = bitsSent;
+  
+  if (mediaType === 'video' && stats.video && stats.video.routingResolution) {
+    const routingResolutionEl = document.querySelector('#video-routingResolution');
+    if (routingResolutionEl) {
+      routingResolutionEl.textContent = stats.video.routingResolution;
+      routingResolutionEl.className = getRoutingResolutionClass(stats.video.routingResolution);
+      
+      const videoResultsEl = document.querySelector('#video .results');
+      if (videoResultsEl && videoResultsEl.style.display !== 'block') {
+        videoResultsEl.style.display = 'block';
+      }
+    }
+    
+    const connectionInfoEl = document.getElementById('connection-info');
+    const connectionTypeLiveEl = document.getElementById('connection-type-live');
+    if (connectionInfoEl && connectionTypeLiveEl) {
+      connectionInfoEl.style.display = 'block';
+      connectionTypeLiveEl.textContent = stats.video.routingResolution;
+      connectionTypeLiveEl.className = getRoutingResolutionClass(stats.video.routingResolution);
+    }
+  }
+}
+
+function getRoutingResolutionClass(routingResolution) {
+  if (routingResolution === 'Routed') {
+    return 'routing-routed';
+  }
+  if (routingResolution.includes('TURN')) {
+    return 'routing-turn';
+  }
+  if (routingResolution.includes('STUN')) {
+    return 'routing-stun';
+  }
+  return 'routing-unknown';
 }

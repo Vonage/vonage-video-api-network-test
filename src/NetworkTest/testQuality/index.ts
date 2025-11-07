@@ -249,10 +249,16 @@ function buildResults(builder: QualityTestResultsBuilder): QualityTestResults {
     builder.state.stats.audio.supported = false;
     builder.state.stats.audio.reason = config.strings.bandwidthLow;
   }
+
+  const lastPublisherStats = builder.state.getLastPublisherStats();
+  if (lastPublisherStats && lastPublisherStats.routingResolution) {
+    builder.state.stats.video.routingResolution = lastPublisherStats.routingResolution;
+  }
+
   return {
     audio: pick(baseProps, builder.state.stats.audio),
     video: pick(baseProps.concat([
-      'frameRate', 'qualityLimitationReason', 'recommendedResolution', 'recommendedFrameRate',
+      'frameRate', 'qualityLimitationReason', 'recommendedResolution', 'recommendedFrameRate', 'routingResolution',
     ]),
     builder.state.stats.video),
   };

@@ -57,6 +57,56 @@ const calculateVideoBitrate = (
   return Math.round((byteSent * 8) / (1000 * timeDiff)); // Convert to kbit per second
 };
 
+const determineRoutingResolution = (
+  localCandidate: RTCIceCandidateStats | null,
+  remoteCandidate: RTCIceCandidateStats | null,
+): string => {
+  if (!localCandidate || !remoteCandidate) {
+    return 'Unknown';
+  }
+
+  const localType = localCandidate.candidateType;
+  const remoteType = remoteCandidate.candidateType;
+  const protocol = (localCandidate.protocol || '').toLowerCase();
+
+  if (localType === 'host' && remoteType === 'host') {
+    return 'Routed';
+  }
+
+  if ((localType === 'prflx' || localType === 'host') && remoteType === 'host') {
+    return 'Routed';
+  }
+
+  if (remoteType === 'relay') {
+    if (protocol === 'tcp') {
+      return 'Relayed (TURN/TLS)';
+    }
+    return 'Relayed (TURN/UDP)';
+  }
+
+  if (localType === 'relay') {
+    if (protocol === 'tcp') {
+      return 'Relayed (TURN/TLS)';
+    }
+    return 'Relayed (TURN/UDP)';
+  }
+
+  if (localType === 'srflx' || remoteType === 'srflx') {
+    if (protocol === 'tcp') {
+      return 'Relayed (STUN/TLS)';
+    }
+    return 'Relayed (STUN/UDP)';
+  }
+
+  if (localType === 'prflx' || remoteType === 'prflx') {
+    if (protocol === 'tcp') {
+      return 'Relayed (STUN/TLS)';
+    }
+    return 'Relayed (STUN/UDP)';
+  }
+  return 'Unknown';
+};
+
 const extractOutboundRtpStats = (
   outboundRtpStats: (RTCOutboundRtpStreamStats & {
     mediaType?: 'video' | 'audio';
@@ -116,7 +166,8 @@ const extractPublisherStats = (
     return rtcStatsArray.find(stats => stats.type === type && stats.id === id) as RTCIceCandidateStats | null;
   };
 
-  const localCandidate = findCandidateById('local-candidate', iceCandidatePairStats.localCandidateId);
+  const localCandidate = findCandidateById('local-candidate', iceCandidatePairStats?.localCandidateId);
+  const remoteCandidate = findCandidateById('remote-candidate', iceCandidatePairStats?.remoteCandidateId);
 
   const { videoStats, audioStats } = extractOutboundRtpStats(outboundRtpStats, previousStats);
 
@@ -127,6 +178,7 @@ const extractPublisherStats = (
   const simulcastEnabled = videoStats.length > 1;
   const transportProtocol = localCandidate?.protocol || 'N/A';
   const timestamp = localCandidate?.timestamp || 0;
+  const routingResolution = determineRoutingResolution(localCandidate, remoteCandidate);
 
   return {
     videoStats,
@@ -138,5 +190,6 @@ const extractPublisherStats = (
     transportProtocol,
     currentRoundTripTime,
     timestamp,
+    routingResolution,
   };
 };
