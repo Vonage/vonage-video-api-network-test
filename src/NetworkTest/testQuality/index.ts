@@ -444,7 +444,14 @@ export function testQuality(
 
     const onError = (error: Error) => {
       stopTest = undefined;
-      otLogging.logEvent({ action: 'testQuality', variation: 'Failure' });
+      otLogging.logEvent({
+        action: 'testQuality',
+        variation: 'Failure',
+        payload: {
+          errorName: error.name,
+          errorMessage: error.message,
+        },
+      });
       reject(error);
     };
 
