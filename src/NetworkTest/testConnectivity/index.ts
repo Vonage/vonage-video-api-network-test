@@ -318,6 +318,14 @@ export function testConnectivity(
 
     const onFailure = (error: Error) => {
       if (error.name === ErrorNames.PERMISSION_DENIED_ERROR) {
+        otLogging.logEvent({
+          action: 'testConnectivity',
+          variation: 'Failure',
+          payload: {
+            errorName: error.name,
+            errorMessage: error.message,
+          },
+        });
         reject(error);
         return;
       }
@@ -338,7 +346,17 @@ export function testConnectivity(
           failedTests,
           success: false,
         };
-        otLogging.logEvent({ action: 'testConnectivity', variation: 'Success' });
+        otLogging.logEvent({
+          action: 'testConnectivity',
+          variation: 'Failure',
+          payload: {
+            failedTests: failedTests.map(test => ({
+              type: test.type,
+              error: test.error.name,
+            })),
+            errorNames: errors.map(e => e.name),
+          },
+        });
         resolve(results);
       };
 
