@@ -209,7 +209,6 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
             }
           });
 
-
           publisher.on('mediaStopped', () => {
             disconnectAndReject(new e.MediaAccessRevokedError());
           });
@@ -359,9 +358,11 @@ function checkSubscriberQuality(
               }
             };
 
-            publisher.on('streamDestroyed', () => {
-              clearTimeout(mosEstimatorTimeoutId);
-              disconnectAndReject(new e.MediaAccessRevokedError());
+            publisher.on('streamDestroyed', (event: OT.Event<'streamDestroyed', OT.Publisher>) => {
+              if ((event as any).reason === 'mediaStopped') {
+                clearTimeout(mosEstimatorTimeoutId);
+                disconnectAndReject(new e.MediaAccessRevokedError());
+              }
             });
 
             const processResults = () => {
