@@ -352,9 +352,9 @@ export function testConnectivity(
           payload: {
             failedTests: failedTests.map(test => ({
               type: test.type,
-              error: test.error.name,
+              error: test.error.name || 'Unknown Error',
             })),
-            errorNames: errors.map(e => e.name),
+            errorNames: errors.map(e => e.name || 'Unknown Error'),
           },
         });
         resolve(results);
