@@ -32,6 +32,7 @@ export enum ErrorNames {
   PUBLISH_TO_SESSION_NOT_CONNECTED = 'PublishToSessionNotConnectedError',
   PUBLISH_TO_SESSION_PERMISSION_OR_TIMEOUT_ERROR = 'PublishToSessionPermissionOrTimeoutError',
   PUBLISH_TO_SESSION_NETWORK_ERROR = 'PublishToSessionNetworkError',
+  MEDIA_ACCESS_REVOKED_ERROR = 'MediaAccessRevokedError',
   SUBSCRIBE_TO_SESSION_ERROR = 'SubscribeToSessionError',
   LOGGING_SERVER_CONNECTION_ERROR = 'LoggingServerConnectionError',
   QUALITY_TEST_ERROR = 'QualityTestError',
