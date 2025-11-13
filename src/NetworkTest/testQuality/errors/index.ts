@@ -121,6 +121,13 @@ export class PublishToSessionPermissionOrTimeoutError extends PublishToSessionEr
   }
 }
 
+export class MediaAccessRevokedError extends PublishToSessionError {
+  constructor() {
+    super('Media access was revoked during the quality test.',
+      ErrorNames.MEDIA_ACCESS_REVOKED_ERROR);
+  }
+}
+
 /**
  * Subscriber Errors
  */

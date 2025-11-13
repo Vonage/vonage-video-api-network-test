@@ -125,7 +125,16 @@ export default class NetworkTest {
     this.otLogging.logEvent({ action: 'testQuality', variation: 'Attempt' });
     if (updateCallback) {
       if (typeof updateCallback !== 'function' || updateCallback.length !== 1) {
-        this.otLogging.logEvent({ action: 'testQuality', variation: 'Failure' });
+        this.otLogging.logEvent({
+          action: 'testQuality',
+          variation: 'Failure',
+          payload: {
+            errorName: 'InvalidOnUpdateCallback',
+            reason: typeof updateCallback !== 'function'
+              ? 'updateCallback is not a function'
+              : 'updateCallback does not accept exactly 1 parameter',
+          },
+        });
         throw new InvalidOnUpdateCallback();
       }
     }

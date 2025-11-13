@@ -208,6 +208,11 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
               });
             }
           });
+
+          publisher.on('mediaStopped', () => {
+            disconnectAndReject(new e.MediaAccessRevokedError());
+          });
+
           publisher.on('streamCreated', (event: StreamCreatedEvent) => {
             const subscriber =
               session.subscribe(event.stream,
@@ -353,6 +358,13 @@ function checkSubscriberQuality(
               }
             };
 
+            publisher.on('streamDestroyed', (event: OT.Event<'streamDestroyed', OT.Publisher>) => {
+              if ((event as any).reason === 'mediaStopped') {
+                clearTimeout(mosEstimatorTimeoutId);
+                disconnectAndReject(new e.MediaAccessRevokedError());
+              }
+            });
+
             const processResults = () => {
               const audioVideoResults: QualityTestResults = buildResults(builder);
               if (!audioOnly && !isAudioQualityAcceptable(audioVideoResults) && !stopTestCalled) {
@@ -444,7 +456,14 @@ export function testQuality(
 
     const onError = (error: Error) => {
       stopTest = undefined;
-      otLogging.logEvent({ action: 'testQuality', variation: 'Failure' });
+      otLogging.logEvent({
+        action: 'testQuality',
+        variation: 'Failure',
+        payload: {
+          errorName: error.name,
+          errorMessage: error.message,
+        },
+      });
       reject(error);
     };
 
