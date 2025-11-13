@@ -58,16 +58,21 @@ function startTest() {
     };
 
     otNetworkTest = new NetworkTest(OT, sessionInfo, options);
+
     otNetworkTest.testConnectivity()
-        .then(results => ConnectivityUI.displayTestConnectivityResults(results))
-        .then(testQuality)
+        .then(results => {
+            ConnectivityUI.displayTestConnectivityResults(results);
+            return testQuality();
+        })
         .catch(error => {
-            // Handle permission errors - show message and retry button
-            if (error.name === ErrorNames.PERMISSION_DENIED_ERROR) {
+            const hasPermissionError = error.failedTests?.some(
+                (test: any) => test.error?.name === ErrorNames.PERMISSION_DENIED_ERROR
+            );
+            
+            if (hasPermissionError) {
                 displayPermissionDeniedError();
             } else {
-                // Handle other errors - show failure message and retry button
-                ConnectivityUI.displayTestConnectivityResults({ success: false, failedTests: [] });
+                ConnectivityUI.displayTestConnectivityResults(error);
                 ConnectivityUI.showRetryButton();
             }
             
