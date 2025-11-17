@@ -2,6 +2,7 @@ import NetworkTest, { ErrorNames } from 'opentok-network-test-js';
 import createChart from './chart.js';
 import * as ConnectivityUI from './connectivity-ui.js';
 import config from './config.js';
+import { ConnectivityError, FailureCase } from './types.js';
 declare const OT: any;
 let sessionInfo = config;
 let otNetworkTest : NetworkTest;
@@ -64,10 +65,10 @@ function startTest() {
             ConnectivityUI.displayTestConnectivityResults(results);
             return testQuality();
         })
-        .catch(error => {
-            const hasPermissionError = error.failedTests?.some(
-                (test: any) => test.error?.name === ErrorNames.PERMISSION_DENIED_ERROR
-            );
+        .catch((error: ConnectivityError) => {
+        const hasPermissionError = error.failedTests?.some(
+            (test: FailureCase) => test.error?.name === ErrorNames.PERMISSION_DENIED_ERROR
+        );
             
             if (hasPermissionError) {
                 displayPermissionDeniedError();
