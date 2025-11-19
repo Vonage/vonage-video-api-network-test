@@ -1,4 +1,4 @@
-import { PublisherStats } from '../../types/publisher';
+import { PublisherStats, RoutingResolution } from '../../types/publisher';
 import { RTCIceCandidateStats } from '../../types/rtcStats';
 
 export interface PreviousStreamStats {
@@ -60,7 +60,7 @@ const calculateVideoBitrate = (
 const determineRoutingResolution = (
   localCandidate: RTCIceCandidateStats | null,
   remoteCandidate: RTCIceCandidateStats | null,
-): string => {
+): RoutingResolution => {
   if (!localCandidate || !remoteCandidate) {
     return 'Unknown';
   }
