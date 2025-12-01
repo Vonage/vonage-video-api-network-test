@@ -77,32 +77,18 @@ const determineRoutingResolution = (
     return 'Routed';
   }
 
-  if (remoteType === 'relay') {
-    if (protocol === 'tcp') {
-      return 'Relayed (TURN/TLS)';
-    }
-    return 'Relayed (TURN/UDP)';
-  }
+  const isTcp = protocol === 'tcp';
 
-  if (localType === 'relay') {
-    if (protocol === 'tcp') {
-      return 'Relayed (TURN/TLS)';
-    }
-    return 'Relayed (TURN/UDP)';
+  if (localType === 'relay' || remoteType === 'relay') {
+    return isTcp ? 'Relayed (TURN/TLS)' : 'Relayed (TURN/UDP)';
   }
 
   if (localType === 'srflx' || remoteType === 'srflx') {
-    if (protocol === 'tcp') {
-      return 'Relayed (STUN/TLS)';
-    }
-    return 'Relayed (STUN/UDP)';
+    return isTcp ? 'Relayed (STUN/TLS)' : 'Relayed (STUN/UDP)';
   }
 
   if (localType === 'prflx' || remoteType === 'prflx') {
-    if (protocol === 'tcp') {
-      return 'Relayed (STUN/TLS)';
-    }
-    return 'Relayed (STUN/UDP)';
+    return isTcp ? 'Relayed (STUN/TLS)' : 'Relayed (STUN/UDP)';
   }
   return 'Unknown';
 };
