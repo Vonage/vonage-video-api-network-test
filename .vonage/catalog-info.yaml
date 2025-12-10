@@ -1,0 +1,13 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: video-network-test-js
+  description: Library to check network connectivity to resources and services required to use Vonage Video API JS
+  annotations:
+    github.com/project-slug: opentok/opentok-network-test-js
+spec:
+  type: library
+  owner: group:orgdata/vcl
+  system: video-network-test
+  lifecycle: production
