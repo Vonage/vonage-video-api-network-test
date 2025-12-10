@@ -167,12 +167,12 @@ export function displayTestQualityResults(error, results) {
   resultsEl.querySelector('#video-recommendedFrameRate').textContent =
     results.video.recommendedFrameRate ? results.video.recommendedFrameRate + ' fps' : '--';
   
-  const routingResolutionEl = resultsEl.querySelector('#video-routingResolution');
-  if (routingResolutionEl && results.video.routingResolution) {
-    routingResolutionEl.textContent = results.video.routingResolution;
-    routingResolutionEl.className = getRoutingResolutionClass(results.video.routingResolution);
-  } else if (routingResolutionEl) {
-    routingResolutionEl.textContent = '--';
+  const mediaRoutingEl = resultsEl.querySelector('#video-mediaRouting');
+  if (mediaRoutingEl && results.video.mediaRouting) {
+    mediaRoutingEl.textContent = results.video.mediaRouting;
+    mediaRoutingEl.className = getMediaRoutingClass(results.video.mediaRouting);
+  } else if (mediaRoutingEl) {
+    mediaRoutingEl.textContent = '--';
   }
   
   if (results.audio.supported) {
@@ -206,11 +206,11 @@ export function graphIntermediateStats(mediaType, stats) {
   charts[mediaType].setTitle(null, { text: chartTitle});
   prevBitsReceived[mediaType] = bitsSent;
   
-  if (mediaType === 'video' && stats.video && stats.video.routingResolution) {
-    const routingResolutionEl = document.querySelector('#video-routingResolution');
-    if (routingResolutionEl) {
-      routingResolutionEl.textContent = stats.video.routingResolution;
-      routingResolutionEl.className = getRoutingResolutionClass(stats.video.routingResolution);
+  if (mediaType === 'video' && stats.video && stats.video.mediaRouting) {
+    const mediaRoutingEl = document.querySelector('#video-mediaRouting');
+    if (mediaRoutingEl) {
+      mediaRoutingEl.textContent = stats.video.mediaRouting;
+      mediaRoutingEl.className = getMediaRoutingClass(stats.video.mediaRouting);
       
       const videoResultsEl = document.querySelector('#video .results');
       if (videoResultsEl && videoResultsEl.style.display !== 'block') {
@@ -222,20 +222,20 @@ export function graphIntermediateStats(mediaType, stats) {
     const connectionTypeLiveEl = document.getElementById('connection-type-live');
     if (connectionInfoEl && connectionTypeLiveEl) {
       connectionInfoEl.style.display = 'block';
-      connectionTypeLiveEl.textContent = stats.video.routingResolution;
-      connectionTypeLiveEl.className = getRoutingResolutionClass(stats.video.routingResolution);
+      connectionTypeLiveEl.textContent = stats.video.mediaRouting;
+      connectionTypeLiveEl.className = getMediaRoutingClass(stats.video.mediaRouting);
     }
   }
 }
 
-function getRoutingResolutionClass(routingResolution) {
-  if (routingResolution === 'Routed') {
+function getMediaRoutingClass(mediaRouting) {
+  if (mediaRouting === 'Routed') {
     return 'routing-routed';
   }
-  if (routingResolution.includes('TURN')) {
+  if (mediaRouting.includes('TURN')) {
     return 'routing-turn';
   }
-  if (routingResolution.includes('STUN')) {
+  if (mediaRouting.includes('STUN')) {
     return 'routing-stun';
   }
   return 'routing-unknown';

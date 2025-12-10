@@ -1,5 +1,5 @@
-import { PublisherStats, RoutingResolution } from '../../types/publisher';
-import { RTCIceCandidateStats } from '../../types/rtcStats';
+import { PublisherStats } from '../../types/publisher';
+import { RTCIceCandidateStats, MediaRouting } from '../../types/rtcStats';
 
 export interface PreviousStreamStats {
   [ssrc: number]: {
@@ -57,10 +57,10 @@ const calculateVideoBitrate = (
   return Math.round((byteSent * 8) / (1000 * timeDiff)); // Convert to kbit per second
 };
 
-const determineRoutingResolution = (
+const determineMediaRouting = (
   localCandidate: RTCIceCandidateStats | null,
   remoteCandidate: RTCIceCandidateStats | null,
-): RoutingResolution => {
+): MediaRouting => {
   if (!localCandidate || !remoteCandidate) {
     return 'Unknown';
   }
@@ -157,6 +157,7 @@ const extractPublisherStats = (
 
   const { videoStats, audioStats } = extractOutboundRtpStats(outboundRtpStats, previousStats);
 
+  const mediaRouting = determineMediaRouting(localCandidate, remoteCandidate);
   const availableOutgoingBitrate = iceCandidatePairStats?.availableOutgoingBitrate || -1;
   const currentRoundTripTime = iceCandidatePairStats?.currentRoundTripTime || -1;
   const videoKbsSent = videoStats.reduce((sum, stats) => sum + stats.kbs, 0);
@@ -164,7 +165,6 @@ const extractPublisherStats = (
   const simulcastEnabled = videoStats.length > 1;
   const transportProtocol = localCandidate?.protocol || 'N/A';
   const timestamp = localCandidate?.timestamp || 0;
-  const routingResolution = determineRoutingResolution(localCandidate, remoteCandidate);
 
   return {
     videoStats,
@@ -176,6 +176,6 @@ const extractPublisherStats = (
     transportProtocol,
     currentRoundTripTime,
     timestamp,
-    routingResolution,
+    mediaRouting,
   };
 };

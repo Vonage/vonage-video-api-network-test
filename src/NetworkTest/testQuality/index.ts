@@ -256,14 +256,14 @@ function buildResults(builder: QualityTestResultsBuilder): QualityTestResults {
   }
 
   const lastPublisherStats = builder.state.getLastPublisherStats();
-  if (lastPublisherStats && lastPublisherStats.routingResolution) {
-    builder.state.stats.video.routingResolution = lastPublisherStats.routingResolution;
+  if (lastPublisherStats && lastPublisherStats.mediaRouting) {
+    builder.state.stats.video.mediaRouting = lastPublisherStats.mediaRouting;
   }
 
   return {
     audio: pick(baseProps, builder.state.stats.audio),
     video: pick(baseProps.concat([
-      'frameRate', 'qualityLimitationReason', 'recommendedResolution', 'recommendedFrameRate', 'routingResolution',
+      'frameRate', 'qualityLimitationReason', 'recommendedResolution', 'recommendedFrameRate', 'mediaRouting',
     ]),
     builder.state.stats.video),
   };

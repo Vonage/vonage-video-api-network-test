@@ -15,7 +15,7 @@ const getUpdateCallbackStats = (
     packetsReceived: audioTrackStats.packetsReceived,
   };
 
-  let videoCallbackStats: CallbackTrackStats & { frameRate: number; routingResolution?: string } | null = null;
+  let videoCallbackStats: CallbackTrackStats & { frameRate: number; mediaRouting?: string } | null = null;
 
   if (phase === 'audio-video') {
     videoCallbackStats = {
@@ -24,7 +24,7 @@ const getUpdateCallbackStats = (
       packetsLost: videoTrackStats?.packetsLost || 0,
       packetsReceived: videoTrackStats?.packetsReceived || 0,
       frameRate: videoTrackStats?.frameRate || 0,
-      routingResolution: publisherStats.routingResolution,
+      mediaRouting: publisherStats.mediaRouting,
     };
   }
 

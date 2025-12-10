@@ -17,14 +17,6 @@ export interface AudioStats {
   currentTimestamp: number;
 }
 
-export type RoutingResolution =
-  | 'Routed'
-  | 'Relayed (TURN/TLS)'
-  | 'Relayed (TURN/UDP)'
-  | 'Relayed (STUN/TLS)'
-  | 'Relayed (STUN/UDP)'
-  | 'Unknown';
-
 export interface PublisherStats {
   videoStats: VideoStats[];
   audioStats: AudioStats[];
@@ -35,5 +27,5 @@ export interface PublisherStats {
   transportProtocol: string;
   currentRoundTripTime: number;
   timestamp: number;
-  routingResolution: RoutingResolution;
+  mediaRouting?: string;
 }
