@@ -166,6 +166,15 @@ export function displayTestQualityResults(error, results) {
     results.video.recommendedResolution || '--';
   resultsEl.querySelector('#video-recommendedFrameRate').textContent =
     results.video.recommendedFrameRate ? results.video.recommendedFrameRate + ' fps' : '--';
+  
+  const mediaRoutingEl = resultsEl.querySelector('#video-mediaRouting');
+  if (mediaRoutingEl && results.video.mediaRouting) {
+    mediaRoutingEl.textContent = results.video.mediaRouting;
+    mediaRoutingEl.className = getMediaRoutingClass(results.video.mediaRouting);
+  } else if (mediaRoutingEl) {
+    mediaRoutingEl.textContent = '--';
+  }
+  
   if (results.audio.supported) {
     if (results.video.supported || audioOnlyTest) {
       statusIconEl.src = 'assets/icon_pass.svg';
@@ -196,4 +205,38 @@ export function graphIntermediateStats(mediaType, stats) {
    'Bitrate over ' + resultCount[mediaType] + 'sec';
   charts[mediaType].setTitle(null, { text: chartTitle});
   prevBitsReceived[mediaType] = bitsSent;
+  
+  if (mediaType === 'video' && stats.video && stats.video.mediaRouting) {
+    const mediaRoutingEl = document.querySelector('#video-mediaRouting');
+    if (mediaRoutingEl) {
+      mediaRoutingEl.textContent = stats.video.mediaRouting;
+      mediaRoutingEl.className = getMediaRoutingClass(stats.video.mediaRouting);
+      
+      const videoResultsEl = document.querySelector('#video .results');
+      if (videoResultsEl && videoResultsEl.style.display !== 'block') {
+        videoResultsEl.style.display = 'block';
+      }
+    }
+    
+    const connectionInfoEl = document.getElementById('connection-info');
+    const connectionTypeLiveEl = document.getElementById('connection-type-live');
+    if (connectionInfoEl && connectionTypeLiveEl) {
+      connectionInfoEl.style.display = 'block';
+      connectionTypeLiveEl.textContent = stats.video.mediaRouting;
+      connectionTypeLiveEl.className = getMediaRoutingClass(stats.video.mediaRouting);
+    }
+  }
+}
+
+function getMediaRoutingClass(mediaRouting) {
+  if (mediaRouting === 'Routed') {
+    return 'routing-routed';
+  }
+  if (mediaRouting.includes('TURN')) {
+    return 'routing-turn';
+  }
+  if (mediaRouting.includes('STUN')) {
+    return 'routing-stun';
+  }
+  return 'routing-unknown';
 }
