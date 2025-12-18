@@ -15,8 +15,8 @@ export type InitSessionOptions = {
 };
 
 export interface SessionCredentials {
-  apiKey: string;
   sessionId: string;
   token: string;
+  applicationId: string;
 }
 

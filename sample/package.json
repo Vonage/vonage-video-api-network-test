@@ -1,7 +1,7 @@
 {
-  "name": "opentok-network-test-sample",
-  "version": "2.0.0",
-  "description": "OpenTok Network Test Sample App",
+  "name": "vonage-network-test-sample",
+  "version": "1.0.1",
+  "description": "Vonage Video API Network Test Sample App",
   "scripts": {
     "build": "webpack --config webpack.config.js"
   },
@@ -21,8 +21,7 @@
     "webpack": "^5.88.1"
   },
   "dependencies": {
-    "@opentok/client": "^2.31.0",
     "highcharts": "^9.0.0",
-    "opentok-network-test-js": "../"
+    "@vonage/video-client-network-test": "../"
   }
 }

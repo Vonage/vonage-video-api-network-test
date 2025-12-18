@@ -58,7 +58,7 @@ let stopTestTimeoutId: number;
 let stopTestTimeoutCompleted = false;
 let stopTestCalled = false;
 /**
- * If not already connected, connect to the OpenTok Session
+ * If not already connected, connect to the Vonage Video API Session
  */
 function connectToSession(session: OT.Session, token: string): Promise<OT.Session> {
   return new Promise((resolve, reject) => {
@@ -86,7 +86,7 @@ function connectToSession(session: OT.Session, token: string): Promise<OT.Sessio
  * Checks for camera support for a given resolution.
  *
  * See the "API reference" section of the README.md file in the root of the
- * opentok-network-test-js project for details.
+ * @vonage/video-client-network-test project for details.
  */
 function checkCameraSupport(width: number, height: number): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -229,7 +229,7 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
     });
 }
 /**
- *  Connect to the OpenTok session, create a publisher, and subsribe to the publisher's stream
+ *  Connect to the Vonage Video API session, create a publisher, and subsribe to the publisher's stream
  */
 function subscribeToTestStream(
   OTInstance: typeof OT,
@@ -435,7 +435,7 @@ function validateBrowser(): Promise<void> {
 }
 
 /**
- * This method checks to see if the client can publish to an OpenTok session.
+ * This method checks to see if the client can publish to a Vonage Video API session.
  */
 export function testQuality(
   OTInstance: typeof OT,
@@ -485,7 +485,7 @@ export function testQuality(
             sessionOptions.proxyUrl = options.proxyServerUrl;
           }
         }
-        const session = OTInstance.initSession(credentials.apiKey, credentials.sessionId, sessionOptions);
+        const session = OTInstance.initSession(credentials.applicationId, credentials.sessionId, sessionOptions);
         checkSubscriberQuality(OTInstance, session, credentials, options, onUpdate)
           .then(onSuccess)
           .catch(onError);
