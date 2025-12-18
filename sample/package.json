@@ -1,6 +1,6 @@
 {
   "name": "opentok-network-test-sample",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "OpenTok Network Test Sample App",
   "scripts": {
     "build": "webpack --config webpack.config.js"
@@ -13,7 +13,7 @@
     "name": "Vonage Video API",
     "email": "support@api.vonage.com"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "homepage": "https://github.com/opentok/opentok-network-connectivity",
   "devDependencies": {
     "ts-loader": "^9.5.2",
