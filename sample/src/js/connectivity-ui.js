@@ -180,7 +180,7 @@ export function displayTestQualityResults(error, results) {
       statusIconEl.src = 'assets/icon_pass.svg';
     } else {
       statusIconEl.src = 'assets/icon_warning.svg';
-      var reasonEl = resultsEl.querySelector('#video-unsupported-reason');
+      const reasonEl = resultsEl.querySelector('#video-unsupported-reason');
       reasonEl.style.display = 'block';
       reasonEl.querySelector('span').textContent = results.video.reason;
     }
@@ -194,7 +194,7 @@ export function graphIntermediateStats(mediaType, stats) {
   if (!charts[mediaType]) {
     charts[mediaType] = createChart(mediaType);
   }
-  const bitsSent = mediaStats && mediaStats.bytesSent ? mediaStats.bytesSent * 8 : 0;
+  const bitsSent = mediaStats?.bytesSent ? mediaStats.bytesSent * 8 : 0;
   resultCount[mediaType]++;
   charts[mediaType].series[0].addPoint({
     x: resultCount[mediaType],
@@ -206,7 +206,7 @@ export function graphIntermediateStats(mediaType, stats) {
   charts[mediaType].setTitle(null, { text: chartTitle});
   prevBitsReceived[mediaType] = bitsSent;
   
-  if (mediaType === 'video' && stats.video && stats.video.mediaRouting) {
+  if (mediaType === 'video' && stats?.video?.mediaRouting) {
     const mediaRoutingEl = document.querySelector('#video-mediaRouting');
     if (mediaRoutingEl) {
       mediaRoutingEl.textContent = stats.video.mediaRouting;
