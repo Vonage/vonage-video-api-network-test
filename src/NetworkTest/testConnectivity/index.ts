@@ -17,7 +17,7 @@ import {
   NetworkTestOptions,
 } from '../index';
 import * as e from './errors';
-import { OTErrorType, errorHasName } from '../errors/types';
+import { OTErrorType, errorHasName, ErrorNames } from '../errors/types';
 import { mapErrors, FailureCase } from './errors/mapping';
 import { getOr } from '../util';
 import { SessionCredentials, InitSessionOptions } from '../types/session';

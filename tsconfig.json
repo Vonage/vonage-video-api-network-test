@@ -14,7 +14,8 @@
     /* Module Resolution Options */
     "types": [
       "node",
-      "@opentok/client"
+      "@vonage/client-sdk-video",
+      "@vonage/server-sdk"
     ]
     /* Source Map Options */
 
