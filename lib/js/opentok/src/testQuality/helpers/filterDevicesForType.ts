@@ -1,5 +1,5 @@
 import * as Promise from 'promise';
-import * as e from '../../testQuality/errors';
+import * as e from '../errors';
 
 export type InputDeviceType = 'audioInput' | 'videoInput';
 

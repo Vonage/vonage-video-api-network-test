@@ -3,7 +3,7 @@ import calculateThroughput from './calculateThroughput';
 import MOSState from './MOSState';
 import { AV } from '../types/stats';
 import { getOr, last, nth } from '../../util';
-import { getPublisherStats }  from '../helpers/getPublisherRtcStatsReport';
+import { getPublisherStats }  from './getPublisherRtcStatsReport';
 import { PublisherStats } from '../../types/publisher';
 
 export type StatsListener = (

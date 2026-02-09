@@ -22,7 +22,7 @@
     /* Experimental Options */
   },
   "files": [
-    "src/NetworkTest/index.ts",
+    "src/index.ts",
     // "test/NetworkTest.spec.ts"
   ],
 /*
