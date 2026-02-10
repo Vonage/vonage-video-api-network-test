@@ -1,6 +1,6 @@
 import config from './config';
-import { getOr, last } from '../../util';
-import { PublisherStats } from '../../types/publisher';
+import { getOr, last } from '@shared/util';
+import { PublisherStats } from '@shared/types/publisher';
 
 export default function getLatestSampleWindow(stats: PublisherStats[]): PublisherStats[] {
   const mostRecentTimestamp: number = getOr(0, 'timestamp', last(stats));

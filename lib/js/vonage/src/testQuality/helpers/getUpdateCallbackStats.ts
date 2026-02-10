@@ -1,5 +1,5 @@
-import { UpdateCallbackStats, CallbackTrackStats } from '../../types/callbacks';
-import { PublisherStats } from '../../types/publisher';
+import { UpdateCallbackStats, CallbackTrackStats } from '@shared/types/callbacks';
+import { PublisherStats } from '@shared/types/publisher';
 
 const getUpdateCallbackStats = (
   subscriberStats: OT.SubscriberStats,

@@ -1,0 +1,15 @@
+// tsconfig.eslint.json
+
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "**/*.ts",
+    "**/*.js",
+    ".eslintrc.js",
+    "vite.config.ts",
+    "webpack.common.js",
+    "lib/js/shared/**/*",
+    "lib/js/opentok/**/*",
+    "lib/js/vonage/**/*"
+  ]
+}

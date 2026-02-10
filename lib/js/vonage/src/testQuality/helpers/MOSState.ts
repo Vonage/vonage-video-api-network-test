@@ -1,4 +1,4 @@
-import { PublisherStats } from '../../types/publisher';
+import { PublisherStats } from '@shared/types/publisher';
 import { AverageStats, Bandwidth, HasAudioVideo } from '../types/stats';
 
 export default class MOSState {

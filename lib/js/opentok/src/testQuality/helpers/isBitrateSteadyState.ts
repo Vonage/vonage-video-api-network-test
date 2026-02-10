@@ -1,6 +1,6 @@
 import getLatestSampleWindow from './getLatestSampleWindow';
 import config from './config';
-import { PublisherStats } from '../../types/publisher';
+import { PublisherStats } from '@shared/types/publisher';
 
 export default function isBitrateSteadyState(statsList: PublisherStats[]): boolean {
   const latestSamples = getLatestSampleWindow(statsList);

@@ -1,0 +1,17 @@
+{
+  "entries": [
+    {
+      "filePath": "./src/index.ts",
+      "outFile": "../../../dist/vonage/index.d.ts",
+      "noCheck": true,
+      "libraries": {
+        "importedLibraries": [
+            "node",
+            "@vonage/client-sdk-video",
+            "@vonage/server-sdk",
+            "opentok-solutions-logging", 
+            "@opentok/client"]
+      }
+    }
+  ]
+}

@@ -10,15 +10,15 @@
  */
 
 /* tslint:disable */
-import OTKAnalytics = require('opentok-solutions-logging');
+import OTKAnalytics from 'opentok-solutions-logging';
 /* tslint:enable */
 import * as Promise from 'promise';
 import {
   NetworkTestOptions,
 } from '../index';
 import { AverageStats, AV, Bandwidth, HasAudioVideo } from './types/stats';
-import { UpdateCallback, UpdateCallbackStats } from '../types/callbacks';
-import { pick } from '../util';
+import { UpdateCallback, UpdateCallbackStats } from '@shared/types/callbacks';
+import { pick } from '@shared/util';
 import * as e from './errors';
 import { OTErrorType, errorHasName } from '../errors/types';
 import subscriberMOS from './helpers/subscriberMOS';
@@ -28,7 +28,7 @@ import isSupportedBrowser from './helpers/isSupportedBrowser';
 import getUpdateCallbackStats from './helpers/getUpdateCallbackStats';
 import { PermissionDeniedError, UnsupportedResolutionError } from '../errors';
 import { InitSessionOptions, SessionCredentials } from '../types/session';
-import { PublisherStats } from '../types/publisher';
+import { PublisherStats } from '@shared/types/publisher';
 
 const FULL_HD_WIDTH = 1920;
 const FULL_HD_HEIGHT = 1080;

@@ -1,5 +1,5 @@
-import { PublisherStats } from '../../types/publisher';
-import { RTCIceCandidateStats, MediaRouting } from '../../types/rtcStats';
+import { PublisherStats } from '@shared/types/publisher';
+import { RTCIceCandidateStats, MediaRouting } from '@shared/types/rtcStats';
 
 export interface PreviousStreamStats {
   [ssrc: number]: {

@@ -2,10 +2,12 @@
   "name": "opentok-network-test-js",
   "version": "5.0.0",
   "description": "Precall network test for applications using the OpenTok platform.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/opentok/index.js",
+  "types": "dist/opentok/index.d.ts",
   "scripts": {
-    "build": "rm -rf dist && webpack --config webpack.config.js",
+    "build:js": "rm -rf dist && webpack --config webpack.config.js  --stats-error-details",
+    "build:types": "tsc --project ./tsconfig.json",
+    "build": "npm run build:js && npm run build:types && node ../scripts/bundle-cleanup.js opentok",
     "test-setup": "node test/setup/setup.js",
     "test-teardown": "rm test/credentials.json",
     "karma": "karma start",
@@ -13,9 +15,10 @@
     "example": "npm run build && cd sample && npm run build && python -m SimpleHTTPServer",
     "lint": "npm run tslint",
     "lint-fix": "npm run tslint-fix",
-    "tslint": "./node_modules/eslint/bin/eslint.js src test/**/*.ts",
-    "tslint-fix": "./node_modules/eslint/bin/eslint.js src test/**/*.ts --fix"
+    "tslint": "../node_modules/eslint/bin/eslint.js src test/**/*.ts",
+    "tslint-fix": "../node_modules/eslint/bin/eslint.js src test/**/*.ts --fix"
   },
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/opentok/opentok-network-test-js.git"
@@ -36,55 +39,8 @@
     "url": "https://github.com/opentok/network-connectivity-js/issues"
   },
   "homepage": "https://github.com/opentok/network-connectivity-js#readme",
-  "dependencies": {
-    "axios": "^1.8.3",
-    "opentok-solutions-logging": "^1.1.1",
-    "promise": "^8.0.1"
-  },
   "devDependencies": {
     "@opentok/client": "^2.31.1",
-    "@types/expect.js": "^0.3.29",
-    "@types/jasmine": "^5.0.0",
-    "@types/jasmine-matchers": "^0.2.30",
-    "@types/mocha": "^5.2.2",
-    "@types/node": "^24.0.0",
-    "@types/promise": "^7.1.30",
-    "@typescript-eslint/eslint-plugin": "^7.6.0",
-    "@typescript-eslint/eslint-plugin-tslint": "^7.0.2",
-    "@typescript-eslint/parser": "^7.6.0",
-    "dotenv": "^17.0.0",
-    "eslint": "^8.44.0",
-    "fs-extra": "^4.0.3",
-    "jasmine": "^5.0.0",
-    "jasmine-core": "^5.0.0",
-    "karma": "^6.4.2",
-    "karma-chrome-launcher": "^3.2.0",
-    "karma-cli": "^2.0.0",
-    "karma-firefox-launcher": "^2.1.2",
-    "karma-jasmine": "^5.1.0",
-    "karma-mocha-reporter": "^2.2.5",
-    "karma-safari-launcher": "^1.0.0",
-    "karma-safaritechpreview-launcher": "2.0.2",
-    "karma-sauce-launcher": "^4.3.6",
-    "karma-sourcemap-loader": "^0.4.0",
-    "karma-webpack": "^5.0.0",
-    "opentok": "^2.16.0",
-    "terser-webpack-plugin": "^5.3.9",
-    "ts-loader": "^9.5.1",
-    "typescript": "^5.4.5",
-    "webpack": "^5.88.1",
-    "webpack-cli": "^6.0.0",
-    "webpack-node-externals": "^3.0.0"
-  },
-  "overrides": {
-    "download": {
-      "got": "^11.8.6"
-    },
-    "find-versions": {
-      "semver-regex": "^4.0.5"
-    },
-    "bin-check": {
-      "execa": "1.0.0"
-    }
+    "opentok": "^2.16.0"
   }
 }

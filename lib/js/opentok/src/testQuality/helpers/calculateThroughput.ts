@@ -4,8 +4,8 @@ import getVideoQualityEvaluation from './getVideoQualityEvaluation';
 import { AV, AverageStats, AverageStatsBase, HasAudioVideo, SubscriberQualityStats } from '../types/stats';
 import config from './config';
 import MOSState from './MOSState';
-import { PublisherStats } from '../../types/publisher';
-import { getOr } from '../../util';
+import { PublisherStats } from '@shared/types/publisher';
+import { getOr } from '@shared/util';
 
 function getAverageBitrateAndPlr(type: AV,
                                  subscriberStatsList: SubscriberQualityStats[],

@@ -9,7 +9,7 @@
 // eslint-disable-next-line
 const version = require('../../package.json').version;
 import { SessionCredentials, InitSessionOptions } from './types/session';
-import { UpdateCallback, UpdateCallbackStats } from './types/callbacks';
+import { UpdateCallback, UpdateCallbackStats } from '@shared/types/callbacks';
 import {
   testConnectivity,
   ConnectivityTestResults,
@@ -25,7 +25,7 @@ import {
   MissingOpenTokInstanceError,
   MissingSessionCredentialsError,
 } from './errors';
-import OTKAnalytics = require('opentok-solutions-logging');
+import OTKAnalytics from 'opentok-solutions-logging';
 
 export interface NetworkTestOptions {
   audioOnly?: boolean;

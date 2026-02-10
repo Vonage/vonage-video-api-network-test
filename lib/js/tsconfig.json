@@ -1,46 +1,41 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
-    // File Layout
-    // "rootDir": "./src",
-    // "outDir": "./dist",
-
-    "allowJs": true,
-    "esModuleInterop": true,
-    // Environment Settings
-    // See also https://aka.ms/tsconfig/module
-    "module": "nodenext",
-    "target": "esnext",
-    "types": [],
-    // For nodejs:
-    // "lib": ["esnext"],
-    // "types": ["node"],
-    // and npm install -D @types/node
-
-    // Other Outputs
-    "sourceMap": true,
-    "declaration": true,
+    /* Basic Options */
+    "baseUrl": ".",
+    "target": "ES6",                                            /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', or 'ESNEXT'. */
+    "module": "commonjs",                                       /* Specify module code generation: 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */
+    "lib": ["es2018", "es2017.object", "dom", "dom.iterable"],  /* Specify library files to be included in the compilation:  */
+    "allowJs": false,                                           /* Allow javascript files to be compiled. */
+    "declaration": true,                                        /* Generates corresponding '.d.ts' file. */
     "declarationMap": true,
+    "sourceMap": true,                        /* Generates corresponding '.map' file. */
+    "outDir": "../",                          /* Redirect output structure to the directory. */
+    "rootDir": ".",                         /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */
+    /* Module Resolution Options */
+    /* Source Map Options */
 
-    // Stricter Typechecking Options
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-
-    // Style Options
-    // "noImplicitReturns": true,
-    // "noImplicitOverride": true,
-    // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
-    // "noFallthroughCasesInSwitch": true,
-    // "noPropertyAccessFromIndexSignature": true,
-
-    // Recommended Options
-    "strict": true,
-    "jsx": "react-jsx",
-    "verbatimModuleSyntax": true,
-    "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
-    "moduleDetection": "force",
-    "skipLibCheck": true,
-  }
+    /* Experimental Options */
+    "allowSyntheticDefaultImports": true
+  },
+  "paths": {
+    "@shared": ["lib/js/shared/index.ts"],
+    "@shared/*": ["lib/js/shared/*"]
+  },
+  "exclude": [
+    "node_modules",
+    "**/dist/**",
+    "test/setup/setup.js"
+  ],
+  // "files": [
+  //   "lib/js/opentok/src/index.ts",
+  //   "lib/js/vonage/src/index.ts",
+  // ],
+  "include": [
+    "lib/js/shared/**/*",     
+    "lib/js/opentok/**/*", 
+    "lib/js/vonage/**/*",  
+    "samples/**/*",             
+    "**/*.ts",                  
+    "**/*.d.ts"
+  ],
 }

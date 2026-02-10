@@ -2,9 +2,9 @@ import isBitrateSteadyState from './isBitrateSteadyState';
 import calculateThroughput from './calculateThroughput';
 import MOSState from './MOSState';
 import { AV } from '../types/stats';
-import { getOr, last, nth } from '../../util';
+import { getOr, last, nth } from '@shared/util';
 import { getPublisherStats }  from './getPublisherRtcStatsReport';
-import { PublisherStats } from '../../types/publisher';
+import { PublisherStats } from '@shared/types/publisher';
 
 export type StatsListener = (
   error?: OT.OTError,
