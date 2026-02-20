@@ -4,6 +4,12 @@
   "description": "Precall network test for applications using the OpenTok platform.",
   "main": "dist/opentok/index.js",
   "types": "dist/opentok/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build:js": "rm -rf dist && webpack --config webpack.config.js  --stats-error-details",
     "build:types": "tsc --project ./tsconfig.json",
@@ -21,7 +27,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/opentok/opentok-network-test-js.git"
+    "url": "git+https://github.com/Vonage/vonage-video-api-network-test.git"
   },
   "keywords": [
     "tokbox",
