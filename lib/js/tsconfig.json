@@ -9,33 +9,17 @@
     "declaration": true,                                        /* Generates corresponding '.d.ts' file. */
     "declarationMap": true,
     "sourceMap": true,                        /* Generates corresponding '.map' file. */
-    "outDir": "../",                          /* Redirect output structure to the directory. */
-    "rootDir": ".",                         /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */
-    /* Module Resolution Options */
-    /* Source Map Options */
-
-    /* Experimental Options */
-    "allowSyntheticDefaultImports": true
-  },
-  "paths": {
-    "@shared": ["lib/js/shared/index.ts"],
-    "@shared/*": ["lib/js/shared/*"]
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "rootDir": "./src",
+    "outDir": "../../dist"
   },
   "exclude": [
-    "node_modules",
+    "./node_modules",
     "**/dist/**",
-    "test/setup/setup.js"
+    "./test/**/*"
   ],
-  // "files": [
-  //   "lib/js/opentok/src/index.ts",
-  //   "lib/js/vonage/src/index.ts",
-  // ],
   "include": [
-    "lib/js/shared/**/*",     
-    "lib/js/opentok/**/*", 
-    "lib/js/vonage/**/*",  
-    "samples/**/*",             
-    "**/*.ts",                  
-    "**/*.d.ts"
+    "./src/**/*"
   ],
 }

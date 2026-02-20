@@ -1,0 +1,28 @@
+{
+  "name": "vonage-network-test-sample",
+  "version": "1.0.2",
+  "description": "Vonage Video API Network Test Sample App",
+  "scripts": {
+    "build": "webpack --config webpack.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/opentok/opentok-network-connectivity.git"
+  },
+  "author": {
+    "name": "Vonage Video API",
+    "email": "support@api.vonage.com"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/Vonage/vonage-video-js-api-network-test",
+  "devDependencies": {
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.7.3",
+    "webpack": "^5.88.1",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "@vonage/video-client-network-test": "../../../dist",
+    "highcharts": "^9.0.0"
+  }
+}
