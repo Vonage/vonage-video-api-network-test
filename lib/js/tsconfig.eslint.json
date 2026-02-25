@@ -8,7 +8,6 @@
     ".eslintrc.js",
     "vite.config.ts",
     "webpack.common.js",
-    "lib/js/shared/**/*",
     "lib/js/opentok/**/*",
     "lib/js/vonage/**/*"
   ]
