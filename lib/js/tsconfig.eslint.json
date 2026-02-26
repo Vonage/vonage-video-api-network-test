@@ -3,11 +3,11 @@
 {
   "extends": "./tsconfig.json",
   "include": [
-    "**/*.ts",
-    "**/*.js",
-    ".eslintrc.js",
-    "webpack.common.js",
-    "lib/js/opentok/**/*",
-    "lib/js/vonage/**/*"
-  ]
+     "src/**/*.ts",
+     "src/**/*.js",
+     "test/**/*.ts",
+     "test/**/*.js",
+     ".eslintrc.cjs",
+     "webpack.config.js"
+   ]
 }

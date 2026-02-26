@@ -6,10 +6,9 @@
 * Define Network Connectivy class
 */
 
-// eslint-disable-next-line
-const version = require('../package.json').version;
+import { version } from '../package.json';
 import { SessionCredentials, InitSessionOptions } from './types/session';
-import { UpdateCallback, UpdateCallbackStats } from './types/callbacks';
+import { UpdateCallback } from './types/callbacks';
 import {
   testConnectivity,
   ConnectivityTestResults,
@@ -25,7 +24,7 @@ import {
   MissingOpenTokInstanceError,
   MissingSessionCredentialsError,
 } from './errors';
-import OTKAnalytics from 'opentok-solutions-logging';
+import OTKAnalytics = require('opentok-solutions-logging');
 
 export interface NetworkTestOptions {
   audioOnly?: boolean;
@@ -123,7 +122,7 @@ export default class NetworkTest {
    * See the "API reference" section of the README.md file in the root of the
    * @vonage/video-client-network-test project for details.
    */
-  testQuality(updateCallback?: UpdateCallback<UpdateCallbackStats>): Promise<QualityTestResults> {
+  testQuality(updateCallback?: UpdateCallback): Promise<QualityTestResults> {
     this.otLogging.logEvent({ action: 'testQuality', variation: 'Attempt' });
     if (updateCallback) {
       if (typeof updateCallback !== 'function' || updateCallback.length !== 1) {

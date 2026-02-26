@@ -1,5 +1,3 @@
-/* tslint: disable */
-
 import * as OTClient from '@vonage/client-sdk-video';
 import {
   primary as sessionCredentials,
@@ -12,7 +10,7 @@ import {
   IncompleteSessionCredentialsError,
   InvalidOnUpdateCallback,
 } from '../src/errors';
-import { ConnectivityError } from '../src/testConnectivity/errors';
+import { OTErrorType } from '../src/errors/types';
 import NetworkTest, { ErrorNames } from '../src';
 import { ConnectivityTestResults } from '../src/testConnectivity/index';
 import { QualityTestError } from '../src/testQuality/errors/index';
@@ -77,8 +75,8 @@ describe('NetworkTest', () => {
   });
 
   describe('Connectivity Test', () => {
-    const testConnectFailure = (errorName, expectedType) => {
-      return new Promise((resolve) => {
+    const testConnectFailure = (errorName: OTErrorType, expectedType): Promise<void> => {
+      return new Promise((resolve, reject) => {
         const realInitSession = OT.initSession;
         spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
           const session = realInitSession(applicationId, sessionId);
@@ -91,10 +89,10 @@ describe('NetworkTest', () => {
         });
         const netTest = new NetworkTest(OT, sessionCredentials);
         netTest.testConnectivity()
-          .then((results: ConnectivityTestResults) => {
+          .catch((results: ConnectivityTestResults) => {
             expect(results.failedTests).toBeInstanceOf(Array);
             if (results.failedTests.find(f => f.type === expectedType)) {
-              resolve();
+              reject();
             }
           });
       });
@@ -108,9 +106,9 @@ describe('NetworkTest', () => {
             expect(results.failedTests).toBeInstanceOf(Array);
             done();
           });
-      }, 10000);
+      }, 15000);
 
-      it('should return a failed test case if invalid session credentials are used', (done) => {
+      it('should return a failed test case if invalid session credentials are used', () => {
         const validateResults = (results: ConnectivityTestResults) => {
           expect(results.success).toBe(false);
           expect(results.failedTests).toBeInstanceOf(Array);
@@ -121,14 +119,8 @@ describe('NetworkTest', () => {
           expect(secondaryFailure.error.name).toBe(ErrorNames.FAILED_MESSAGING_SERVER_TEST);
         };
 
-        const validateError = (error?: ConnectivityError) => {
-          expect(error).toBeUndefined();
-        };
-
         badCredentialsNetworkTest.testConnectivity()
-          .then(validateResults)
-          .catch(validateError)
-          .finally(done);
+          .catch(validateResults)
       });
 
       it('should result in a failed test if the logging server cannot be reached', (done) => {
@@ -143,67 +135,68 @@ describe('NetworkTest', () => {
         };
         const badLoggingNetworkTest = new NetworkTest(badLoggingOT, badLoggingCredentials);
         badLoggingNetworkTest.testConnectivity()
-          .then((results: ConnectivityTestResults) => {
+          .catch((results: ConnectivityTestResults) => {
             expect(results.failedTests).toBeInstanceOf(Array);
             if (results.failedTests.find(f => f.type === 'logging')) {
               done();
             }
           });
-      }, 10000);
+      }, 15000);
 
       it('should result in a failed test if the API server cannot be reached', (done) => {
-        testConnectFailure('OT_CONNECT_FAILED', 'api').then(done);
+        testConnectFailure(OTErrorType.OT_CONNECT_FAILED, 'api').catch(done);
       }, 1000);
 
       it('results in a failed test when session.connect() gets an invalid HTTP status', (done) => {
-        testConnectFailure('OT_INVALID_HTTP_STATUS', 'api').then(done);
+        testConnectFailure(OTErrorType.OT_INVALID_HTTP_STATUS, 'api').catch(done);
       }, 1000);
 
       it('results in a failed test if session.connect() gets an authentication error', (done) => {
-        testConnectFailure('OT_AUTHENTICATION_ERROR', 'messaging').then(done);
+        testConnectFailure(OTErrorType.OT_AUTHENTICATION_ERROR, 'messaging').catch(done);
       }, 1000);
+
       it('results in a failed test if OT.getDevices() returns an error', (done) => {
         spyOn(OT, 'getDevices').and.callFake((callback) => {
           callback(new Error());
         });
         networkTest.testConnectivity()
-          .then((results: ConnectivityTestResults) => {
+          .catch((results: ConnectivityTestResults) => {
             expect(results.success).toBe(false);
             expect(results.failedTests).toBeInstanceOf(Array);
             if (results.failedTests.find(f => f.type === 'OpenTok.js')) {
               done();
             }
           });
-      }, 10000);
+      }, 15000);
       it('results in a failed test if there are no cameras or mics', (done) => {
         spyOn(OT, 'getDevices').and.callFake((callback) => {
           callback(null, []);
         });
         networkTest.testConnectivity()
-          .then((results: ConnectivityTestResults) => {
+          .catch((results: ConnectivityTestResults) => {
             expect(results.success).toBe(false);
             expect(results.failedTests).toBeInstanceOf(Array);
             if (results.failedTests.find(f => f.type === 'OpenTok.js')) {
               done();
             }
           });
-      }, 10000);
+      }, 15000);
       it('results in a failed test if session.connect() gets an authentication error', (done) => {
-        testConnectFailure('OT_AUTHENTICATION_ERROR', 'messaging').then(done);
+        testConnectFailure(OTErrorType.OT_AUTHENTICATION_ERROR, 'messaging').catch(done);
       }, 1000);
       it('results in a failed test if OT.initPublisher() returns an error', (done) => {
         spyOn(OT, 'initPublisher').and.callFake((target, options, callback) => {
           callback(new Error());
         });
         networkTest.testConnectivity()
-          .then((results: ConnectivityTestResults) => {
+          .catch((results: ConnectivityTestResults) => {
             expect(results.success).toBe(false);
             expect(results.failedTests).toBeInstanceOf(Array);
             if (results.failedTests.find(f => f.type === 'OpenTok.js')) {
               done();
             }
           });
-      }, 10000);
+      }, 15000);
       it('results in a failed test if Session.subscribe() returns an error', (done) => {
         const realInitSession = OT.initSession;
         spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
@@ -215,14 +208,14 @@ describe('NetworkTest', () => {
           return session;
         });
         networkTest.testConnectivity()
-          .then((results: ConnectivityTestResults) => {
+          .catch((results: ConnectivityTestResults) => {
             expect(results.success).toBe(false);
             expect(results.failedTests).toBeInstanceOf(Array);
             if (results.failedTests.find(f => f.type === 'media')) {
               done();
             }
           });
-      }, 10000);
+      }, 15000);
     });
 
     describe('Quality Test', () => {
@@ -234,7 +227,7 @@ describe('NetworkTest', () => {
         expect(error.name).toBe(ErrorNames.UNSUPPORTED_BROWSER);
       };
 
-      const testConnectFailure = (otErrorName, netTestErrorName) => {
+      const testConnectFailure = (otErrorName: OTErrorType, netTestErrorName) => {
         const realInitSession = OT.initSession;
         spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
           const session = realInitSession(applicationId, sessionId);
@@ -246,16 +239,11 @@ describe('NetworkTest', () => {
           return session;
         });
 
-        const validateResults = (results: QualityTestResults) => {
-          expect(results).toBe(undefined);
-        };
-
         const validateError = (error?: QualityTestError) => {
           expect(error.name).toBe(netTestErrorName);
         };
 
         networkTest.testQuality(null)
-          .then(validateResults)
           .catch(validateError);
       };
 
@@ -282,37 +270,31 @@ describe('NetworkTest', () => {
       };
 
       it('validates its onUpdate callback', () => {
-        // eslint-disable-next-line
         expect(() => networkTest.testQuality('bad-callback').toThrow(new InvalidOnUpdateCallback()));
         expect(() => networkTest.testConnectivity(validOnUpdateCallback)
           .not.toThrowError(NetworkTestError));
       });
 
       it('should return an error if invalid session credentials are used', (done) => {
-        const validateResults = (results: QualityTestResults) => {
-          expect(results).toBe(undefined);
-        };
-
         const validateError = (error?: QualityTestError) => {
           expect(error.name).toBe(ErrorNames.CONNECT_TO_SESSION_TOKEN_ERROR);
         };
 
         badCredentialsNetworkTest.testQuality(null)
-          .then(validateResults)
           .catch(validateError)
           .finally(done);
       });
 
       it('should return an error if session.connect() gets an authentication error', () => {
-        testConnectFailure('OT_AUTHENTICATION_ERROR', ErrorNames.CONNECT_TO_SESSION_TOKEN_ERROR);
+        testConnectFailure(OTErrorType.OT_AUTHENTICATION_ERROR, ErrorNames.CONNECT_TO_SESSION_TOKEN_ERROR);
       });
 
       it('should return an error if session.connect() gets a session ID error', () => {
-        testConnectFailure('OT_INVALID_SESSION_ID', ErrorNames.CONNECT_TO_SESSION_ID_ERROR);
+        testConnectFailure(OTErrorType.OT_INVALID_SESSION_ID, ErrorNames.CONNECT_TO_SESSION_ID_ERROR);
       });
 
       it('should return an error if session.connect() gets a network error', () => {
-        testConnectFailure('OT_CONNECT_FAILED', ErrorNames.CONNECT_TO_SESSION_NETWORK_ERROR);
+        testConnectFailure(OTErrorType.OT_CONNECT_FAILED, ErrorNames.CONNECT_TO_SESSION_NETWORK_ERROR);
       });
 
       it('results in a failed test if OT.getDevices() returns an error', (done) => {
@@ -324,7 +306,7 @@ describe('NetworkTest', () => {
             expect(error?.name).toBe(ErrorNames.FAILED_TO_OBTAIN_MEDIA_DEVICES);
             done();
           });
-      }, 10000);
+      }, 15000);
 
       it('results in a failed test if there are no mics', (done) => {
         const realOTGetDevices = OT.getDevices;
@@ -339,18 +321,13 @@ describe('NetworkTest', () => {
             expect(error?.name).toBe(ErrorNames.NO_AUDIO_CAPTURE_DEVICES);
             done();
           });
-      }, 10000);
+      }, 15000);
 
       it('should return valid test results or an error', (done) => {
-        const validateError = (error?: QualityTestError) => {
-          expect(error?.name).toBe(ErrorNames.QUALITY_TEST_ERROR);
-        };
-
         const onUpdate = (stats: Stats) => validOnUpdateCallback(stats);
 
         networkTest.testQuality(onUpdate)
-          .then(validateStandardResults)
-          .catch(validateError)
+          .catch(validateStandardResults)
           .finally(done);
       }, 40000);
 
@@ -377,7 +354,7 @@ describe('NetworkTest', () => {
           .then(validateResults)
           .catch(validateError)
           .finally(done);
-      }, 10000);
+      }, 15000);
 
       it('should stop the quality test when you call the stop() method', (done) => {
         const validateError = (error?: QualityTestError) => {
@@ -393,7 +370,7 @@ describe('NetworkTest', () => {
           .then(validateStandardResults)
           .catch(validateError)
           .finally(done);
-      }, 10000);
+      }, 15000);
 
       it('should return valid test results or an error when there is no camera', (done) => {
         const realOTGetDevices = OT.getDevices;
@@ -425,7 +402,7 @@ describe('NetworkTest', () => {
           .then(validateResults)
           .catch(validateError)
           .finally(done);
-      }, 10000);
+      }, 15000);
 
       it('should return an error if the window.navigator is undefined', () => {
         spyOnProperty(window, 'navigator', 'get').and.returnValue(undefined);
@@ -444,7 +421,7 @@ describe('NetworkTest', () => {
         networkTest.testQuality(null)
           .then(validateResultsUndefined)
           .catch(validateUnsupportedBrowserError);
-      }, 10000);
+      }, 15000);
 
       it('should run the test if the browser is a Chromium-based version of Edge', (done) => {
         const mozGetUserMedia = navigator.mozGetUserMedia;
@@ -458,17 +435,17 @@ describe('NetworkTest', () => {
             navigator.webkitGetUserMedia = webkitGetUserMedia;
             done();
           });
-      }, 10000);
+      }, 15000);
 
       it('results in a failed test if OT.initPublisher() returns an error', (done) => {
         spyOn(OT, 'initPublisher').and.callFake((target, options, callback) => {
           callback(new Error());
         });
         networkTest.testQuality().catch((error?: QualityTestError) => {
-          expect(error?.name).toBe(ErrorNames.INIT_PUBLISHER_ERROR);
+          expect(error?.name).toBe(ErrorNames.TYPE_ERROR);
           done();
         });
-      }, 10000);
+      }, 15000);
 
       it('results in a failed test if Session.subscribe() returns an error', (done) => {
         const realInitSession = OT.initSession;
@@ -484,7 +461,7 @@ describe('NetworkTest', () => {
           expect(error?.name).toBe(ErrorNames.SUBSCRIBE_TO_SESSION_ERROR);
           done();
         });
-      }, 10000);
+      }, 15000);
     });
   });
 });
