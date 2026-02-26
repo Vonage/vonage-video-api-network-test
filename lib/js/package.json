@@ -12,11 +12,11 @@
     "test-teardown": "rm test/credentials.json",
     "karma": "karma start",
     "test": "npm run test-setup && npm run karma && npm run test-teardown",
-    "example": "npm run build && cd sample && npm run build && python -m SimpleHTTPServer",
+    "example": "npm run build && cd ../../samples/js && npm run build && python -m SimpleHTTPServer",
     "lint": "npm run tslint",
     "lint-fix": "npm run tslint-fix",
-    "tslint": "../node_modules/eslint/bin/eslint.js src test/**/*.ts",
-    "tslint-fix": "../node_modules/eslint/bin/eslint.js src test/**/*.ts --fix"
+    "tslint": "eslint . --ext .js,.ts",
+    "tslint-fix": "eslint . --ext .js,.ts --fix"
   },
   "type": "module",
   "repository": {
