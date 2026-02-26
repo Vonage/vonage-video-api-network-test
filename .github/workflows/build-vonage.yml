@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: lib/js
+
+    strategy:
+      fail-fast: true
+      matrix:
+        node-version: [24.x]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: https://registry.npmjs.org/
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Linting
+        run: npm run tslint
+
+      - name: Testing
+        run: npm run test
+
+      - name: Version Packages and Generate Changelog
+        run: npx changeset version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: release new versions [skip ci]" || echo "No changes to commit"
+          git push || echo "No changes to push"
+
+          if [ "$ACT" != "true" ]; then
+            git push || echo "No changes to push"
+          else
+            echo "Running locally in act: Skipping git push"
+          fi
+
+      - name: Build package
+        run: npm run build
+
+      - name: Publish to NPM and Create Releases
+        if: ${{ !env.ACT }}
+        run: npx changeset publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-package-dist
+          path: lib/js/dist/
