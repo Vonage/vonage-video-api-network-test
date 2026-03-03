@@ -11,15 +11,17 @@
     "sourceMap": true,                        /* Generates corresponding '.map' file. */
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "rootDir": "./src",
     "outDir": "../../dist"
   },
   "exclude": [
     "./node_modules",
-    "**/dist/**",
-    "./test/**/*"
+    "**/dist/**"
   ],
   "include": [
-    "./src/**/*"
+    "./src/**/*",
+    "./test/**/*"
   ],
 }

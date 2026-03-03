@@ -1,0 +1,46 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: lib/js
+
+    strategy:
+      fail-fast: true
+      matrix:
+        node-version: [24.x]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: https://registry.npmjs.org/
+          cache: npm
+          cache-dependency-path: lib/js/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Linting
+        run: npm run tslint
+
+      - name: Testing
+        run: npm run test
+
+      - name: Validate Changeset Status
+        run: npx changeset status --since=origin/${{ github.base_ref }}
