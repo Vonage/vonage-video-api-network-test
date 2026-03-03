@@ -1,24 +1,3 @@
-From 87a0a72be156fdda27a38315bf536bf13c5296b6 Mon Sep 17 00:00:00 2001
-From: LukaszPilarski <lukasz.pilarski@vonage.com>
-Date: Mon, 23 Feb 2026 17:50:20 +0100
-Subject: [PATCH] chore: apply and resolve opentok network test patch
-
----
- lib/js/README.md                            | 225 ++++++++++----------
- lib/js/package.json                         |  30 ++-
- lib/js/src/errors/index.ts                  |   6 +-
- lib/js/src/errors/types.ts                  |   2 +-
- lib/js/src/index.ts                         |  20 +-
- lib/js/src/testConnectivity/errors/index.ts |   6 +-
- lib/js/src/testConnectivity/index.ts        |  10 +-
- lib/js/src/testQuality/errors/index.ts      |   2 +-
- lib/js/src/testQuality/index.ts             |  10 +-
- lib/js/src/types/session.ts                 |   2 +-
- lib/js/test/NetworkTest.spec.ts             |  22 +-
- lib/js/test/setup/setup.js                  |  61 +++---
- lib/js/tsconfig.json                        |  16 +-
- 13 files changed, 206 insertions(+), 206 deletions(-)
-
 diff --git a/lib/js/README.md b/lib/js/README.md
 index 22bfdec..04d871d 100644
 --- a/lib/js/README.md

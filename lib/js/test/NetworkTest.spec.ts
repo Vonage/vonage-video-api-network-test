@@ -120,7 +120,7 @@ describe('NetworkTest', () => {
         };
 
         badCredentialsNetworkTest.testConnectivity()
-          .catch(validateResults)
+          .catch(validateResults);
       });
 
       it('should result in a failed test if the logging server cannot be reached', (done) => {
