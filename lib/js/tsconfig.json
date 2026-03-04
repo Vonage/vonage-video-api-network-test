@@ -13,15 +13,17 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "rootDir": "./src",
+    "rootDir": "./",
     "outDir": "../../dist"
   },
+  "files": [
+    "src/index.ts",
+    "test/NetworkTest.spec.ts"
+  ],
   "exclude": [
     "./node_modules",
-    "**/dist/**"
   ],
   "include": [
-    "./src/**/*",
-    "./test/**/*"
+    "./src/**/*"
   ],
 }

@@ -39,6 +39,17 @@ jobs:
       - name: Linting
         run: npm run tslint
 
+      - name: Create .env file
+        run: |
+          touch .env
+          echo "TEST_APPLICATION_ID=${{ secrets.TEST_APPLICATION_ID }}" >> .env
+
+      - name: Create private key file
+        env:
+          PRIVATE_KEY_SECRET: ${{ secrets.PRIVATE_KEY_SECRET }}
+        run: |
+          echo "$PRIVATE_KEY_SECRET" > private.key
+
       - name: Testing
         run: npm run test
 

@@ -41,6 +41,7 @@ export enum ErrorNames {
   MISSING_SUBSCRIBER_ERROR = 'MissingSubscriberError',
   PERMISSION_DENIED_ERROR = 'PermissionDeniedError',
   UNSUPPORTED_RESOLUTION_ERROR = 'UnsupportedResolutionError',
+  TYPE_ERROR = 'TypeError'
 }
 
 export enum OTErrorType {

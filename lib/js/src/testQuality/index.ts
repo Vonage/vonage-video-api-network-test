@@ -11,13 +11,11 @@
 
 /* tslint:disable */
 import OTKAnalytics from 'opentok-solutions-logging';
-/* tslint:enable */
-import * as Promise from 'promise';
 import {
   NetworkTestOptions,
 } from '../index';
 import { AverageStats, AV, Bandwidth, HasAudioVideo } from './types/stats';
-import { UpdateCallback, UpdateCallbackStats } from '../types/callbacks';
+import { UpdateCallback } from '../types/callbacks';
 import { pick } from '../util';
 import * as e from './errors';
 import { OTErrorType, errorHasName } from '../errors/types';
@@ -277,7 +275,7 @@ function isAudioQualityAcceptable(results: QualityTestResults): boolean {
  * Disconnect from a session. Once disconnected, remove all session
  * event listeners and invoke the provided callback function.
  */
-function disconnectFromSession(session: OT.Session) {
+function disconnectFromSession(session: OT.Session): Promise<void> {
   return new Promise((resolve) => {
     session.on('sessionDisconnected', () => {
       session.off();
@@ -293,7 +291,7 @@ function disconnectFromSession(session: OT.Session) {
  * @param session
  * @param subscriber
  */
-function cleanSubscriber(session: OT.Session, subscriber: OT.Subscriber) {
+function cleanSubscriber(session: OT.Session, subscriber: OT.Subscriber): Promise<void> {
   return new Promise((resolve) => {
     subscriber.on('destroyed', () => {
       resolve();
@@ -309,7 +307,7 @@ function cleanSubscriber(session: OT.Session, subscriber: OT.Subscriber) {
  * Clean publisher objects before disconnecting from the session
  * @param publisher
  */
-function cleanPublisher(session: OT.Session, publisher: OT.Publisher) {
+function cleanPublisher(session: OT.Session, publisher: OT.Publisher): Promise<void> {
   return new Promise((resolve) => {
     publisher.on('destroyed', () => {
       resolve();
@@ -326,7 +324,7 @@ function checkSubscriberQuality(
   session: OT.Session,
   credentials: SessionCredentials,
   options?: NetworkTestOptions,
-  onUpdate?: UpdateCallback<UpdateCallbackStats>,
+  onUpdate?: UpdateCallback,
   audioOnlyFallback?: boolean,
 ): Promise<QualityTestResults> {
 
@@ -442,7 +440,7 @@ export function testQuality(
   credentials: SessionCredentials,
   otLogging: OTKAnalytics,
   options?: NetworkTestOptions,
-  onUpdate?: UpdateCallback<UpdateCallbackStats>,
+  onUpdate?: UpdateCallback,
 ): Promise<QualityTestResults> {
 
   stopTestTimeoutCompleted = false;

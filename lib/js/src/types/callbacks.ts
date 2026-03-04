@@ -1,4 +1,4 @@
-export type UpdateCallback<A> = (stats: UpdateCallbackStats) => void;
+export type UpdateCallback = (stats: UpdateCallbackStats) => void;
 export type UpdateCallbackStats = {
   audio: CallbackTrackStats;
   video: CallbackTrackStats & { frameRate: number; mediaRouting?: string };

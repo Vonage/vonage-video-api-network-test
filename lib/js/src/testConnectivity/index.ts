@@ -9,7 +9,6 @@
  * Connectivity Test Flow
  */
 import axios from 'axios';
-import * as Promise from 'promise';
 import OTKAnalytics from 'opentok-solutions-logging';
 import {
   NetworkTestOptions,
@@ -37,7 +36,7 @@ export type ConnectivityTestResults = {
  * Disconnect from a session. Once disconnected, remove all session
  * event listeners and invoke the provided callback function.
  */
-function disconnectFromSession(session: OT.Session) {
+function disconnectFromSession(session: OT.Session): Promise<void> {
   return new Promise((resolve) => {
     session.on('sessionDisconnected', () => {
       session.off();
@@ -52,7 +51,7 @@ function disconnectFromSession(session: OT.Session) {
  * @param session
  * @param subscriber
  */
-function cleanSubscriber(session: OT.Session, subscriber: OT.Subscriber) {
+function cleanSubscriber(session: OT.Session, subscriber: OT.Subscriber): Promise<void> {
   return new Promise((resolve) => {
     subscriber.on('destroyed', () => {
       resolve();
@@ -64,7 +63,7 @@ function cleanSubscriber(session: OT.Session, subscriber: OT.Subscriber) {
   });
 }
 
-function cleanPublisher(publisher: OT.Publisher) {
+function cleanPublisher(publisher: OT.Publisher): Promise<void> {
   return new Promise((resolve) => {
     publisher.on('destroyed', () => {
       resolve();

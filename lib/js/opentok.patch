@@ -631,7 +631,7 @@ index 1a41f2c..5809d80 100644
 -   * @vonage/video-client-network-test project for details.
 +   * opentok-network-test-js project for details.
     */
-   testQuality(updateCallback?: UpdateCallback<UpdateCallbackStats>): Promise<QualityTestResults> {
+   testQuality(updateCallback?: UpdateCallback): Promise<QualityTestResults> {
      this.otLogging.logEvent({ action: 'testQuality', variation: 'Attempt' });
 @@ -148,7 +148,7 @@ export default class NetworkTest {
     * Stops the currently running test.
@@ -867,7 +867,6 @@ index a01392f..1305f11 100644
  require('dotenv').config()
 -const { Vonage } = require('@vonage/server-sdk');
 +const OpenTok = require('opentok');
-+const Promise = require('promise');
  const fse = require('fs-extra');
 -const fs = require('fs');
 -const applicationId = process.env.TEST_APPLICATION_ID;
