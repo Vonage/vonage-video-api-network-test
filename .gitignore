@@ -81,3 +81,7 @@ samples/js/vonage/node_modules
 yarn.lock
 
 .DS_STORE
+
+*Pods
+*.xcworkspace
+*.DS_Store
