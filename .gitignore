@@ -71,8 +71,7 @@ sample/bundle.js
 sample/src/js/config.js
 sample/node_modules
 
-samples/js/opentok/node_modules
-samples/js/vonage/node_modules
+samples/js/node_modules
 
 # test credentials
 /test/credentials.json
