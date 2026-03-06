@@ -1,7 +1,7 @@
 # Getting Involved
 
 ## Welcome to Contributors
-Thank you for your interest in contributing to our open source **OpenTok Network Test** application! We're excited to have you join our community and help improve this project.
+Thank you for your interest in contributing to our open source **Vonage Video API Network Test** application! We're excited to have you join our community and help improve this project.
 
 ## Getting Started
 Before you begin, please review the following:
