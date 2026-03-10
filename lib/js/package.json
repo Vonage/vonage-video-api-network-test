@@ -23,6 +23,10 @@
     "type": "git",
     "url": "git+https://github.com/Vonage/vonage-video-js-api-network-test.git"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/",
+    "access": "public"
+  },
   "keywords": [
     "vonage",
     "video",

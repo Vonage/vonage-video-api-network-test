@@ -1,0 +1,134 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Which package do you want to release?'
+        required: true
+        type: choice
+        options:
+          - vonage
+          - opentok
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+  packages: write
+
+jobs:
+  release-vonage:
+    if: ${{ github.event_name == 'push' || inputs.target == 'vonage' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lib/js
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          registry-url: 'https://npm.pkg.github.com'
+          cache: npm
+          cache-dependency-path: lib/js/package-lock.json
+
+      - name: Install dependencies (Vonage)
+        run: npm ci
+
+      - name: Version Packages and Generate Changelog
+        run: |
+          npx changeset version
+          npm install --package-lock-only
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit Version Bump
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: release new versions [skip ci]" || echo "No changes to commit"
+
+      - name: Build package
+        run: npm run build
+
+      - name: Publish to GitHub Packages
+        if: ${{ !env.ACT }}
+        run: npx changeset publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-package-dist-vonage
+          path: lib/js/dist/
+
+      - name: Push Version Bump
+        run: |
+          if [ "$ACT" != "true" ]; then
+            git push --follow-tags || echo "No changes to push"
+          else
+            echo "Running locally in act: Skipping git push"
+          fi
+
+  release-opentok:
+    needs: release-vonage
+    if: |
+      always() &&
+      (needs.release-vonage.result == 'success' || needs.release-vonage.result == 'skipped') &&
+      (github.event_name == 'push' || inputs.target == 'opentok')
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lib/js
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          registry-url: 'https://npm.pkg.github.com'
+          cache: npm
+          cache-dependency-path: lib/js/package-lock.json
+
+      - name: Apply OpenTok patch
+        working-directory: .
+        run: git apply ./lib/js/opentok.patch
+
+      - name: Install dependencies (OpenTok)
+        run: npm install
+
+      - name: Build package
+        run: npm run build
+
+      - name: Publish to GitHub Packages
+        if: ${{ !env.ACT }}
+        run: npx changeset publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-package-dist-opentok
+          path: lib/js/dist/
+
+      - name: Discard uncommitted patch files
+        run: git reset --hard HEAD

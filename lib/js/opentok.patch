@@ -448,14 +448,336 @@ index 22bfdec..04d871d 100644
  
 -[releases-page]: https://github.com/vonage/vonage-video-js-api-network-test/releases
 +[releases-page]: https://github.com/opentok/opentok-network-test-js/releases
+diff --git a/lib/js/package-lock.json b/lib/js/package-lock.json
+index 0c0bb32..8b6e5e2 100644
+--- a/lib/js/package-lock.json
++++ b/lib/js/package-lock.json
+@@ -1,11 +1,11 @@
+ {
+-  "name": "@vonage/video-client-network-test",
++  "name": "@opentok/network-test-js",
+   "version": "5.0.0",
+   "lockfileVersion": 3,
+   "requires": true,
+   "packages": {
+     "": {
+-      "name": "@vonage/video-client-network-test",
++      "name": "@opentok/network-test-js",
+       "version": "5.0.0",
+       "license": "Apache-2.0",
+       "dependencies": {
+@@ -15,6 +15,7 @@
+       "devDependencies": {
+         "@changesets/changelog-github": "^0.5.2",
+         "@changesets/cli": "^2.29.8",
++        "@opentok/client": "^2.31.1",
+         "@types/expect.js": "^0.3.29",
+         "@types/jasmine": "^5.0.0",
+         "@types/jasmine-matchers": "^0.2.30",
+@@ -41,12 +42,12 @@
+         "karma-sauce-launcher": "^4.3.6",
+         "karma-sourcemap-loader": "^0.4.0",
+         "karma-webpack": "^5.0.0",
++        "opentok": "^2.16.0",
+         "terser-webpack-plugin": "^5.3.9",
+         "ts-loader": "^9.5.1",
+-        "typescript": "^5.9.3",
++        "typescript": "^5.4.5",
+         "webpack": "^5.88.1",
+         "webpack-cli": "^6.0.0",
+-        "webpack-merge": "6.0.1",
+         "webpack-node-externals": "^3.0.0"
+       }
+     },
+@@ -808,6 +809,13 @@
+         "node": ">= 8"
+       }
+     },
++    "node_modules/@opentok/client": {
++      "version": "2.33.1",
++      "resolved": "https://registry.npmjs.org/@opentok/client/-/client-2.33.1.tgz",
++      "integrity": "sha512-XhFLTYE+JO12q9r2Q8rdRufHyWvgCIfEDz9dzbe5ICuUcAmL+h4LUA9q/0s1eGmgzm3DVoBde/FNQYxYOYIeEg==",
++      "dev": true,
++      "license": "https://www.vonage.com/legal/communications-apis/terms-of-use/"
++    },
+     "node_modules/@sindresorhus/is": {
+       "version": "4.6.0",
+       "resolved": "https://registry.npmjs.org/@sindresorhus/is/-/is-4.6.0.tgz",
+@@ -1031,6 +1039,16 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/@types/ws": {
++      "version": "8.18.1",
++      "resolved": "https://registry.npmjs.org/@types/ws/-/ws-8.18.1.tgz",
++      "integrity": "sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@types/node": "*"
++      }
++    },
+     "node_modules/@types/yauzl": {
+       "version": "2.10.3",
+       "resolved": "https://registry.npmjs.org/@types/yauzl/-/yauzl-2.10.3.tgz",
+@@ -1427,9 +1445,9 @@
+       }
+     },
+     "node_modules/@vonage/client-sdk-video": {
+-      "version": "2.33.0",
+-      "resolved": "https://registry.npmjs.org/@vonage/client-sdk-video/-/client-sdk-video-2.33.0.tgz",
+-      "integrity": "sha512-Z4240pvN9jBXqe3W5uJ3z24oth20zl1eEaEL1KP3ECpbguI552qr3RVrv4B7WyJCClcfs1Mz9Wep1qjf6S9Hlg==",
++      "version": "2.33.1",
++      "resolved": "https://registry.npmjs.org/@vonage/client-sdk-video/-/client-sdk-video-2.33.1.tgz",
++      "integrity": "sha512-Hm0TyKjtRU7WP5W+Jky3CYJULX7UP3hIDLe9YXmASbGLBZrjJas119RY/RhsR3nMhU8sTBee3dLaJ0kOtI7BYg==",
+       "dev": true,
+       "license": "https://www.vonage.com/legal/communications-apis/terms-of-use/"
+     },
+@@ -4041,14 +4059,15 @@
+       }
+     },
+     "node_modules/engine.io": {
+-      "version": "6.6.5",
+-      "resolved": "https://registry.npmjs.org/engine.io/-/engine.io-6.6.5.tgz",
+-      "integrity": "sha512-2RZdgEbXmp5+dVbRm0P7HQUImZpICccJy7rN7Tv+SFa55pH+lxnuw6/K1ZxxBfHoYpSkHLAO92oa8O4SwFXA2A==",
++      "version": "6.6.6",
++      "resolved": "https://registry.npmjs.org/engine.io/-/engine.io-6.6.6.tgz",
++      "integrity": "sha512-U2SN0w3OpjFRVlrc17E6TMDmH58Xl9rai1MblNjAdwWp07Kk+llmzX0hjDpQdrDGzwmvOtgM5yI+meYX6iZ2xA==",
+       "dev": true,
+       "license": "MIT",
+       "dependencies": {
+         "@types/cors": "^2.8.12",
+         "@types/node": ">=10.0.0",
++        "@types/ws": "^8.5.12",
+         "accepts": "~1.3.4",
+         "base64id": "2.0.0",
+         "cookie": "~0.7.2",
+@@ -4980,9 +4999,9 @@
+       }
+     },
+     "node_modules/flatted": {
+-      "version": "3.4.0",
+-      "resolved": "https://registry.npmjs.org/flatted/-/flatted-3.4.0.tgz",
+-      "integrity": "sha512-kC6Bb+ooptOIvWj5B63EQWkF0FEnNjV2ZNkLMLZRDDduIiWeFF4iKnslwhiWxjAdbg4NzTNo6h0qLuvFrcx+Sw==",
++      "version": "3.4.1",
++      "resolved": "https://registry.npmjs.org/flatted/-/flatted-3.4.1.tgz",
++      "integrity": "sha512-IxfVbRFVlV8V/yRaGzk0UVIcsKKHMSfYw66T/u4nTwlWteQePsxe//LjudR1AMX4tZW3WFCh3Zqa/sjlqpbURQ==",
+       "dev": true,
+       "license": "ISC"
+     },
+@@ -6543,16 +6562,6 @@
+         "node": "*"
+       }
+     },
+-    "node_modules/karma-webpack/node_modules/webpack-merge": {
+-      "version": "4.2.2",
+-      "resolved": "https://registry.npmjs.org/webpack-merge/-/webpack-merge-4.2.2.tgz",
+-      "integrity": "sha512-TUE1UGoTX2Cd42j3krGYqObZbOD+xF7u28WB7tfUordytSjbWTIjK/8V0amkBfTYN4/pB/GIDlJZZ657BGG19g==",
+-      "dev": true,
+-      "license": "MIT",
+-      "dependencies": {
+-        "lodash": "^4.17.15"
+-      }
+-    },
+     "node_modules/karma/node_modules/brace-expansion": {
+       "version": "1.1.12",
+       "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.12.tgz",
+@@ -7287,6 +7296,16 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/nonce": {
++      "version": "1.0.4",
++      "resolved": "https://registry.npmjs.org/nonce/-/nonce-1.0.4.tgz",
++      "integrity": "sha512-FVPu+tMZPP91HDwiq1DNhn9WIhg4/uo6mXR0xXAn0IMOxDmjJOkgbH0tm7qtowvAFZofWZRX+9KWZpNURrgtSA==",
++      "dev": true,
++      "license": "Free as in Hugs",
++      "engines": {
++        "node": ">=0.6"
++      }
++    },
+     "node_modules/normalize-path": {
+       "version": "3.0.0",
+       "resolved": "https://registry.npmjs.org/normalize-path/-/normalize-path-3.0.0.tgz",
+@@ -7413,6 +7432,25 @@
+         "wrappy": "1"
+       }
+     },
++    "node_modules/opentok": {
++      "version": "2.23.1",
++      "resolved": "https://registry.npmjs.org/opentok/-/opentok-2.23.1.tgz",
++      "integrity": "sha512-aeDw0SmbjNtFYseyA5JgDsIcTsJmGe4JLIapbtNMkYyQANRfBYlfbF7V9ao3PO7w1St7Vuz3j51HmYyd+ar/Rw==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@vonage/jwt": "1.11.0",
++        "debug": "4.4.0",
++        "jsonwebtoken": "9.0.3",
++        "lodash": "4.17.21",
++        "node-fetch": "2.7.0",
++        "opentok-token": "1.1.1",
++        "uuid": "11.0.5"
++      },
++      "engines": {
++        "node": ">=4"
++      }
++    },
+     "node_modules/opentok-solutions-logging": {
+       "version": "1.1.5",
+       "resolved": "https://registry.npmjs.org/opentok-solutions-logging/-/opentok-solutions-logging-1.1.5.tgz",
+@@ -7422,6 +7460,83 @@
+         "axios": "^1.6.3"
+       }
+     },
++    "node_modules/opentok-token": {
++      "version": "1.1.1",
++      "resolved": "https://registry.npmjs.org/opentok-token/-/opentok-token-1.1.1.tgz",
++      "integrity": "sha512-/uMsmUMiGWT95zemuE9H3OWSb+1NcDmZSDzjum1oKk2KLLGkjqlPsEo8NWarH2q1rfd+cBWP8Pu+dwJS0uNHcg==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "lodash": "^4.17.11",
++        "nonce": "^1.0.3",
++        "unix-timestamp": "^0.1.2"
++      }
++    },
++    "node_modules/opentok/node_modules/@vonage/jwt": {
++      "version": "1.11.0",
++      "resolved": "https://registry.npmjs.org/@vonage/jwt/-/jwt-1.11.0.tgz",
++      "integrity": "sha512-P9KM6QYBBkW8ruC+HeOxFGVQh123KCqgVuGyWjp+VjD64WikYAfT73N5isP4rQob0umpMDjGKNOIAYsVAaRdnA==",
++      "dev": true,
++      "license": "Apache-2.0",
++      "dependencies": {
++        "debug": "^4.3.4",
++        "jsonwebtoken": "^9.0.2",
++        "uuid": "^9.0.1"
++      }
++    },
++    "node_modules/opentok/node_modules/@vonage/jwt/node_modules/uuid": {
++      "version": "9.0.1",
++      "resolved": "https://registry.npmjs.org/uuid/-/uuid-9.0.1.tgz",
++      "integrity": "sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==",
++      "dev": true,
++      "funding": [
++        "https://github.com/sponsors/broofa",
++        "https://github.com/sponsors/ctavan"
++      ],
++      "license": "MIT",
++      "bin": {
++        "uuid": "dist/bin/uuid"
++      }
++    },
++    "node_modules/opentok/node_modules/debug": {
++      "version": "4.4.0",
++      "resolved": "https://registry.npmjs.org/debug/-/debug-4.4.0.tgz",
++      "integrity": "sha512-6WTZ/IxCY/T6BALoZHaE4ctp9xm+Z5kY/pzYaCHRFeyVhojxlrm+46y68HA6hr0TcwEssoxNiDEUJQjfPZ/RYA==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "ms": "^2.1.3"
++      },
++      "engines": {
++        "node": ">=6.0"
++      },
++      "peerDependenciesMeta": {
++        "supports-color": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/opentok/node_modules/lodash": {
++      "version": "4.17.21",
++      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz",
++      "integrity": "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==",
++      "dev": true,
++      "license": "MIT"
++    },
++    "node_modules/opentok/node_modules/uuid": {
++      "version": "11.0.5",
++      "resolved": "https://registry.npmjs.org/uuid/-/uuid-11.0.5.tgz",
++      "integrity": "sha512-508e6IcKLrhxKdBbcA2b4KQZlLVp2+J5UwQ6F7Drckkc5N9ZJwFa4TgWtsww9UG8fGHbm6gbV19TdM5pQ4GaIA==",
++      "dev": true,
++      "funding": [
++        "https://github.com/sponsors/broofa",
++        "https://github.com/sponsors/ctavan"
++      ],
++      "license": "MIT",
++      "bin": {
++        "uuid": "dist/esm/bin/uuid"
++      }
++    },
+     "node_modules/optionator": {
+       "version": "0.9.4",
+       "resolved": "https://registry.npmjs.org/optionator/-/optionator-0.9.4.tgz",
+@@ -9212,9 +9327,9 @@
+       }
+     },
+     "node_modules/terser-webpack-plugin": {
+-      "version": "5.3.17",
+-      "resolved": "https://registry.npmjs.org/terser-webpack-plugin/-/terser-webpack-plugin-5.3.17.tgz",
+-      "integrity": "sha512-YR7PtUp6GMU91BgSJmlaX/rS2lGDbAF7D+Wtq7hRO+MiljNmodYvqslzCFiYVAgW+Qoaaia/QUIP4lGXufjdZw==",
++      "version": "5.4.0",
++      "resolved": "https://registry.npmjs.org/terser-webpack-plugin/-/terser-webpack-plugin-5.4.0.tgz",
++      "integrity": "sha512-Bn5vxm48flOIfkdl5CaD2+1CiUVbonWQ3KQPyP7/EuIl9Gbzq/gQFOzaMFUEgVjB1396tcK0SG8XcNJ/2kDH8g==",
+       "dev": true,
+       "license": "MIT",
+       "dependencies": {
+@@ -9773,6 +9888,13 @@
+         "node": ">= 4.0.0"
+       }
+     },
++    "node_modules/unix-timestamp": {
++      "version": "0.1.2",
++      "resolved": "https://registry.npmjs.org/unix-timestamp/-/unix-timestamp-0.1.2.tgz",
++      "integrity": "sha512-nSpkcoMTJWN8sup4/pAt04Rj8Psf9hV6ymtn6XWWBtGBCyKhxvkhi/MOfLn8GLfITIaRt4XFnrg9Mb3SSkT+sg==",
++      "dev": true,
++      "license": "BSD-3-Clause"
++    },
+     "node_modules/unpipe": {
+       "version": "1.0.0",
+       "resolved": "https://registry.npmjs.org/unpipe/-/unpipe-1.0.0.tgz",
+@@ -10134,6 +10256,7 @@
+       "integrity": "sha512-MfwFQ6SfwinsUVi0rNJm7rHZ31GyTcpVE5pgVA3hwFRb7COD4TzjUUwhGWKfO50+xdc2MQPuEBBJoqIMGt3JDw==",
+       "dev": true,
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "@discoveryjs/json-ext": "^0.6.1",
+         "@webpack-cli/configtest": "^3.0.1",
+@@ -10181,7 +10304,7 @@
+         "node": ">=18"
+       }
+     },
+-    "node_modules/webpack-merge": {
++    "node_modules/webpack-cli/node_modules/webpack-merge": {
+       "version": "6.0.1",
+       "resolved": "https://registry.npmjs.org/webpack-merge/-/webpack-merge-6.0.1.tgz",
+       "integrity": "sha512-hXXvrjtx2PLYx4qruKl+kyRSLc52V+cCvMxRjmKwoA+CBbbF5GfIBtR6kCvl0fYGqTUPKB+1ktVmTHqMOzgCBg==",
+@@ -10196,6 +10319,16 @@
+         "node": ">=18.0.0"
+       }
+     },
++    "node_modules/webpack-merge": {
++      "version": "4.2.2",
++      "resolved": "https://registry.npmjs.org/webpack-merge/-/webpack-merge-4.2.2.tgz",
++      "integrity": "sha512-TUE1UGoTX2Cd42j3krGYqObZbOD+xF7u28WB7tfUordytSjbWTIjK/8V0amkBfTYN4/pB/GIDlJZZ657BGG19g==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "lodash": "^4.17.15"
++      }
++    },
+     "node_modules/webpack-node-externals": {
+       "version": "3.0.0",
+       "resolved": "https://registry.npmjs.org/webpack-node-externals/-/webpack-node-externals-3.0.0.tgz",
 diff --git a/lib/js/package.json b/lib/js/package.json
-index 56d33cf..7cf242b 100644
+index abba029..854d311 100644
 --- a/lib/js/package.json
 +++ b/lib/js/package.json
 @@ -1,9 +1,9 @@
  {
 -  "name": "@vonage/video-client-network-test",
-+  "name": "opentok-network-test-js",
++  "name": "@opentok/network-test-js",
    "version": "5.0.0",
 -  "description": "Precall network test for applications using the Vonage Video API platform.",
 -  "main": "dist/vonage/index.js",
@@ -466,20 +788,19 @@ index 56d33cf..7cf242b 100644
    "scripts": {
      "build:js": "rm -rf dist && webpack --config webpack.config.js  --stats-error-details",
      "build:types": "tsc --project ./tsconfig.json",
-@@ -15,17 +15,16 @@
-     "example": "npm run build && cd sample && npm run build && python -m SimpleHTTPServer",
-     "lint": "npm run tslint",
-     "lint-fix": "npm run tslint-fix",
--    "tslint": "../node_modules/eslint/bin/eslint.js src test/**/*.ts",
--    "tslint-fix": "../node_modules/eslint/bin/eslint.js src test/**/*.ts --fix"
-+    "tslint": "./node_modules/eslint/bin/eslint.js src test/**/*.ts",
-+    "tslint-fix": "./node_modules/eslint/bin/eslint.js src test/**/*.ts --fix"
+@@ -18,18 +18,17 @@
+     "tslint": "eslint . --ext .js,.ts",
+     "tslint-fix": "eslint . --ext .js,.ts --fix"
    },
 -  "type": "module",
    "repository": {
      "type": "git",
 -    "url": "git+https://github.com/Vonage/vonage-video-js-api-network-test.git"
 +    "url": "git+https://github.com/opentok/opentok-network-test-js.git"
+   },
+   "publishConfig": {
+     "registry": "https://npm.pkg.github.com/",
+     "access": "public"
    },
    "keywords": [
 -    "vonage",
@@ -489,7 +810,7 @@ index 56d33cf..7cf242b 100644
      "network test",
      "connectivity",
      "webrtc"
-@@ -36,17 +35,16 @@
+@@ -40,9 +39,9 @@
    },
    "license": "Apache-2.0",
    "bugs": {
@@ -500,17 +821,16 @@ index 56d33cf..7cf242b 100644
 +  "homepage": "https://github.com/opentok/network-connectivity-js#readme",
    "dependencies": {
      "axios": "^1.8.3",
-     "opentok-solutions-logging": "^1.1.1",
-     "promise": "^8.0.1"
-   },
-   "devDependencies": {
--    "@vonage/client-sdk-video": "^2.29.2",
--    "@vonage/server-sdk": "^3.20.0",
+     "opentok-solutions-logging": "^1.1.1"
+@@ -52,6 +51,7 @@
+     "@changesets/cli": "^2.29.8",
+     "@vonage/client-sdk-video": "^2.29.2",
+     "@vonage/server-sdk": "^3.20.0",
 +    "@opentok/client": "^2.31.1",
      "@types/expect.js": "^0.3.29",
      "@types/jasmine": "^5.0.0",
      "@types/jasmine-matchers": "^0.2.30",
-@@ -72,12 +70,12 @@
+@@ -76,12 +76,12 @@
      "karma-sauce-launcher": "^4.3.6",
      "karma-sourcemap-loader": "^0.4.0",
      "karma-webpack": "^5.0.0",
@@ -555,7 +875,7 @@ index c3750f0..824f8f9 100644
    }
  }
 diff --git a/lib/js/src/errors/types.ts b/lib/js/src/errors/types.ts
-index fdb6444..74dc3de 100644
+index 3644174..d917b12 100644
 --- a/lib/js/src/errors/types.ts
 +++ b/lib/js/src/errors/types.ts
 @@ -6,7 +6,7 @@
@@ -568,10 +888,10 @@ index fdb6444..74dc3de 100644
  
  export enum ErrorNames {
 diff --git a/lib/js/src/index.ts b/lib/js/src/index.ts
-index 1a41f2c..5809d80 100644
+index ab42d70..28ff6b7 100644
 --- a/lib/js/src/index.ts
 +++ b/lib/js/src/index.ts
-@@ -49,13 +49,13 @@ export default class NetworkTest {
+@@ -48,13 +48,13 @@ export default class NetworkTest {
  
    /**
     * Returns an instance of NetworkConnectivity. See the "API reference" section of the
@@ -587,7 +907,7 @@ index 1a41f2c..5809d80 100644
      this.OTInstance = OTInstance;
      this.credentials = credentials;
      this.options = options;
-@@ -72,7 +72,7 @@ export default class NetworkTest {
+@@ -71,7 +71,7 @@ export default class NetworkTest {
      if (!credentials) {
        throw new MissingSessionCredentialsError();
      }
@@ -596,7 +916,7 @@ index 1a41f2c..5809d80 100644
        throw new IncompleteSessionCredentialsError();
      }
    }
-@@ -90,10 +90,10 @@ export default class NetworkTest {
+@@ -89,10 +89,10 @@ export default class NetworkTest {
      }
    }
  
@@ -609,7 +929,7 @@ index 1a41f2c..5809d80 100644
        source: window.location.href,
        clientVersion: `js-network-test-${version}`,
        name: 'opentok-network-test',
-@@ -104,11 +104,11 @@ export default class NetworkTest {
+@@ -103,11 +103,11 @@ export default class NetworkTest {
    }
  
    /**
@@ -624,7 +944,7 @@ index 1a41f2c..5809d80 100644
     */
    testConnectivity(): Promise<ConnectivityTestResults> {
      this.otLogging.logEvent({ action: 'testConnectivity', variation: 'Attempt' });
-@@ -121,7 +121,7 @@ export default class NetworkTest {
+@@ -120,7 +120,7 @@ export default class NetworkTest {
     * results indicating the recommended supported publisher settings.
     *
     * See the "API reference" section of the README.md file in the root of the
@@ -633,7 +953,7 @@ index 1a41f2c..5809d80 100644
     */
    testQuality(updateCallback?: UpdateCallback): Promise<QualityTestResults> {
      this.otLogging.logEvent({ action: 'testQuality', variation: 'Attempt' });
-@@ -148,7 +148,7 @@ export default class NetworkTest {
+@@ -147,7 +147,7 @@ export default class NetworkTest {
     * Stops the currently running test.
     *
     * See the "API reference" section of the README.md file in the root of the
@@ -673,10 +993,10 @@ index 62e49fc..4908092 100644
    }
  }
 diff --git a/lib/js/src/testConnectivity/index.ts b/lib/js/src/testConnectivity/index.ts
-index 4c04c59..337a887 100644
+index 55ae29c..d0cae9b 100644
 --- a/lib/js/src/testConnectivity/index.ts
 +++ b/lib/js/src/testConnectivity/index.ts
-@@ -77,11 +77,11 @@ function cleanPublisher(publisher: OT.Publisher) {
+@@ -76,11 +76,11 @@ function cleanPublisher(publisher: OT.Publisher): Promise<void> {
  }
  
  /**
@@ -690,7 +1010,7 @@ index 4c04c59..337a887 100644
    options?: NetworkTestOptions,
  ): Promise<OT.Session> {
    return new Promise((resolve, reject) => {
-@@ -95,7 +95,7 @@ function connectToSession(
+@@ -94,7 +94,7 @@ function connectToSession(
          sessionOptions.proxyUrl = options.proxyServerUrl;
        }
      }
@@ -699,7 +1019,7 @@ index 4c04c59..337a887 100644
      session.connect(token, (error?: OT.OTError) => {
        if (errorHasName(error, OTErrorType.OT_AUTHENTICATION_ERROR)) {
          reject(new e.ConnectToSessionTokenError());
-@@ -274,7 +274,7 @@ function checkSubscribeToSession({ session, publisher }: PublishToSessionResults
+@@ -273,7 +273,7 @@ function checkSubscribeToSession({ session, publisher }: PublishToSessionResults
  }
  
  /**
@@ -708,7 +1028,7 @@ index 4c04c59..337a887 100644
   */
  function checkLoggingServer(OTInstance: typeof OT, options?: NetworkTestOptions, input?: SubscribeToSessionResults):
  Promise<SubscribeToSessionResults> {
-@@ -293,7 +293,7 @@ Promise<SubscribeToSessionResults> {
+@@ -292,7 +292,7 @@ Promise<SubscribeToSessionResults> {
  }
  
  /**
@@ -731,10 +1051,10 @@ index 1cbb201..8cf5432 100644
    }
  }
 diff --git a/lib/js/src/testQuality/index.ts b/lib/js/src/testQuality/index.ts
-index f0e9cd4..cb79041 100644
+index 036be73..5aa418a 100644
 --- a/lib/js/src/testQuality/index.ts
 +++ b/lib/js/src/testQuality/index.ts
-@@ -58,7 +58,7 @@ let stopTestTimeoutId: number;
+@@ -56,7 +56,7 @@ let stopTestTimeoutId: number;
  let stopTestTimeoutCompleted = false;
  let stopTestCalled = false;
  /**
@@ -743,7 +1063,7 @@ index f0e9cd4..cb79041 100644
   */
  function connectToSession(session: OT.Session, token: string): Promise<OT.Session> {
    return new Promise((resolve, reject) => {
-@@ -86,7 +86,7 @@ function connectToSession(session: OT.Session, token: string): Promise<OT.Sessio
+@@ -84,7 +84,7 @@ function connectToSession(session: OT.Session, token: string): Promise<OT.Sessio
   * Checks for camera support for a given resolution.
   *
   * See the "API reference" section of the README.md file in the root of the
@@ -752,7 +1072,7 @@ index f0e9cd4..cb79041 100644
   */
  function checkCameraSupport(width: number, height: number): Promise<void> {
    return new Promise((resolve, reject) => {
-@@ -229,7 +229,7 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
+@@ -227,7 +227,7 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
      });
  }
  /**
@@ -761,7 +1081,7 @@ index f0e9cd4..cb79041 100644
   */
  function subscribeToTestStream(
    OTInstance: typeof OT,
-@@ -435,7 +435,7 @@ function validateBrowser(): Promise<void> {
+@@ -433,7 +433,7 @@ function validateBrowser(): Promise<void> {
  }
  
  /**
@@ -770,7 +1090,7 @@ index f0e9cd4..cb79041 100644
   */
  export function testQuality(
    OTInstance: typeof OT,
-@@ -485,7 +485,7 @@ export function testQuality(
+@@ -483,7 +483,7 @@ export function testQuality(
              sessionOptions.proxyUrl = options.proxyServerUrl;
            }
          }
@@ -793,18 +1113,18 @@ index cfa3017..c743f67 100644
 -  applicationId: string;
  }
 diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
-index 5a80142..8507198 100644
+index 24049ca..4824ab4 100644
 --- a/lib/js/test/NetworkTest.spec.ts
 +++ b/lib/js/test/NetworkTest.spec.ts
-@@ -1,6 +1,6 @@
- /* tslint: disable */
- 
+@@ -1,4 +1,6 @@
 -import * as OTClient from '@vonage/client-sdk-video';
++/* tslint: disable */
++
 +import * as OTClient from '@opentok/client';
  import {
    primary as sessionCredentials,
    faultyLogging as badLoggingCredentials,
-@@ -19,8 +19,8 @@ import { QualityTestError } from '../src/testQuality/errors/index';
+@@ -17,8 +19,8 @@ import { QualityTestError } from '../src/testQuality/errors/index';
  
  type CustomMatcher = jasmine.CustomMatcher;
  
@@ -815,9 +1135,9 @@ index 5a80142..8507198 100644
  const networkTest = new NetworkTest(OTClient, sessionCredentials);
  const networkTestWithOptions = new NetworkTest(OTClient, sessionCredentials, {
    audioOnly: true,
-@@ -80,8 +80,8 @@ describe('NetworkTest', () => {
-     const testConnectFailure = (errorName, expectedType) => {
-       return new Promise((resolve) => {
+@@ -78,8 +80,8 @@ describe('NetworkTest', () => {
+     const testConnectFailure = (errorName: OTErrorType, expectedType): Promise<void> => {
+       return new Promise((resolve, reject) => {
          const realInitSession = OT.initSession;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
@@ -826,8 +1146,8 @@ index 5a80142..8507198 100644
            spyOn(session, 'connect').and.callFake((token, callback) => {
              const error = new Error();
              error.name = errorName;
-@@ -206,8 +206,8 @@ describe('NetworkTest', () => {
-       }, 10000);
+@@ -199,8 +201,8 @@ describe('NetworkTest', () => {
+       }, 15000);
        it('results in a failed test if Session.subscribe() returns an error', (done) => {
          const realInitSession = OT.initSession;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
@@ -837,9 +1157,9 @@ index 5a80142..8507198 100644
            spyOn(session, 'subscribe').and.callFake((stream, target, config, callback) => {
              const error = new Error();
              callback(error);
-@@ -236,8 +236,8 @@ describe('NetworkTest', () => {
+@@ -229,8 +231,8 @@ describe('NetworkTest', () => {
  
-       const testConnectFailure = (otErrorName, netTestErrorName) => {
+       const testConnectFailure = (otErrorName: OTErrorType, netTestErrorName) => {
          const realInitSession = OT.initSession;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
@@ -848,7 +1168,7 @@ index 5a80142..8507198 100644
            spyOn(session, 'connect').and.callFake((token, callback) => {
              const error = new Error();
              error.name = otErrorName;
-@@ -472,8 +472,8 @@ describe('NetworkTest', () => {
+@@ -449,8 +451,8 @@ describe('NetworkTest', () => {
  
        it('results in a failed test if Session.subscribe() returns an error', (done) => {
          const realInitSession = OT.initSession;
@@ -859,27 +1179,38 @@ index 5a80142..8507198 100644
            spyOn(session, 'subscribe').and.callFake((stream, target, config, callback) => {
              const error = new Error();
              callback(error);
-diff --git a/lib/js/test/setup/setup.js b/lib/js/test/setup/setup.js
-index a01392f..1305f11 100644
+diff --git a/lib/js/test/credentials.json b/lib/js/test/credentials.json
+index 3cecd93..ecd24f1 100644
 --- a/lib/js/test/setup/setup.js
 +++ b/lib/js/test/setup/setup.js
-@@ -1,50 +1,39 @@
- require('dotenv').config()
--const { Vonage } = require('@vonage/server-sdk');
-+const OpenTok = require('opentok');
- const fse = require('fs-extra');
--const fs = require('fs');
+@@ -1,60 +1,38 @@
+ import dotenv from 'dotenv';
+ dotenv.config();
+-import { Vonage } from '@vonage/server-sdk';
++import OpenTok from 'opentok';
+ import fse from 'fs-extra';
+-import * as fs from 'fs';
 -const applicationId = process.env.TEST_APPLICATION_ID;
 -const privateKeyPath = './private.key';
 -
+-if (!applicationId) {
+-  console.error('Environment variable TEST_APPLICATION_ID is not set. Please set it before running this script.');
+-  process.exit(1);
+-}
+-
+-if (!fs.existsSync(privateKeyPath)) {
+-  console.error(
+-    `Private key file not found at path: ${privateKeyPath}. Please create or place your private.key file there.`
+-  );
+-  process.exit(1);
+-}
 -
 -async function createSessionAndToken({applicationId, privateKey}) {
 -  const vonage = new Vonage({
 -    applicationId,
 -    privateKey,
-+const apiKey = process.env.TEST_API_KEY
-+const apiSecret = process.env.TEST_API_SECRET
-+
++const apiKey = process.env.TEST_API_KEY;
++const apiSecret = process.env.TEST_API_SECRET;
 +
 +function createSessionAndToken({ apiKey, apiSecret }) {
 +  return new Promise((resolve, reject) => {
@@ -903,8 +1234,6 @@ index a01392f..1305f11 100644
 -    console.error(e);
 -    throw e;
 -  }
--
--
  }
  
 -async function writeCredentials(credentialsArray) {
@@ -921,10 +1250,10 @@ index a01392f..1305f11 100644
 -    const sessions = await Promise.all([
 -      createSessionAndToken({ applicationId, privateKey }),
 -      createSessionAndToken({ applicationId, privateKey }),
--      createSessionAndToken({ applicationId, privateKey })
+-      createSessionAndToken({ applicationId, privateKey }),
 -    ]);
 +function generateCredentials(){
-+  const create = () => createSessionAndToken({ apiKey, apiSecret })
++  const create = () => createSessionAndToken({ apiKey, apiSecret });
  
 -    await writeCredentials(sessions);
 -    console.info('Generated session credentials for test.');
@@ -933,39 +1262,8 @@ index a01392f..1305f11 100644
 -  }
 +  Promise.all([create(), create(), create()])
 +    .then(writeCredentials)
-+    .then((results) => console.info('Generated session credentials for test.'))
++    .then(() => console.info('Generated session credentials for test.'))
 +    .catch(e => console.error('Failed to generate test credentials', e));
  }
  
  generateCredentials();
-diff --git a/lib/js/tsconfig.json b/lib/js/tsconfig.json
-index 9c5c119..910348c 100644
---- a/lib/js/tsconfig.json
-+++ b/lib/js/tsconfig.json
-@@ -14,12 +14,18 @@
-     "rootDir": "./src",
-     "outDir": "../../dist"
-   },
--  "exclude": [
--    "./node_modules",
--    "**/dist/**",
--    "./test/**/*"
-+  "files": [
-+    "src/index.ts",
-+    // "test.spec.ts"
-   ],
-+/*
-+*/
-   "include": [
--    "./src/**/*"
-+    "src/**/*.ts"
-   ],
-+  "exclude": [
-+    "node_modules",
-+    "dist",
-+    "test/setup/setup.js"
-+  ]
- }
--- 
-2.50.1 (Apple Git-155)
-

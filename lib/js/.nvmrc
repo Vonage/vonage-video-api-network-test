@@ -1,1 +1,4 @@
 24.10.0
+
+@vonage:registry=https://npm.pkg.github.com
+@opentok:registry=https://npm.pkg.github.com

@@ -1,0 +1,67 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches:
+      - '**'
+
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Which package do you want to check?'
+        required: true
+        type: choice
+        options:
+          - vonage
+          - opentok
+
+jobs:
+  check-vonage:
+    if: github.event_name == 'pull_request' || inputs.target == 'vonage'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lib/js
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          cache: npm
+          cache-dependency-path: lib/js/package-lock.json
+
+      - name: Install dependencies (Vonage)
+        run: npm ci
+
+      - name: Install Google Chrome & Dependencies (Local Only)
+        if: ${{ env.ACT }}
+        run: |
+          if ! command -v google-chrome &> /dev/null; then
+            echo "Chrome not found. Installing..."
+            apt-get update
+            apt-get install -y wget
+            wget -q -O chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+            apt-get install -y ./chrome.deb
+            rm chrome.deb
+          else
+            echo "Chrome is already installed! Skipping download."
+          fi
+          echo "CHROME_BIN=/usr/bin/google-chrome" >> $GITHUB_ENV
+
+      - name: Create private key file for Vonage testing
+        run: echo "${{ secrets.VONAGE_PRIVATE_KEY }}" > private.key
+
+      - name: Linting
+        run: npm run tslint
+
+      - name: Testing
+        run: npm run test
+        env:
+          TEST_APPLICATION_ID: ${{ secrets.TEST_APPLICATION_ID }}
+          TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
+          TEST_API_SECRET: ${{ secrets.TEST_API_SECRET }}
