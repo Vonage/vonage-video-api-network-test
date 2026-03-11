@@ -50,7 +50,7 @@
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.2",
     "@changesets/cli": "^2.29.8",
-    "@vonage/client-sdk-video": "^2.29.2",
+    "@vonage/client-sdk-video": "2.32.1",
     "@vonage/server-sdk": "^3.20.0",
     "@types/expect.js": "^0.3.29",
     "@types/jasmine": "^5.0.0",

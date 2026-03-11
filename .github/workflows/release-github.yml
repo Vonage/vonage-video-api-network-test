@@ -1,0 +1,188 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Which package do you want to release?'
+        required: true
+        type: choice
+        options:
+          - vonage
+          - opentok
+      version:
+        description: 'Manual version bump (e.g., 1.2.0). Leave empty to use package.json.'
+        required: false
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [vonage, opentok]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lib/js
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: lib/js/node_modules
+          key: ${{ runner.os }}-node-${{ matrix.target }}-${{ hashFiles('lib/js/package-lock.json') }}
+
+      - name: Apply OpenTok patch
+        if: matrix.target == 'opentok'
+        working-directory: .
+        run: git apply ./lib/js/opentok.patch
+
+      - name: Install dependencies (Vonage)
+        if: matrix.target == 'vonage' && steps.cache-npm.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Install dependencies (OpenTok)
+        if: matrix.target == 'opentok' && steps.cache-npm.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Build package
+        run: npm run build
+
+      - name: Create private key file for Vonage testing
+        if: matrix.target == 'vonage'
+        run: echo "${{ secrets.VONAGE_PRIVATE_KEY }}" > private.key
+
+      - name: Testing
+        run: npm run test
+        env:
+          TEST_APPLICATION_ID: ${{ secrets.TEST_APPLICATION_ID }}
+          TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
+          TEST_API_SECRET: ${{ secrets.TEST_API_SECRET }}
+
+  release-vonage:
+    needs: test
+    if: github.event_name == 'push' || inputs.target == 'vonage'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lib/js
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: lib/js/node_modules
+          key: ${{ runner.os }}-node-vonage-${{ hashFiles('lib/js/package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.cache-npm.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Set Package Version
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+            npm version $VERSION --no-git-tag-version
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.version }}" != "" ]]; then
+            VERSION="${{ inputs.version#v }}"
+            npm version $VERSION --no-git-tag-version
+          fi
+
+      - name: Build package
+        run: npm run build
+
+      - name: Publish to GitHub Packages
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-package-dist-vonage
+          path: lib/js/dist/
+
+  release-opentok:
+    needs: test
+    if: github.event_name == 'push' || inputs.target == 'opentok'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lib/js
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: lib/js/node_modules
+          key: ${{ runner.os }}-node-opentok-${{ hashFiles('lib/js/package-lock.json') }}
+
+      - name: Apply OpenTok patch
+        working-directory: .
+        run: git apply ./lib/js/opentok.patch
+
+      - name: Install dependencies
+        if: steps.cache-npm.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Set Package Version
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+            npm version $VERSION --no-git-tag-version
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.version }}" != "" ]]; then
+            VERSION="${{ inputs.version#v }}"
+            npm version $VERSION --no-git-tag-version
+          fi
+
+      - name: Build package
+        run: npm run build
+
+      - name: Publish to GitHub Packages
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-package-dist-opentok
+          path: lib/js/dist/

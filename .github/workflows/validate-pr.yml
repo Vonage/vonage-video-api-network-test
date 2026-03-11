@@ -1,26 +1,22 @@
-name: PR Validation
+name: Validate PR
 
 on:
   pull_request:
     branches:
-      - main
-      - develop
+      - '**'
 
 jobs:
-  validate:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [vonage, opentok]
     runs-on: ubuntu-latest
-
     defaults:
       run:
         working-directory: lib/js
-
-    strategy:
-      fail-fast: true
-      matrix:
-        node-version: [24.x]
-
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -28,30 +24,142 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
-          registry-url: https://registry.npmjs.org/
-          cache: npm
-          cache-dependency-path: lib/js/package-lock.json
+          node-version: 24.x
 
-      - name: Install Dependencies
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: lib/js/node_modules
+          key: ${{ runner.os }}-node-${{ matrix.target }}-${{ hashFiles('lib/js/package-lock.json') }}
+
+      - name: Apply OpenTok patch
+        if: matrix.target == 'opentok'
+        working-directory: .
+        run: git apply ./lib/js/opentok.patch
+
+      - name: Install dependencies (Vonage)
+        if: matrix.target == 'vonage' && steps.cache-npm.outputs.cache-hit != 'true'
         run: npm ci
 
-      - name: Linting
-        run: npm run tslint
+      - name: Install dependencies (OpenTok)
+        if: matrix.target == 'opentok' && steps.cache-npm.outputs.cache-hit != 'true'
+        run: npm install
 
-      - name: Create .env file
-        run: |
-          touch .env
-          echo "TEST_APPLICATION_ID=${{ secrets.TEST_APPLICATION_ID }}" >> .env
+      - name: Build package
+        run: npm run build
 
-      - name: Create private key file
-        env:
-          PRIVATE_KEY_SECRET: ${{ secrets.PRIVATE_KEY_SECRET }}
-        run: |
-          echo "$PRIVATE_KEY_SECRET" > private.key
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ matrix.target }}
+          path: dist
+          retention-days: 1
+
+  test:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [vonage, opentok]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lib/js
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: lib/js/node_modules
+          key: ${{ runner.os }}-node-${{ matrix.target }}-${{ hashFiles('lib/js/package-lock.json') }}
+
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts-${{ matrix.target }}
+          path: dist
+
+      - name: Apply OpenTok patch
+        if: matrix.target == 'opentok'
+        working-directory: .
+        run: git apply ./lib/js/opentok.patch
+
+      - name: Install dependencies (Vonage)
+        if: matrix.target == 'vonage' && steps.cache-npm.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Install dependencies (OpenTok)
+        if: matrix.target == 'opentok' && steps.cache-npm.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Create private key file for Vonage testing
+        if: matrix.target == 'vonage'
+        run: echo "${{ secrets.VONAGE_PRIVATE_KEY }}" > private.key
 
       - name: Testing
         run: npm run test
+        env:
+          TEST_APPLICATION_ID: ${{ secrets.TEST_APPLICATION_ID }}
+          TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
+          TEST_API_SECRET: ${{ secrets.TEST_API_SECRET }}
 
-      - name: Validate Changeset Status
-        run: npx changeset status --since=origin/${{ github.base_ref }}
+  lint:
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [vonage, opentok]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lib/js
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: lib/js/node_modules
+          key: ${{ runner.os }}-node-${{ matrix.target }}-${{ hashFiles('lib/js/package-lock.json') }}
+
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts-${{ matrix.target }}
+          path: dist
+
+      - name: Apply OpenTok patch
+        if: matrix.target == 'opentok'
+        working-directory: .
+        run: git apply ./lib/js/opentok.patch
+
+      - name: Install dependencies (Vonage)
+        if: matrix.target == 'vonage' && steps.cache-npm.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Install dependencies (OpenTok)
+        if: matrix.target == 'opentok' && steps.cache-npm.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Linting
+        run: npm run tslint
