@@ -80,3 +80,7 @@ samples/js/node_modules
 yarn.lock
 
 .DS_STORE
+
+*Pods
+*.xcworkspace
+*.DS_Store
