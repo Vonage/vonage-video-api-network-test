@@ -1,8 +1,8 @@
 diff --git a/lib/js/README.md b/lib/js/README.md
-index 22bfdec..04d871d 100644
+index eb1871d..c14da57 100644
 --- a/lib/js/README.md
 +++ b/lib/js/README.md
-@@ -1,32 +1,36 @@
+@@ -1,19 +1,24 @@
 -# Vonage Video API Network Test
  
 -[![license](https://img.shields.io/github/license/vonage/vonage-video-js-api-network-test.svg)](https://github.com/Vonage/vonage-video-js-api-network-test/blob/develop/CONTRIBUTING.md)
@@ -27,29 +27,31 @@ index 22bfdec..04d871d 100644
  
  * A recommended frame rate and resolution to use for publishing to a session
  
--For a sample that uses this module, see the [Vonage Video API Pre-call Test
--tool](https://tools.vonage.com/video/precall/).
+-For a sample that uses this module, see the [Vonage Video API Pre-call Test tool](https://tools.vonage.com/video/precall/).
 +For a sample that uses this module, see the [OpenTok Pre-call Test
 +tool](https://tokbox.com/developer/tools/precall/).
  
- ## Example Usage in Node/Browserify/Webpack
+ ## Instalation
  
- First, install the package:
+@@ -51,7 +56,7 @@ Replace `YOUR_GITHUB_TOKEN` with your GitHub personal access token.
+ Once configured, you can use standard `npm install` command to install the package.
  
  ```
 -$ npm install @vonage/video-client-network-test
 +$ npm install opentok-network-test-js
  ```
  
--Now load the Vonage Video API Network Test in your project. The module exports two objects:
-+Now load the OpenTok Network Test in your project. The module exports two objects:
+ #### Note on Package Availability
+@@ -64,7 +69,7 @@ For more information about working with GitHub Packages' NPM registry, see the [
+ 
+ After successful instalation, you have to load the Vonage Video API Network Test in your project. The module exports two objects:
  
 -* NetworkTest -- The class containing methods for testing your Vonage Video API connectivity and quality.
 +* NetworkTest -- The class containing methods for testing your OpenTok connectivity and quality.
    This is the default export.
  
  * ErrorNames -- An object enumerating error name values
-@@ -34,47 +38,47 @@ Now load the Vonage Video API Network Test in your project. The module exports t
+@@ -72,47 +77,47 @@ After successful instalation, you have to load the Vonage Video API Network Test
  Using CommonJS:
  
  ```javascript
@@ -115,7 +117,7 @@ index 22bfdec..04d871d 100644
      let publisherSettings = {};
      if (results.video.reason) {
        console.log('Video not supported:', results.video.reason);
-@@ -94,10 +98,10 @@ videoNetworkTest.testConnectivity().then((results) => {
+@@ -132,10 +137,10 @@ videoNetworkTest.testConnectivity().then((results) => {
        // Publish to the "real" session, using the publisherSettings object.
      }
    }).catch((error) => {
@@ -128,7 +130,7 @@ index 22bfdec..04d871d 100644
  });
  ```
  
-@@ -106,20 +110,20 @@ with `audioOnly` set to `true` into the constructor:
+@@ -144,20 +149,20 @@ with `audioOnly` set to `true` into the constructor:
  
  ```javascript
  const sessionInfo = {
@@ -155,18 +157,17 @@ index 22bfdec..04d871d 100644
  });
  ```
  
-@@ -159,31 +163,33 @@ The OTNetworkTest NPM module includes three public methods:
+@@ -194,30 +199,33 @@ The OTNetworkTest NPM module includes three public methods:
  
  The `OTNetworkTest()` constructor includes the following parameters:
  
--* `ot` -- A reference to the Vonage Video web client SDK `OT` object. You must load Vonage Video web client SDK into the
--  web page and pass the Vonage Video web client SDK `OT` into the `OTNetworkTest()` constructor.
+-* `ot` -- A reference to the Vonage Video web client SDK `OT` object. You must load Vonage Video web client SDK into the web page and pass the Vonage Video web client SDK `OT` into the `OTNetworkTest()` constructor.
 +* `ot` -- A reference to the OpenTok.js `OT` object. You must load OpenTok.js into the
 +  web page and pass the OpenTok.js `OT` into the `OTNetworkTest()` constructor.
  
--  Note that you may load Vonage Video web client SDK from the Vonage Video API server
--  (https://unpkg.com/@vonage/client-sdk-video@2/dist/js/opentok.js) or via NPM
--  (https://www.npmjs.com/package/@vonage/server-sdk).
+-  Note that you may load Vonage Video web client SDK from the 
+-  [Vonage Video API server](https://unpkg.com/@vonage/client-sdk-video@2/dist/js/opentok.js) or via 
+-  [NPM](https://www.npmjs.com/package/@vonage/server-sdk).
 +  Note that you may load OpenTok.js from the opentok.com server
 +  (https://static.opentok.com/v2/js/opentok.js) or via NPM
 +  (https://www.npmjs.com/package/@opentok/client). Or if your OpenTok project uses the [enterprise
@@ -199,8 +200,8 @@ index 22bfdec..04d871d 100644
 +     session](https://tokbox.com/developer/guides/create-session/).
  
    * `token` -- A token corresponding to the test session. The role of the token must be
-     either `publisher` or `moderator`.
-@@ -217,8 +223,8 @@ The `OTNetworkTest()` constructor includes the following parameters:
+     either `publisher` or `moderator`. The `sessionInfo` parameter is required.
+@@ -249,8 +257,8 @@ The `OTNetworkTest()` constructor includes the following parameters:
      to be used by the test publisher. You can obtain a list of available devices,
      including audio input devices, by calling the `OT.getDevices()` method.
  
@@ -211,7 +212,7 @@ index 22bfdec..04d871d 100644
      to grant permission to the correct device. Note that changing the audio device may not
      influence the quality test score.
  
-@@ -226,28 +232,29 @@ The `OTNetworkTest()` constructor includes the following parameters:
+@@ -258,27 +266,29 @@ The `OTNetworkTest()` constructor includes the following parameters:
      to be used by the test publisher. You can obtain a list of available devices,
      including audio input devices, by calling the `OT.getDevices()` method.
  
@@ -230,8 +231,7 @@ index 22bfdec..04d871d 100644
 +    for initializing the session
 +    ([Session Options](https://tokbox.com/developer/sdks/js/reference/OT.html#initSession)).
      This object includes the following properties:
--	  * `ipWhitelist ` (Boolean) -- Set this to true if IP white listing 
--        is enabled for your project. The default value is false. 
+-	  * `ipWhitelist ` (Boolean) -- Set this to `true` if IP white listing is enabled for your project. The default value is `false`. 
 +	  * `ipWhitelist ` (Boolean) -- This is available as an add-on feature
 +        for **enterprise accounts**. Set this to true if IP white listing
 +        is enabled for your project. The default value is false.
@@ -255,7 +255,7 @@ index 22bfdec..04d871d 100644
  
    * `fullHd` (Boolean) -- (Optional) Allows publishing with a resolution of 1920x1080 (1080p).
      If the camera does not support 1920x1080 resolution, the `OTNetworkTest.testConnectivity()` method
-@@ -262,7 +269,7 @@ the `ErrorNames` object (see [ErrorNames](#errornames)). For example:
+@@ -291,7 +301,7 @@ the `ErrorNames` object (see [ErrorNames](#errornames)). For example:
  
  ```javascript
  try {
@@ -264,7 +264,7 @@ index 22bfdec..04d871d 100644
  } catch (error) {
    switch (error.name) {
      case ErrorNames.MISSING_OPENTOK_INSTANCE:
-@@ -271,7 +278,7 @@ try {
+@@ -300,7 +310,7 @@ try {
      case ErrorNames.INCOMPLETE_SESSON_CREDENTIALS:
      case ErrorNames.MISSING_SESSON_CREDENTIALS:
      case ErrorNames.INVALID_SESSON_CREDENTIALS:
@@ -273,7 +273,7 @@ index 22bfdec..04d871d 100644
        break;
      default:
        console.error('Unknown error .');
-@@ -281,11 +288,11 @@ try {
+@@ -310,11 +320,11 @@ try {
  
  ### OTNetworkTest.testConnectivity()
  
@@ -287,7 +287,7 @@ index 22bfdec..04d871d 100644
    any connectivity test failed.
  
  * `failedTests` (Array) -- If connectivity failed, this array contains an object for each
-@@ -293,24 +300,24 @@ with a `results` object that has the following two properties:
+@@ -322,23 +332,24 @@ with a `results` object that has the following two properties:
  
    * `type` -- A sting defining the failure type. It will be set to one of the following values:
  
@@ -312,19 +312,19 @@ index 22bfdec..04d871d 100644
 +    a relayed session, the client *may* still succeed in using the OpenTok session, although
      it may fail if the relayed session requires use of a TURN server.
  
--    * `'logging'` -- The test could not connect to the Vonage Video API logging server. The Vonage Video web client SDK
-+    * `'logging'` -- The test could not connect to the OpenTok logging server. The OpenTok.js
-     library periodically logs data (such as video and audio quality) to this server. The client
+-    * `'logging'` -- The test could not connect to the Vonage Video API logging server. The Vonage Video web client SDK library periodically logs data (such as video and audio quality) to this server. The client
 -    can still connect to a Vonage Video API session, however Vonage will not collect data that may help
 -    you debug issues with the session, using tools like [Vonage Video API
 -    Inspector](https://tools.vonage.com/video/inspector/).
++    * `'logging'` -- The test could not connect to the OpenTok logging server. The OpenTok.js
++    library periodically logs data (such as video and audio quality) to this server. The client
 +    can still connect to an OpenTok session, however TokBox will not collect data that may help
 +    you debug issues with the session, using tools like [OpenTok
 +    Inspector](https://tokbox.com/developer/tools/inspector/).
  
    * `error` -- An object defining the reason for the type of failure. This object includes
    a `message` property and a `name` property. The message property describes the error.
-@@ -321,7 +328,7 @@ with a `results` object that has the following two properties:
+@@ -349,7 +360,7 @@ with a `results` object that has the following two properties:
      For example:
  
      ```javascript
@@ -333,25 +333,26 @@ index 22bfdec..04d871d 100644
        results.failedTests && results.failedTests.forEach(result) => {
          switch (failedTest.error.name) {
            case ErrorNames.FAILED_TO_OBTAIN_MEDIA_DEVICES:
-@@ -343,7 +350,7 @@ with a `results` object that has the following two properties:
+@@ -371,7 +382,8 @@ with a `results` object that has the following two properties:
  
  ### OTNetworkTest.testQuality(updateCallback)
  
--This function runs a test publisher (using the application ID, session ID and token provided in the constructor). Based on the measured video bitrate, audio bitrate, and the audio packet loss for
+-This function runs a test publisher (using the application ID, session ID and token provided in the constructor). Based on the measured video bitrate, audio bitrate, and the audio packet loss for the published stream, it provides the following results:
 +This function runs a test publisher (using the API key, session ID and token provided in the constructor). Based on the measured video bitrate, audio bitrate, and the audio packet loss for
- the published stream, it provides the following results:
++the published stream, it provides the following results:
  
  * Whether audio and video are supported and a reason why they aren't supported (if they aren't).
-@@ -395,7 +402,7 @@ audio-video test), the property is set to 'audio-only'.
+ 
+@@ -422,7 +434,7 @@ audio-video test), the property is set to `'audio-only'`.
  
  Pass in a `null` value if you do not want to register an `updateCallback` function.
  
--Update: We advise using 'bytesSent' to provide a more accurate result, especially if scalable video is enabled for the application ID
+-Update: We advise using `'bytesSent'` to provide a more accurate result, especially if scalable video is enabled for the application ID.
 +Update: We advise using 'bytesSent' to provide a more accurate result, especially if scalable video is enabled for the API key
  
  #### Promise returned
  
-@@ -473,7 +480,7 @@ will be set to one of the values defined as properties of the `ErrorNames` objec
+@@ -497,7 +509,7 @@ will be set to one of the values defined as properties of the `ErrorNames` objec
  (see [Error.name values](#errorname-values)).
  
  ```javascript
@@ -360,9 +361,9 @@ index 22bfdec..04d871d 100644
    // process intermediate results
  }).then((results) => {
    // Display UI based on results
-@@ -514,9 +521,9 @@ an error object (against the values defined in ErrorNames) to determine the type
+@@ -538,9 +550,9 @@ an error object (against the values defined in `ErrorNames`) to determine the ty
  
- | Error.name property set<br/>to this property of<br/>ErrorNames ... | Description |
+ | Error.name property set to this property of ErrorNames | Description |
  | ------------------------------------------------------------------ | ----------- |
 -|   `MISSING_OPENTOK_INSTANCE` | An instance of OT, the Vonage Video web client SDK, was not passed into the constructor. |
 -|   `INCOMPLETE_SESSON_CREDENTIALS` | The sessionInfo object passed into the constructor did not include an `applicationId`, `sessionId`,  or `token` object. |
@@ -373,9 +374,9 @@ index 22bfdec..04d871d 100644
  
  #### testConnectivity() errors
  
-@@ -527,22 +534,22 @@ the following:
+@@ -551,22 +563,22 @@ the following:
  
- | Error.name property set to this property<br/>of ErrorNames ... | Description |
+ | Error.name property set to this property of ErrorNames | Description |
  | -------------------------------------------------------------- | ----------- |
 -|   `API_CONNECTIVITY_ERROR` | The test failed to connect to Vonage Video API Server. | 
 -|   `CONNECT_TO_SESSION_ERROR` | The test failed to connect to the test Vonage Video API session due to a network error. | 
@@ -408,8 +409,8 @@ index 22bfdec..04d871d 100644
  
  #### testQuality() errors
  
-@@ -552,14 +559,14 @@ method has a `name` property set to one of the following:
- | Error.name property set to this<br/>property of ErrorNames ... | Description |
+@@ -576,14 +588,14 @@ method has a `name` property set to one of the following:
+ | Error.name property set to this property of ErrorNames | Description |
  | -------------------------------------------------------------- | ----------- |
  |   `INVALID_ON_UPDATE_CALLBACK` | The `updateCallback` parameter is invalid. It must be a function that accepts a single parameter. |
 -|   `UNSUPPORTED_BROWSER`  | The test is running on an unsupported browser (see [Supported browsers](#supported-browsers)). | 
@@ -431,7 +432,7 @@ index 22bfdec..04d871d 100644
  |   `PUBLISH_TO_SESSION_ERROR` | The test encountered an unknown error while attempting to publish to a session. | 
  |   `INIT_PUBLISHER_ERROR` | The test failed to initialize a publisher. | 
  |   `PUBLISH_TO_SESSION_NOT_CONNECTED` | The test failed to publish to the test session because the client was not connected to the session. | 
-@@ -593,8 +600,8 @@ limit the range of scores from 1.0 to 4.5.
+@@ -616,8 +628,8 @@ limit the range of scores from 1.0 to 4.5.
  | 1.7 - 2.39 | Poor      |
  | 1.0 - 1.69 | Bad       |
  
@@ -442,14 +443,14 @@ index 22bfdec..04d871d 100644
  for audio, which is factored into the MOS calculation.
  
  ## Building the module
-@@ -613,4 +620,4 @@ See the /sample subdirectory (and the /sample/README.md file) for a sample app.
+@@ -646,4 +658,4 @@ See the /samples/js subdirectory (and the /samples/js/README.md file) for a samp
  
  [itu-g107]: https://www.itu.int/rec/dologin_pub.asp?lang=s&id=T-REC-G.107-201402-S!!PDF-E
  
 -[releases-page]: https://github.com/vonage/vonage-video-js-api-network-test/releases
 +[releases-page]: https://github.com/opentok/opentok-network-test-js/releases
 diff --git a/lib/js/package-lock.json b/lib/js/package-lock.json
-index 0c0bb32..8b6e5e2 100644
+index 8ca866a..400bba4 100644
 --- a/lib/js/package-lock.json
 +++ b/lib/js/package-lock.json
 @@ -1,11 +1,11 @@
@@ -489,7 +490,7 @@ index 0c0bb32..8b6e5e2 100644
          "webpack-node-externals": "^3.0.0"
        }
      },
-@@ -808,6 +809,13 @@
+@@ -810,6 +811,13 @@
          "node": ">= 8"
        }
      },
@@ -503,69 +504,7 @@ index 0c0bb32..8b6e5e2 100644
      "node_modules/@sindresorhus/is": {
        "version": "4.6.0",
        "resolved": "https://registry.npmjs.org/@sindresorhus/is/-/is-4.6.0.tgz",
-@@ -1031,6 +1039,16 @@
-       "dev": true,
-       "license": "MIT"
-     },
-+    "node_modules/@types/ws": {
-+      "version": "8.18.1",
-+      "resolved": "https://registry.npmjs.org/@types/ws/-/ws-8.18.1.tgz",
-+      "integrity": "sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==",
-+      "dev": true,
-+      "license": "MIT",
-+      "dependencies": {
-+        "@types/node": "*"
-+      }
-+    },
-     "node_modules/@types/yauzl": {
-       "version": "2.10.3",
-       "resolved": "https://registry.npmjs.org/@types/yauzl/-/yauzl-2.10.3.tgz",
-@@ -1427,9 +1445,9 @@
-       }
-     },
-     "node_modules/@vonage/client-sdk-video": {
--      "version": "2.33.0",
--      "resolved": "https://registry.npmjs.org/@vonage/client-sdk-video/-/client-sdk-video-2.33.0.tgz",
--      "integrity": "sha512-Z4240pvN9jBXqe3W5uJ3z24oth20zl1eEaEL1KP3ECpbguI552qr3RVrv4B7WyJCClcfs1Mz9Wep1qjf6S9Hlg==",
-+      "version": "2.33.1",
-+      "resolved": "https://registry.npmjs.org/@vonage/client-sdk-video/-/client-sdk-video-2.33.1.tgz",
-+      "integrity": "sha512-Hm0TyKjtRU7WP5W+Jky3CYJULX7UP3hIDLe9YXmASbGLBZrjJas119RY/RhsR3nMhU8sTBee3dLaJ0kOtI7BYg==",
-       "dev": true,
-       "license": "https://www.vonage.com/legal/communications-apis/terms-of-use/"
-     },
-@@ -4041,14 +4059,15 @@
-       }
-     },
-     "node_modules/engine.io": {
--      "version": "6.6.5",
--      "resolved": "https://registry.npmjs.org/engine.io/-/engine.io-6.6.5.tgz",
--      "integrity": "sha512-2RZdgEbXmp5+dVbRm0P7HQUImZpICccJy7rN7Tv+SFa55pH+lxnuw6/K1ZxxBfHoYpSkHLAO92oa8O4SwFXA2A==",
-+      "version": "6.6.6",
-+      "resolved": "https://registry.npmjs.org/engine.io/-/engine.io-6.6.6.tgz",
-+      "integrity": "sha512-U2SN0w3OpjFRVlrc17E6TMDmH58Xl9rai1MblNjAdwWp07Kk+llmzX0hjDpQdrDGzwmvOtgM5yI+meYX6iZ2xA==",
-       "dev": true,
-       "license": "MIT",
-       "dependencies": {
-         "@types/cors": "^2.8.12",
-         "@types/node": ">=10.0.0",
-+        "@types/ws": "^8.5.12",
-         "accepts": "~1.3.4",
-         "base64id": "2.0.0",
-         "cookie": "~0.7.2",
-@@ -4980,9 +4999,9 @@
-       }
-     },
-     "node_modules/flatted": {
--      "version": "3.4.0",
--      "resolved": "https://registry.npmjs.org/flatted/-/flatted-3.4.0.tgz",
--      "integrity": "sha512-kC6Bb+ooptOIvWj5B63EQWkF0FEnNjV2ZNkLMLZRDDduIiWeFF4iKnslwhiWxjAdbg4NzTNo6h0qLuvFrcx+Sw==",
-+      "version": "3.4.1",
-+      "resolved": "https://registry.npmjs.org/flatted/-/flatted-3.4.1.tgz",
-+      "integrity": "sha512-IxfVbRFVlV8V/yRaGzk0UVIcsKKHMSfYw66T/u4nTwlWteQePsxe//LjudR1AMX4tZW3WFCh3Zqa/sjlqpbURQ==",
-       "dev": true,
-       "license": "ISC"
-     },
-@@ -6543,16 +6562,6 @@
+@@ -6553,16 +6561,6 @@
          "node": "*"
        }
      },
@@ -580,9 +519,9 @@ index 0c0bb32..8b6e5e2 100644
 -      }
 -    },
      "node_modules/karma/node_modules/brace-expansion": {
-       "version": "1.1.12",
-       "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.12.tgz",
-@@ -7287,6 +7296,16 @@
+       "version": "1.1.13",
+       "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.13.tgz",
+@@ -7297,6 +7295,16 @@
        "dev": true,
        "license": "MIT"
      },
@@ -599,7 +538,7 @@ index 0c0bb32..8b6e5e2 100644
      "node_modules/normalize-path": {
        "version": "3.0.0",
        "resolved": "https://registry.npmjs.org/normalize-path/-/normalize-path-3.0.0.tgz",
-@@ -7413,6 +7432,25 @@
+@@ -7423,6 +7431,25 @@
          "wrappy": "1"
        }
      },
@@ -625,7 +564,7 @@ index 0c0bb32..8b6e5e2 100644
      "node_modules/opentok-solutions-logging": {
        "version": "1.1.5",
        "resolved": "https://registry.npmjs.org/opentok-solutions-logging/-/opentok-solutions-logging-1.1.5.tgz",
-@@ -7422,6 +7460,83 @@
+@@ -7432,6 +7459,83 @@
          "axios": "^1.6.3"
        }
      },
@@ -709,20 +648,7 @@ index 0c0bb32..8b6e5e2 100644
      "node_modules/optionator": {
        "version": "0.9.4",
        "resolved": "https://registry.npmjs.org/optionator/-/optionator-0.9.4.tgz",
-@@ -9212,9 +9327,9 @@
-       }
-     },
-     "node_modules/terser-webpack-plugin": {
--      "version": "5.3.17",
--      "resolved": "https://registry.npmjs.org/terser-webpack-plugin/-/terser-webpack-plugin-5.3.17.tgz",
--      "integrity": "sha512-YR7PtUp6GMU91BgSJmlaX/rS2lGDbAF7D+Wtq7hRO+MiljNmodYvqslzCFiYVAgW+Qoaaia/QUIP4lGXufjdZw==",
-+      "version": "5.4.0",
-+      "resolved": "https://registry.npmjs.org/terser-webpack-plugin/-/terser-webpack-plugin-5.4.0.tgz",
-+      "integrity": "sha512-Bn5vxm48flOIfkdl5CaD2+1CiUVbonWQ3KQPyP7/EuIl9Gbzq/gQFOzaMFUEgVjB1396tcK0SG8XcNJ/2kDH8g==",
-       "dev": true,
-       "license": "MIT",
-       "dependencies": {
-@@ -9773,6 +9888,13 @@
+@@ -9809,6 +9913,13 @@
          "node": ">= 4.0.0"
        }
      },
@@ -736,7 +662,7 @@ index 0c0bb32..8b6e5e2 100644
      "node_modules/unpipe": {
        "version": "1.0.0",
        "resolved": "https://registry.npmjs.org/unpipe/-/unpipe-1.0.0.tgz",
-@@ -10134,6 +10256,7 @@
+@@ -10169,6 +10280,7 @@
        "integrity": "sha512-MfwFQ6SfwinsUVi0rNJm7rHZ31GyTcpVE5pgVA3hwFRb7COD4TzjUUwhGWKfO50+xdc2MQPuEBBJoqIMGt3JDw==",
        "dev": true,
        "license": "MIT",
@@ -744,7 +670,7 @@ index 0c0bb32..8b6e5e2 100644
        "dependencies": {
          "@discoveryjs/json-ext": "^0.6.1",
          "@webpack-cli/configtest": "^3.0.1",
-@@ -10181,7 +10304,7 @@
+@@ -10216,7 +10328,7 @@
          "node": ">=18"
        }
      },
@@ -753,7 +679,7 @@ index 0c0bb32..8b6e5e2 100644
        "version": "6.0.1",
        "resolved": "https://registry.npmjs.org/webpack-merge/-/webpack-merge-6.0.1.tgz",
        "integrity": "sha512-hXXvrjtx2PLYx4qruKl+kyRSLc52V+cCvMxRjmKwoA+CBbbF5GfIBtR6kCvl0fYGqTUPKB+1ktVmTHqMOzgCBg==",
-@@ -10196,6 +10319,16 @@
+@@ -10231,6 +10343,16 @@
          "node": ">=18.0.0"
        }
      },
@@ -771,7 +697,7 @@ index 0c0bb32..8b6e5e2 100644
        "version": "3.0.0",
        "resolved": "https://registry.npmjs.org/webpack-node-externals/-/webpack-node-externals-3.0.0.tgz",
 diff --git a/lib/js/package.json b/lib/js/package.json
-index abba029..854d311 100644
+index 62daf67..12696c3 100644
 --- a/lib/js/package.json
 +++ b/lib/js/package.json
 @@ -1,9 +1,9 @@
@@ -824,7 +750,7 @@ index abba029..854d311 100644
      "opentok-solutions-logging": "^1.1.1"
 @@ -52,6 +51,7 @@
      "@changesets/cli": "^2.29.8",
-     "@vonage/client-sdk-video": "^2.29.2",
+     "@vonage/client-sdk-video": "2.32.1",
      "@vonage/server-sdk": "^3.20.0",
 +    "@opentok/client": "^2.31.1",
      "@types/expect.js": "^0.3.29",
@@ -1179,8 +1105,8 @@ index 24049ca..4824ab4 100644
            spyOn(session, 'subscribe').and.callFake((stream, target, config, callback) => {
              const error = new Error();
              callback(error);
-diff --git a/lib/js/test/credentials.json b/lib/js/test/credentials.json
-index 3cecd93..ecd24f1 100644
+diff --git a/lib/js/test/setup/setup.js b/lib/js/test/setup/setup.js
+index 3cecd93..586674f 100644
 --- a/lib/js/test/setup/setup.js
 +++ b/lib/js/test/setup/setup.js
 @@ -1,60 +1,38 @@
