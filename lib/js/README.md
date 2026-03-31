@@ -13,8 +13,7 @@ to use [Vonage Video API](https://www.vonage.com/communications-apis/video). Run
 
 * A recommended frame rate and resolution to use for publishing to a session
 
-For a sample that uses this module, see the [Vonage Video API Pre-call Test
-tool](https://tools.vonage.com/video/precall/).
+For a sample that uses this module, see the [Vonage Video API Pre-call Test tool](https://tools.vonage.com/video/precall/).
 
 ## Example Usage in Node/Browserify/Webpack
 
@@ -129,7 +128,7 @@ handler functions into each of these methods.
 
 See the following section for details on using the test results.
 
-See the /sample subdirectory (and the /sample/README.md file) for a sample app.
+See the /samples/js subdirectory (and the /samples/js/README.md file) for a sample app.
 
 ## Supported browsers
 
@@ -152,19 +151,15 @@ The OTNetworkTest NPM module includes three public methods:
 
 * The `OTNetworkTest.testQuality()` method
 
-*Note:* Some API changes were introduced in v2. See the
-[releases page][releases-page] for details.
-
 ### OTNetworkTest() constructor
 
 The `OTNetworkTest()` constructor includes the following parameters:
 
-* `ot` -- A reference to the Vonage Video web client SDK `OT` object. You must load Vonage Video web client SDK into the
-  web page and pass the Vonage Video web client SDK `OT` into the `OTNetworkTest()` constructor.
+* `ot` -- A reference to the Vonage Video web client SDK `OT` object. You must load Vonage Video web client SDK into the web page and pass the Vonage Video web client SDK `OT` into the `OTNetworkTest()` constructor.
 
-  Note that you may load Vonage Video web client SDK from the Vonage Video API server
-  (https://unpkg.com/@vonage/client-sdk-video@2/dist/js/opentok.js) or via NPM
-  (https://www.npmjs.com/package/@vonage/server-sdk).
+  Note that you may load Vonage Video web client SDK from the 
+  [Vonage Video API server](https://unpkg.com/@vonage/client-sdk-video@2/dist/js/opentok.js) or via 
+  [NPM](https://www.npmjs.com/package/@vonage/server-sdk).
 
   Passing the OT object into the `OTNetworkTest()` constructor ensures that the tests will
   use the same version of Vonage Video API and the same Vonage Video API environment that will be used by the
@@ -186,11 +181,9 @@ The `OTNetworkTest()` constructor includes the following parameters:
      session](https://developer.vonage.com/en/video/guides/create-session).
 
   * `token` -- A token corresponding to the test session. The role of the token must be
-    either `publisher` or `moderator`.
+    either `publisher` or `moderator`. The `sessionInfo` parameter is required.
 
-    The `sessionInfo` parameter is required.
-
-* `options` --The `options` parameter is an object containing the following properties,
+* `options`-- (Optional) The `options` parameter is an object containing the following properties,
   each of which are optional:
 
    * `audioOnly` (Boolean) -- Set this property to `true` to run audio-only tests.
@@ -235,8 +228,7 @@ The `OTNetworkTest()` constructor includes the following parameters:
     for initializing the session 
     ([Session Options](https://vonage.github.io/video-docs/video-js-reference/latest/OT.html#initSession)).
     This object includes the following properties:
-	  * `ipWhitelist ` (Boolean) -- Set this to true if IP white listing 
-        is enabled for your project. The default value is false. 
+	  * `ipWhitelist ` (Boolean) -- Set this to `true` if IP white listing is enabled for your project. The default value is `false`. 
 	  * `iceConfig ` (Object) -- This feature is part of the configurable TURN add-on feature.
 
   * `proxyServerUrl` (String) -- (Optional) Set this to the proxy server URL 
@@ -253,9 +245,7 @@ The `OTNetworkTest()` constructor includes the following parameters:
     If the camera does not support 1920x1080 resolution, the `OTNetworkTest.testConnectivity()` method
     is rejected with an `UNSUPPORTED_RESOLUTION_ERROR` error. We highly recommend set `scalableVideo` setting to `true` when testing full HD resolution. Without `scalableVideo`, the client may not reach full HD resolution during the test period.
 
-  The `options` parameter is optional.
-
-The constructor throws an Error object with a `message` property and a `name` property. The
+The constructor throws an `Error` object with a `message` property and a `name` property. The
 message property describes the error. You should check the `name` property to determine the
 type of error. The `name` property will be set to one of the values defined as properties of
 the `ErrorNames` object (see [ErrorNames](#errornames)). For example:
@@ -306,8 +296,7 @@ with a `results` object that has the following two properties:
     a relayed session, the client *may* still succeed in using the Vonage Video API session, although
     it may fail if the relayed session requires use of a TURN server.
 
-    * `'logging'` -- The test could not connect to the Vonage Video API logging server. The Vonage Video web client SDK
-    library periodically logs data (such as video and audio quality) to this server. The client
+    * `'logging'` -- The test could not connect to the Vonage Video API logging server. The Vonage Video web client SDK library periodically logs data (such as video and audio quality) to this server. The client
     can still connect to a Vonage Video API session, however Vonage will not collect data that may help
     you debug issues with the session, using tools like [Vonage Video API
     Inspector](https://tools.vonage.com/video/inspector/).
@@ -343,8 +332,7 @@ with a `results` object that has the following two properties:
 
 ### OTNetworkTest.testQuality(updateCallback)
 
-This function runs a test publisher (using the application ID, session ID and token provided in the constructor). Based on the measured video bitrate, audio bitrate, and the audio packet loss for
-the published stream, it provides the following results:
+This function runs a test publisher (using the application ID, session ID and token provided in the constructor). Based on the measured video bitrate, audio bitrate, and the audio packet loss for the published stream, it provides the following results:
 
 * Whether audio and video are supported and a reason why they aren't supported (if they aren't).
 
@@ -367,19 +355,19 @@ The `updateCallback` function is called periodically during the test (at a 1-sec
 The object passed into the `updateCallback` function includes statistics about the audio and
 video in the test stream. The object has the following data:
 
-```
+```js
 {
   audio: {
     timestamp: 1509747314,
-    bytesSent:534349,// The total number of video bytes received, cumulative
+    bytesSent: 534349, // The total number of video bytes received, cumulative
     bytesReceived: 434349, // The total number of audio bytes received, cumulative
     packetsReceived: 24234,  // The total number of audio packets received, cumulative
-    packetsLost: 0   // The total number of audio packets lost, cumulative
+    packetsLost: 0  // The total number of audio packets lost, cumulative
   },
   video: {
     timestamp: 1509747314,
     bytesReceived: 434349, // The total number of video bytes received, cumulative
-    bytesSent:434349, // The total number of video bytes sent
+    bytesSent: 434349, // The total number of video bytes sent
     frameRate: 15,   // The video frame rate
     packetsReceived: 24234,  // The total number of video packets received, cumulative
     packetsLost: 0   // The total number of video packets lost, cumulative
@@ -389,13 +377,13 @@ video in the test stream. The object has the following data:
 }
 ```
 
-The `phase` property is set to 'audio-video' during the initial audio-video test. If a
+The `phase` property is set to `'audio-video'` during the initial audio-video test. If a
 secondary audio-only test is required (because audio quality was not acceptable during the
-audio-video test), the property is set to 'audio-only'.
+audio-video test), the property is set to `'audio-only'`.
 
 Pass in a `null` value if you do not want to register an `updateCallback` function.
 
-Update: We advise using 'bytesSent' to provide a more accurate result, especially if scalable video is enabled for the application ID
+Update: We advise using `'bytesSent'` to provide a more accurate result, especially if scalable video is enabled for the application ID.
 
 #### Promise returned
 
@@ -409,12 +397,12 @@ following properties:
 
     * `recommendedFrameRate` (Number) -- The recommended video frame rate. However, if
       video is unsupported, this is set to `null`. If the the test ran in audio-only mode
-      (for example, because no camera was found), this property is undefined.
+      (for example, because no camera was found), this property is `undefined`.
 
     * `recommendedResolution` (String) -- The recommended video resolution. This will be
       set to `'1280x720'`, `'640x480'`, or `'320x240'`. However, if video is unsupported,
       this is set to `null`. If the the test ran in audio-only mode (for example, because
-      no camera was found), this property is undefined.
+      no camera was found), this property is `undefined`.
 
     * `reason` (String) -- A string describing the reason for an unsupported video recommendation.
       For example, `'No camera was found.'`
@@ -455,11 +443,8 @@ following properties:
   * `mos` (Number) -- The MOS estimate for the test audio quality. This will be in a range from
     1 to 4.5. See [MOS estimates](#mos-estimates) below for more information.
 
-`results` is undefined if there was an error in running the tests (and the `error` parameter
+`results` is `undefined` if there was an error in running the tests (and the `error` parameter
 is unset).
-
-*Important:* v1 included a `results.mos` property (an overall MOS rating for the test). This
-was removed in v2 and replaced with `results.audio.mos` and `results.video.mos` properties.
 
 The results, including the MOS estimates and the recommended video resolution and frame rate are
 subjective. You can adjust the values used in the source code, or you can use the data passed into
@@ -507,12 +492,12 @@ While you can call `stop()` prior to this, results will not be returned until th
 ### ErrorNames
 
 The ErrorNames object includes properties that enumerate values used in the
-`name` property of OTNetworkTest error objects. You should check the `name` property of
-an error object (against the values defined in ErrorNames) to determine the type of error.
+`name` property of `OTNetworkTest` error objects. You should check the `name` property of
+an error object (against the values defined in `ErrorNames`) to determine the type of error.
 
 #### Errors thrown by the OTNetworkTest() constructor
 
-| Error.name property set<br/>to this property of<br/>ErrorNames ... | Description |
+| Error.name property set to this property of ErrorNames | Description |
 | ------------------------------------------------------------------ | ----------- |
 |   `MISSING_OPENTOK_INSTANCE` | An instance of OT, the Vonage Video web client SDK, was not passed into the constructor. |
 |   `INCOMPLETE_SESSON_CREDENTIALS` | The sessionInfo object passed into the constructor did not include an `applicationId`, `sessionId`,  or `token` object. |
@@ -525,7 +510,7 @@ The `results` object contains a `failedTests` array, and each element of this ar
 any elements) has an `error` property, which is error object has a `name` property set to one of
 the following:
 
-| Error.name property set to this property<br/>of ErrorNames ... | Description |
+| Error.name property set to this property of ErrorNames | Description |
 | -------------------------------------------------------------- | ----------- |
 |   `API_CONNECTIVITY_ERROR` | The test failed to connect to Vonage Video API Server. | 
 |   `CONNECT_TO_SESSION_ERROR` | The test failed to connect to the test Vonage Video API session due to a network error. | 
@@ -549,7 +534,7 @@ the following:
 If the promised returned by the `testQuality()` is rejected, the error passed into the `.catch()`
 method has a `name` property set to one of the following:
 
-| Error.name property set to this<br/>property of ErrorNames ... | Description |
+| Error.name property set to this property of ErrorNames | Description |
 | -------------------------------------------------------------- | ----------- |
 |   `INVALID_ON_UPDATE_CALLBACK` | The `updateCallback` parameter is invalid. It must be a function that accepts a single parameter. |
 |   `UNSUPPORTED_BROWSER`  | The test is running on an unsupported browser (see [Supported browsers](#supported-browsers)). | 
@@ -569,11 +554,10 @@ method has a `name` property set to one of the following:
 
 #### Errors thrown by the OTNetworkTest.checkCameraSupport() method
 
-| Error.name property set<br/>to this property of<br/>ErrorNames ... | Description       |
-| ------------------------------------------------------------------ | ----------------- |
+| Error.name property set to this property of ErrorNames | Description       |
+| ------------------------------------------------------ | ----------------- |
 |   `PERMISSION_DENIED_ERROR`    | The user denied access to the camera.                 |
 |   `UNSUPPORTED_RESOLUTION_ERROR` | The camera does not support the requested resolution. | 
-
 
 ## MOS estimates
 
@@ -618,7 +602,7 @@ $ npm run build
 
 ## Sample app
 
-See the /sample subdirectory (and the /sample/README.md file) for a sample app.
+See the /samples/js subdirectory (and the /samples/js/README.md file) for a sample app.
 
 
 [itu-g107]: https://www.itu.int/rec/dologin_pub.asp?lang=s&id=T-REC-G.107-201402-S!!PDF-E
