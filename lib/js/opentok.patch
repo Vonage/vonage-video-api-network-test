@@ -447,7 +447,7 @@ index 9636181..f9a362d 100644
 -[releases-page]: https://github.com/vonage/vonage-video-js-api-network-test/releases
 +[releases-page]: https://github.com/opentok/opentok-network-test-js/releases
 diff --git a/lib/js/package-lock.json b/lib/js/package-lock.json
-index 8ca866a..400bba4 100644
+index 2bbd977..f07a3a5 100644
 --- a/lib/js/package-lock.json
 +++ b/lib/js/package-lock.json
 @@ -1,11 +1,11 @@
@@ -487,7 +487,7 @@ index 8ca866a..400bba4 100644
          "webpack-node-externals": "^3.0.0"
        }
      },
-@@ -810,6 +811,13 @@
+@@ -808,6 +809,13 @@
          "node": ">= 8"
        }
      },
@@ -501,7 +501,7 @@ index 8ca866a..400bba4 100644
      "node_modules/@sindresorhus/is": {
        "version": "4.6.0",
        "resolved": "https://registry.npmjs.org/@sindresorhus/is/-/is-4.6.0.tgz",
-@@ -6553,16 +6561,6 @@
+@@ -6554,16 +6562,6 @@
          "node": "*"
        }
      },
@@ -518,7 +518,7 @@ index 8ca866a..400bba4 100644
      "node_modules/karma/node_modules/brace-expansion": {
        "version": "1.1.13",
        "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.13.tgz",
-@@ -7297,6 +7295,16 @@
+@@ -7298,6 +7296,16 @@
        "dev": true,
        "license": "MIT"
      },
@@ -535,7 +535,7 @@ index 8ca866a..400bba4 100644
      "node_modules/normalize-path": {
        "version": "3.0.0",
        "resolved": "https://registry.npmjs.org/normalize-path/-/normalize-path-3.0.0.tgz",
-@@ -7423,6 +7431,25 @@
+@@ -7424,6 +7432,25 @@
          "wrappy": "1"
        }
      },
@@ -561,7 +561,7 @@ index 8ca866a..400bba4 100644
      "node_modules/opentok-solutions-logging": {
        "version": "1.1.5",
        "resolved": "https://registry.npmjs.org/opentok-solutions-logging/-/opentok-solutions-logging-1.1.5.tgz",
-@@ -7432,6 +7459,83 @@
+@@ -7433,6 +7460,83 @@
          "axios": "^1.6.3"
        }
      },
@@ -645,7 +645,7 @@ index 8ca866a..400bba4 100644
      "node_modules/optionator": {
        "version": "0.9.4",
        "resolved": "https://registry.npmjs.org/optionator/-/optionator-0.9.4.tgz",
-@@ -9809,6 +9913,13 @@
+@@ -9794,6 +9898,13 @@
          "node": ">= 4.0.0"
        }
      },
@@ -659,15 +659,7 @@ index 8ca866a..400bba4 100644
      "node_modules/unpipe": {
        "version": "1.0.0",
        "resolved": "https://registry.npmjs.org/unpipe/-/unpipe-1.0.0.tgz",
-@@ -10169,6 +10280,7 @@
-       "integrity": "sha512-MfwFQ6SfwinsUVi0rNJm7rHZ31GyTcpVE5pgVA3hwFRb7COD4TzjUUwhGWKfO50+xdc2MQPuEBBJoqIMGt3JDw==",
-       "dev": true,
-       "license": "MIT",
-+      "peer": true,
-       "dependencies": {
-         "@discoveryjs/json-ext": "^0.6.1",
-         "@webpack-cli/configtest": "^3.0.1",
-@@ -10216,7 +10328,7 @@
+@@ -10203,7 +10314,7 @@
          "node": ">=18"
        }
      },
@@ -676,7 +668,7 @@ index 8ca866a..400bba4 100644
        "version": "6.0.1",
        "resolved": "https://registry.npmjs.org/webpack-merge/-/webpack-merge-6.0.1.tgz",
        "integrity": "sha512-hXXvrjtx2PLYx4qruKl+kyRSLc52V+cCvMxRjmKwoA+CBbbF5GfIBtR6kCvl0fYGqTUPKB+1ktVmTHqMOzgCBg==",
-@@ -10231,6 +10343,16 @@
+@@ -10218,6 +10329,16 @@
          "node": ">=18.0.0"
        }
      },
@@ -694,7 +686,7 @@ index 8ca866a..400bba4 100644
        "version": "3.0.0",
        "resolved": "https://registry.npmjs.org/webpack-node-externals/-/webpack-node-externals-3.0.0.tgz",
 diff --git a/lib/js/package.json b/lib/js/package.json
-index 62daf67..12696c3 100644
+index bbcb01a..eec63b8 100644
 --- a/lib/js/package.json
 +++ b/lib/js/package.json
 @@ -1,9 +1,9 @@
@@ -747,7 +739,7 @@ index 62daf67..12696c3 100644
      "opentok-solutions-logging": "^1.1.1"
 @@ -52,6 +51,7 @@
      "@changesets/cli": "^2.29.8",
-     "@vonage/client-sdk-video": "2.32.1",
+     "@vonage/client-sdk-video": "2.29.2",
      "@vonage/server-sdk": "^3.20.0",
 +    "@opentok/client": "^2.31.1",
      "@types/expect.js": "^0.3.29",
