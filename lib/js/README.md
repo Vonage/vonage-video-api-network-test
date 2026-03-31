@@ -41,7 +41,7 @@ Add the following configuration to your project's `.npmrc` file or your user-lev
 
 ```
 //npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
-@opentok:registry= https://npm.pkg.github.com
+@vonage:registry= https://npm.pkg.github.com
 ```
 
 Replace `YOUR_GITHUB_TOKEN` with your GitHub personal access token.
