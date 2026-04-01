@@ -38,87 +38,48 @@ jobs:
       matrix:
         target: [vonage, opentok]
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: lib/js
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup and Build
+        uses: ./.github/actions/build-env
         with:
-          node-version: 24.x
+          target: ${{ matrix.target }}
 
-      - name: Cache node modules
-        id: cache-npm
-        uses: actions/cache@v4
+      - name: Test
+        uses: ./.github/actions/test
         with:
-          path: lib/js/node_modules
-          key: ${{ runner.os }}-node-${{ matrix.target }}-${{ hashFiles('lib/js/package-lock.json') }}
-
-      - name: Apply OpenTok patch
-        if: matrix.target == 'opentok'
-        working-directory: .
-        run: git apply ./lib/js/opentok.patch
-
-      - name: Install dependencies (Vonage)
-        if: matrix.target == 'vonage' && steps.cache-npm.outputs.cache-hit != 'true'
-        run: npm ci
-
-      - name: Install dependencies (OpenTok)
-        if: matrix.target == 'opentok' && steps.cache-npm.outputs.cache-hit != 'true'
-        run: npm install
-
-      - name: Build package
-        run: npm run build
-
-      - name: Create private key file for Vonage testing
-        if: matrix.target == 'vonage'
-        run: echo "${{ secrets.VONAGE_PRIVATE_KEY }}" > private.key
-
-      - name: Testing
-        run: npm run test
-        env:
-          TEST_APPLICATION_ID: ${{ secrets.TEST_APPLICATION_ID }}
-          TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
-          TEST_API_SECRET: ${{ secrets.TEST_API_SECRET }}
+          target: ${{ matrix.target }}
+          vonage_private_key: ${{ secrets.VONAGE_PRIVATE_KEY }}
+          test_application_id: ${{ secrets.TEST_APPLICATION_ID }}
+          test_api_key: ${{ secrets.TEST_API_KEY }}
+          test_api_secret: ${{ secrets.TEST_API_SECRET }}
 
   release-vonage:
     needs: test
     if: github.event_name == 'push' || inputs.target == 'vonage'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: lib/js
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Environment
+        uses: ./.github/actions/build-env
         with:
-          node-version: 24.x
-          registry-url: 'https://npm.pkg.github.com'
-
-      - name: Cache node modules
-        id: cache-npm
-        uses: actions/cache@v4
-        with:
-          path: lib/js/node_modules
-          key: ${{ runner.os }}-node-vonage-${{ hashFiles('lib/js/package-lock.json') }}
-
-      - name: Install dependencies
-        if: steps.cache-npm.outputs.cache-hit != 'true'
-        run: npm ci
+          target: 'vonage'
+          run_build: 'false'
+          registry_url: 'https://npm.pkg.github.com'
 
       - name: Set Package Version
+        working-directory: lib/js
         run: |
           if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == refs/tags/* ]]; then
             VERSION="${GITHUB_REF_NAME#v}"
             npm version $VERSION --no-git-tag-version
           elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.version }}" != "" ]]; then
-            VERSION="${{ inputs.version#v }}"
+            INPUT_VER="${{ inputs.version }}"
+            VERSION="${INPUT_VER#v}"
             npm version $VERSION --no-git-tag-version
           else
             VERSION=$(node -p "require('./package.json').version")
@@ -126,12 +87,14 @@ jobs:
           echo "PACKAGE_VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Build .npmrc file
+        working-directory: lib/js
         run: |
           echo "always-auth=true" > .npmrc
           echo "registry=https://npm.pkg.github.com/" >> .npmrc
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
 
       - name: Check if version already published
+        working-directory: lib/js
         run: |
           PACKAGE_NAME=$(node -p "require('./package.json').name")
           PUBLISHED_VERSION=$(npm view $PACKAGE_NAME@${{ env.PACKAGE_VERSION }} version 2>/dev/null || echo "")
@@ -142,20 +105,24 @@ jobs:
           fi
 
       - name: Build package
+        working-directory: lib/js
         run: npm run build
 
       - name: Dry-run before publishing
         if: github.event_name == 'workflow_dispatch' && inputs.dry_run == true
+        working-directory: lib/js
         run: |
           echo "DRY RUN MODE"
           npm publish --dry-run
 
       - name: Publish to GitHub Packages
         if: github.event_name == 'push' || inputs.dry_run == false
+        working-directory: lib/js
         run: npm publish
 
       - name: Verify publication
         if: github.event_name == 'push' || inputs.dry_run == false
+        working-directory: lib/js
         run: |
           sleep 10
           PACKAGE_NAME=$(node -p "require('./package.json').name")
@@ -171,41 +138,26 @@ jobs:
     needs: test
     if: github.event_name == 'push' || inputs.target == 'opentok'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: lib/js
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Environment
+        uses: ./.github/actions/build-env
         with:
-          node-version: 24.x
-          registry-url: 'https://npm.pkg.github.com'
-
-      - name: Cache node modules
-        id: cache-npm
-        uses: actions/cache@v4
-        with:
-          path: lib/js/node_modules
-          key: ${{ runner.os }}-node-opentok-${{ hashFiles('lib/js/package-lock.json') }}
-
-      - name: Apply OpenTok patch
-        working-directory: .
-        run: git apply ./lib/js/opentok.patch
-
-      - name: Install dependencies
-        if: steps.cache-npm.outputs.cache-hit != 'true'
-        run: npm install
+          target: 'opentok'
+          run_build: 'false'
+          registry_url: 'https://npm.pkg.github.com'
 
       - name: Set Package Version
+        working-directory: lib/js
         run: |
           if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == refs/tags/* ]]; then
             VERSION="${GITHUB_REF_NAME#v}"
             npm version $VERSION --no-git-tag-version
           elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.version }}" != "" ]]; then
-            VERSION="${{ inputs.version#v }}"
+            INPUT_VER="${{ inputs.version }}"
+            VERSION="${INPUT_VER#v}"
             npm version $VERSION --no-git-tag-version
           else
             VERSION=$(node -p "require('./package.json').version")
@@ -213,12 +165,14 @@ jobs:
           echo "PACKAGE_VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Build .npmrc file
+        working-directory: lib/js
         run: |
           echo "always-auth=true" > .npmrc
           echo "registry=https://npm.pkg.github.com/" >> .npmrc
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
 
       - name: Check if version already published
+        working-directory: lib/js
         run: |
           PACKAGE_NAME=$(node -p "require('./package.json').name")
           PUBLISHED_VERSION=$(npm view $PACKAGE_NAME@${{ env.PACKAGE_VERSION }} version 2>/dev/null || echo "")
@@ -229,20 +183,24 @@ jobs:
           fi
 
       - name: Build package
+        working-directory: lib/js
         run: npm run build
 
       - name: Dry-run before publishing
         if: github.event_name == 'workflow_dispatch' && inputs.dry_run == true
+        working-directory: lib/js
         run: |
           echo "DRY RUN MODE"
           npm publish --dry-run
 
       - name: Publish to GitHub Packages
         if: github.event_name == 'push' || inputs.dry_run == false
+        working-directory: lib/js
         run: npm publish
 
       - name: Verify publication
         if: github.event_name == 'push' || inputs.dry_run == false
+        working-directory: lib/js
         run: |
           sleep 10
           PACKAGE_NAME=$(node -p "require('./package.json').name")

@@ -30,85 +30,47 @@ jobs:
       matrix:
         target: [vonage, opentok]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || inputs.target == matrix.target
-    defaults:
-      run:
-        working-directory: lib/js
     steps:
       - name: Checkout repository
+        if: github.event_name == 'push' || inputs.target == matrix.target
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup and Build
+        if: github.event_name == 'push' || inputs.target == matrix.target
+        uses: ./.github/actions/build-env
         with:
-          node-version: 24.x
+          target: ${{ matrix.target }}
 
-      - name: Cache node modules
-        id: cache-npm
-        uses: actions/cache@v4
+      - name: Test
+        if: github.event_name == 'push' || inputs.target == matrix.target
+        uses: ./.github/actions/test
         with:
-          path: lib/js/node_modules
-          key: ${{ runner.os }}-node-${{ matrix.target }}-${{ hashFiles('lib/js/package-lock.json') }}
-
-      - name: Apply OpenTok patch
-        if: matrix.target == 'opentok'
-        working-directory: .
-        run: git apply ./lib/js/opentok.patch
-
-      - name: Install dependencies (Vonage)
-        if: matrix.target == 'vonage' && steps.cache-npm.outputs.cache-hit != 'true'
-        run: npm ci
-
-      - name: Install dependencies (OpenTok)
-        if: matrix.target == 'opentok' && steps.cache-npm.outputs.cache-hit != 'true'
-        run: npm install
-
-      - name: Build package
-        run: npm run build
-
-      - name: Create private key file for Vonage testing
-        if: matrix.target == 'vonage'
-        run: echo "${{ secrets.VONAGE_PRIVATE_KEY }}" > private.key
-
-      - name: Testing
-        run: npm run test
-        env:
-          TEST_APPLICATION_ID: ${{ secrets.TEST_APPLICATION_ID }}
-          TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
-          TEST_API_SECRET: ${{ secrets.TEST_API_SECRET }}
+          target: ${{ matrix.target }}
+          vonage_private_key: ${{ secrets.VONAGE_PRIVATE_KEY }}
+          test_application_id: ${{ secrets.TEST_APPLICATION_ID }}
+          test_api_key: ${{ secrets.TEST_API_KEY }}
+          test_api_secret: ${{ secrets.TEST_API_SECRET }}
 
   package-vonage:
     needs: test
     if: github.event_name == 'push' || inputs.target == 'vonage'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: lib/js
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Environment
+        uses: ./.github/actions/build-env
         with:
-          node-version: 24.x
-
-      - name: Cache node modules
-        id: cache-npm
-        uses: actions/cache@v4
-        with:
-          path: lib/js/node_modules
-          key: ${{ runner.os }}-node-vonage-${{ hashFiles('lib/js/package-lock.json') }}
-
-      - name: Install dependencies (Vonage)
-        if: steps.cache-npm.outputs.cache-hit != 'true'
-        run: npm ci
+          target: 'vonage'
+          run_build: 'false'
 
       - name: Version Packages and Generate Changelog
+        working-directory: lib/js
         run: |
           npx changeset version
           npm install --package-lock-only
@@ -116,6 +78,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit Version Bump
+        working-directory: lib/js
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -123,19 +86,16 @@ jobs:
           git commit -m "chore: version bump [skip ci]" || echo "No changes to commit"
 
       - name: Build package
+        working-directory: lib/js
         run: npm run build
 
-      - name: Pack Vonage
-        run: npm pack
-
-      - name: Upload Vonage Tarball
-        uses: actions/upload-artifact@v4
+      - name: Package and Upload
+        uses: ./.github/actions/package
         with:
-          name: vonage-package-tarball
-          path: lib/js/*.tgz
-          retention-days: 7
+          target: 'vonage'
 
       - name: Push Version Bump
+        working-directory: lib/js
         run: git push origin main --follow-tags || echo "No changes to push"
 
   package-opentok:
@@ -146,9 +106,6 @@ jobs:
       (needs.package-vonage.result == 'success' || needs.package-vonage.result == 'skipped') &&
       (github.event_name == 'push' || inputs.target == 'opentok')
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: lib/js
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -156,35 +113,12 @@ jobs:
           fetch-depth: 0
           ref: main
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup and Build
+        uses: ./.github/actions/build-env
         with:
-          node-version: 24.x
+          target: 'opentok'
 
-      - name: Cache node modules
-        id: cache-npm
-        uses: actions/cache@v4
+      - name: Package and Upload
+        uses: ./.github/actions/package
         with:
-          path: lib/js/node_modules
-          key: ${{ runner.os }}-node-opentok-${{ hashFiles('lib/js/package-lock.json') }}
-
-      - name: Apply OpenTok patch
-        working-directory: .
-        run: git apply ./lib/js/opentok.patch
-
-      - name: Install dependencies (OpenTok)
-        if: steps.cache-npm.outputs.cache-hit != 'true'
-        run: npm install
-
-      - name: Build package
-        run: npm run build
-
-      - name: Pack OpenTok
-        run: npm pack
-
-      - name: Upload OpenTok Tarball
-        uses: actions/upload-artifact@v4
-        with:
-          name: opentok-package-tarball
-          path: lib/js/*.tgz
-          retention-days: 7
+          target: 'opentok'

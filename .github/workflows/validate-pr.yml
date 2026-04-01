@@ -12,42 +12,16 @@ jobs:
       matrix:
         target: [vonage, opentok]
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: lib/js
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup and Build
+        uses: ./.github/actions/build-env
         with:
-          node-version: 24.x
-
-      - name: Cache node modules
-        id: cache-npm
-        uses: actions/cache@v4
-        with:
-          path: lib/js/node_modules
-          key: ${{ runner.os }}-node-${{ matrix.target }}-${{ hashFiles('lib/js/package-lock.json') }}
-
-      - name: Apply OpenTok patch
-        if: matrix.target == 'opentok'
-        working-directory: .
-        run: git apply ./lib/js/opentok.patch
-
-      - name: Install dependencies (Vonage)
-        if: matrix.target == 'vonage' && steps.cache-npm.outputs.cache-hit != 'true'
-        run: npm ci
-
-      - name: Install dependencies (OpenTok)
-        if: matrix.target == 'opentok' && steps.cache-npm.outputs.cache-hit != 'true'
-        run: npm install
-
-      - name: Build package
-        run: npm run build
+          target: ${{ matrix.target }}
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
@@ -63,26 +37,17 @@ jobs:
       matrix:
         target: [vonage, opentok]
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: lib/js
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Environment
+        uses: ./.github/actions/build-env
         with:
-          node-version: 24.x
-
-      - name: Cache node modules
-        id: cache-npm
-        uses: actions/cache@v4
-        with:
-          path: lib/js/node_modules
-          key: ${{ runner.os }}-node-${{ matrix.target }}-${{ hashFiles('lib/js/package-lock.json') }}
+          target: ${{ matrix.target }}
+          run_build: 'false'
 
       - name: Download Build Artifact
         uses: actions/download-artifact@v4
@@ -90,29 +55,14 @@ jobs:
           name: build-artifacts-${{ matrix.target }}
           path: dist
 
-      - name: Apply OpenTok patch
-        if: matrix.target == 'opentok'
-        working-directory: .
-        run: git apply ./lib/js/opentok.patch
-
-      - name: Install dependencies (Vonage)
-        if: matrix.target == 'vonage' && steps.cache-npm.outputs.cache-hit != 'true'
-        run: npm ci
-
-      - name: Install dependencies (OpenTok)
-        if: matrix.target == 'opentok' && steps.cache-npm.outputs.cache-hit != 'true'
-        run: npm install
-
-      - name: Create private key file for Vonage testing
-        if: matrix.target == 'vonage'
-        run: echo "${{ secrets.VONAGE_PRIVATE_KEY }}" > private.key
-
-      - name: Testing
-        run: npm run test
-        env:
-          TEST_APPLICATION_ID: ${{ secrets.TEST_APPLICATION_ID }}
-          TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
-          TEST_API_SECRET: ${{ secrets.TEST_API_SECRET }}
+      - name: Test
+        uses: ./.github/actions/test
+        with:
+          target: ${{ matrix.target }}
+          vonage_private_key: ${{ secrets.VONAGE_PRIVATE_KEY }}
+          test_application_id: ${{ secrets.TEST_APPLICATION_ID }}
+          test_api_key: ${{ secrets.TEST_API_KEY }}
+          test_api_secret: ${{ secrets.TEST_API_SECRET }}
 
   lint:
     needs: test
@@ -121,26 +71,17 @@ jobs:
       matrix:
         target: [vonage, opentok]
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: lib/js
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Environment
+        uses: ./.github/actions/build-env
         with:
-          node-version: 24.x
-
-      - name: Cache node modules
-        id: cache-npm
-        uses: actions/cache@v4
-        with:
-          path: lib/js/node_modules
-          key: ${{ runner.os }}-node-${{ matrix.target }}-${{ hashFiles('lib/js/package-lock.json') }}
+          target: ${{ matrix.target }}
+          run_build: 'false'
 
       - name: Download Build Artifact
         uses: actions/download-artifact@v4
@@ -148,18 +89,6 @@ jobs:
           name: build-artifacts-${{ matrix.target }}
           path: dist
 
-      - name: Apply OpenTok patch
-        if: matrix.target == 'opentok'
-        working-directory: .
-        run: git apply ./lib/js/opentok.patch
-
-      - name: Install dependencies (Vonage)
-        if: matrix.target == 'vonage' && steps.cache-npm.outputs.cache-hit != 'true'
-        run: npm ci
-
-      - name: Install dependencies (OpenTok)
-        if: matrix.target == 'opentok' && steps.cache-npm.outputs.cache-hit != 'true'
-        run: npm install
-
       - name: Linting
+        working-directory: lib/js
         run: npm run tslint
