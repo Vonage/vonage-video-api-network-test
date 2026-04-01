@@ -1,32 +1,21 @@
-name: Validate PR
+name: Package
 
 on:
-  pull_request:
+  push:
     branches:
-      - '**'
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
 
 jobs:
-  lint:
-    strategy:
-      fail-fast: true
-      matrix:
-        target: [vonage, opentok]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Environment
-        uses: ./.github/actions/setup-environment
-        with:
-          target: ${{ matrix.target }}
-
-      - name: Linting
-        working-directory: lib/js
-        run: npm run tslint
-
   test:
-    needs: lint
     strategy:
       fail-fast: false
       matrix:
@@ -50,23 +39,23 @@ jobs:
           test_api_key: ${{ secrets.TEST_API_KEY }}
           test_api_secret: ${{ secrets.TEST_API_SECRET }}
 
-  build:
+  package:
     needs: test
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [vonage, opentok]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Setup Environment
-        uses: ./.github/actions/setup-environment
         with:
-          target: ${{ matrix.target }}
+          fetch-depth: 0
 
-      - name: Build package
-        shell: bash
-        working-directory: lib/js
-        run: npm run build
+      - name: Build and Package Vonage
+        uses: ./.github/actions/build-and-package-library
+        with:
+          target: 'vonage'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          bump_version: 'true'
+
+      - name: Build and Package OpenTok
+        uses: ./.github/actions/build-and-package-library
+        with:
+          target: 'opentok'

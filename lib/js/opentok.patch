@@ -692,7 +692,7 @@ index bbcb01a..eec63b8 100644
 @@ -1,9 +1,9 @@
  {
 -  "name": "@vonage/video-client-network-test",
-+  "name": "@opentok/network-test-js",
++  "name": "@opentok/opentok-network-test-js",
    "version": "5.0.0",
 -  "description": "Precall network test for applications using the Vonage Video API platform.",
 -  "main": "dist/vonage/index.js",

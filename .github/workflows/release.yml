@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Which package do you want to release?'
+        required: true
+        type: choice
+        options:
+          - vonage
+          - opentok
+      dry_run:
+        description: 'Dry run mode (test without publishing)'
+        required: true
+        type: boolean
+        default: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+  actions: read
+
+jobs:
+  release-vonage:
+    if: inputs.target == 'vonage'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Publish Package (Vonage)
+        uses: ./.github/actions/publish-package
+        with:
+          target: 'vonage'
+          dry_run: ${{ inputs.dry_run }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  release-opentok:
+    if: inputs.target == 'opentok'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Publish Package (OpenTok)
+        uses: ./.github/actions/publish-package
+        with:
+          target: 'opentok'
+          dry_run: ${{ inputs.dry_run }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
