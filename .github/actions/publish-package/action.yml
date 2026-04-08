@@ -1,25 +1,40 @@
 name: 'Publish Package'
-description: 'Downloads a pre-built artifact and publishes it to GitHub Packages'
+description: 'Downloads a pre-built artifact and publishes it to the specified registry'
 inputs:
   target:
     description: 'Target package (vonage or opentok)'
+    required: true
+  registry:
+    description: 'Target registry (github.com or npmjs.com)'
     required: true
   dry_run:
     description: 'Dry run mode (true/false)'
     required: false
     default: 'false'
   github_token:
-    description: 'GitHub token for downloading artifacts and npm auth'
+    description: 'GitHub token for downloading artifacts and GitHub Packages auth'
     required: true
+  npm_token:
+    description: 'NPM token for publishing to registry.npmjs.org (optional if only publishing to github)'
+    required: false
 
 runs:
   using: "composite"
   steps:
-    - name: Setup Node
+    # --- DYNAMIC NODE SETUP ---
+    - name: Setup Node for GitHub Packages
+      if: inputs.registry == 'github.com'
       uses: actions/setup-node@v4
       with:
         node-version: 24.x
         registry-url: 'https://npm.pkg.github.com/'
+
+    - name: Setup Node for NPM Registry
+      if: inputs.registry == 'npmjs.com'
+      uses: actions/setup-node@v4
+      with:
+        node-version: 24.x
+        registry-url: 'https://registry.npmjs.org/'
 
     - name: Download Build Artifact
       uses: dawidd6/action-download-artifact@v6
@@ -33,31 +48,39 @@ runs:
     - name: Check if version already published
       working-directory: lib/js
       shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github_token }}
+        NPM_TOKEN: ${{ inputs.npm_token }}
+        REGISTRY: ${{ inputs.registry }}
       run: |
-        # Version is already correct because it was checked out from main
+        # Dynamically map the correct token based on the selected registry
+        export NODE_AUTH_TOKEN=$([ "$REGISTRY" == "github.com" ] && echo "$GH_TOKEN" || echo "$NPM_TOKEN")
+
         PACKAGE_NAME=$(node -p "require('./package.json').name")
         PACKAGE_VERSION=$(node -p "require('./package.json').version")
         PUBLISHED_VERSION=$(npm view $PACKAGE_NAME@$PACKAGE_VERSION version 2>/dev/null || echo "")
 
         if [ "$PUBLISHED_VERSION" == "$PACKAGE_VERSION" ]; then
-          echo "❌ Error: Version $PACKAGE_VERSION is already published on GitHub Packages!"
+          echo "❌ Error: Version $PACKAGE_VERSION is already published on $REGISTRY!"
           exit 1
         fi
 
-    - name: Dry-run before publishing
-      if: github.event_name == 'workflow_dispatch' && inputs.dry_run == 'true'
+    - name: Publish Package
       working-directory: lib/js
       shell: bash
       env:
-        NODE_AUTH_TOKEN: ${{ inputs.github_token }}
+        GH_TOKEN: ${{ inputs.github_token }}
+        NPM_TOKEN: ${{ inputs.npm_token }}
+        REGISTRY: ${{ inputs.registry }}
+        DRY_RUN: ${{ inputs.dry_run }}
       run: |
-        echo "DRY RUN MODE"
-        npm publish --dry-run
+        # Dynamically map the correct token again
+        export NODE_AUTH_TOKEN=$([ "$REGISTRY" == "github.com" ] && echo "$GH_TOKEN" || echo "$NPM_TOKEN")
 
-    - name: Publish to GitHub Packages
-      if: inputs.dry_run == 'false'
-      working-directory: lib/js
-      shell: bash
-      env:
-        NODE_AUTH_TOKEN: ${{ inputs.github_token }}
-      run: npm publish
+        if [ "$DRY_RUN" == "true" ]; then
+          echo "DRY RUN MODE - Publishing to $REGISTRY"
+          npm publish --dry-run
+        else
+          echo "Publishing to $REGISTRY..."
+          npm publish
+        fi
