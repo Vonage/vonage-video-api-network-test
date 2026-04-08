@@ -765,7 +765,7 @@ index bbcb01a..eec63b8 100644
      "opentok-solutions-logging": "^1.1.1"
 @@ -52,6 +51,7 @@
      "@changesets/cli": "^2.29.8",
-     "@vonage/client-sdk-video": "2.29.2",
+     "@vonage/client-sdk-video": "2.31.1",
      "@vonage/server-sdk": "^3.20.0",
 +    "@opentok/client": "^2.31.1",
      "@types/expect.js": "^0.3.29",
