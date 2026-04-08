@@ -42,10 +42,10 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  
  ### GitHub Packages
  
--On top of npm registry, `@vonage/video-api-network-test` is published to [Github Packages](https://github.com/orgs/Vonage/packages/npm/package/video-api-network-test).
-+On top of npm registry, `opentok-network-test-js` is published to [Github Packages](https://github.com/opentok/opentok-network-test-js).
+-On top of npm registry, `@vonage/video-client-network-test` is published to [Github Packages](https://github.com/orgs/Vonage/packages/npm/package/video-client-network-test).
++On top of npm registry, `opentok-network-test-js` is published to [Github Packages](https://github.com/orgs/Opentok/packages/npm/opentok-network-test-js).
  
--To install `@vonage/video-api-network-test` from GitHub Packages' NPM registry, you need to configure npm to authenticate with GitHub:
+-To install `@vonage/video-client-network-test` from GitHub Packages' NPM registry, you need to configure npm to authenticate with GitHub:
 +To install `opentok-network-test-js` from GitHub Packages' NPM registry, you need to configure npm to authenticate with GitHub:
  
  **1. Create a GitHub Personal Access Token (PAT)**
@@ -55,7 +55,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  
  ```
 -$ npm install @vonage/video-client-network-test
-+$ npm install opentok-network-test-js
++$ npm install @opentok/opentok-network-test-js
  ```
  
  #### Note on Package Availability
@@ -765,7 +765,7 @@ index bbcb01a..eec63b8 100644
      "opentok-solutions-logging": "^1.1.1"
 @@ -52,6 +51,7 @@
      "@changesets/cli": "^2.29.8",
-     "@vonage/client-sdk-video": "2.29.2",
+     "@vonage/client-sdk-video": "2.31.1",
      "@vonage/server-sdk": "^3.20.0",
 +    "@opentok/client": "^2.31.1",
      "@types/expect.js": "^0.3.29",

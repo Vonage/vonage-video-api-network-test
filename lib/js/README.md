@@ -27,9 +27,9 @@ $ npm install @vonage/video-client-network-test
 
 ### GitHub Packages
 
-On top of npm registry, `@vonage/video-api-network-test` is published to [Github Packages](https://github.com/orgs/Vonage/packages/npm/package/video-api-network-test).
+On top of npm registry, `@vonage/video-client-network-test` is published to [Github Packages](https://github.com/orgs/Vonage/packages/npm/package/video-client-network-test).
 
-To install `@vonage/video-api-network-test` from GitHub Packages' NPM registry, you need to configure npm to authenticate with GitHub:
+To install `@vonage/video-client-network-test` from GitHub Packages' NPM registry, you need to configure npm to authenticate with GitHub:
 
 **1. Create a GitHub Personal Access Token (PAT)**
 
