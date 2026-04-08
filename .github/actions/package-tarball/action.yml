@@ -17,4 +17,4 @@ runs:
       with:
         name: ${{ inputs.target }}-package-tarball
         path: lib/js/*.tgz
-        retention-days: 7
+        retention-days: 30

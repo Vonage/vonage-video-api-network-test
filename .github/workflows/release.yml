@@ -1,171 +1,62 @@
 name: Publish Package
 
+permissions: read-all
+
 on:
   workflow_dispatch:
     inputs:
-      target_vonage:
-        description: 'Publish Vonage'
+      target:
+        description: 'Target package'
         required: true
-        type: boolean
-        default: true
-      target_opentok:
-        description: 'Publish OpenTok'
+        type: choice
+        default: 'vonage'
+        options:
+          - 'vonage'
+          - 'opentok'
+      registry:
+        description: 'NPM Registry to publish to.'
         required: true
-        type: boolean
-        default: true
-      registry_npm:
-        description: 'Publish to npmjs.com'
-        required: true
-        type: boolean
-        default: true
-      registry_github:
-        description: 'Publish to github.com'
-        required: true
-        type: boolean
-        default: true
+        type: choice
+        default: 'npmjs.com'
+        options:
+          - 'github.com'
+          - 'npmjs.com'
       dry_run:
         description: 'Dry run mode (test without publishing)'
         required: true
         type: boolean
         default: true
+      tag:
+        description: 'NPM distribution tag (e.g., alpha, beta — leave empty to publish as latest)'
+        required: false
+        type: choice
+        default: ''
+        options:
+          - ''
+          - 'alpha'
+          - 'beta'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  prepare-matrix:
-    runs-on: ubuntu-latest
-    outputs:
-      targets: ${{ steps.set-matrix.outputs.targets }}
-      registries: ${{ steps.set-matrix.outputs.registries }}
-    steps:
-      - id: set-matrix
-        run: |
-          TARGETS=()
-          if [ "${{ inputs.target_vonage }}" == "true" ]; then TARGETS+=('"vonage"'); fi
-          if [ "${{ inputs.target_opentok }}" == "true" ]; then TARGETS+=('"opentok"'); fi
-
-          REGISTRIES=()
-          if [ "${{ inputs.registry_npm }}" == "true" ]; then REGISTRIES+=('"npmjs.com"'); fi
-          if [ "${{ inputs.registry_github }}" == "true" ]; then REGISTRIES+=('"github.com"'); fi
-
-          echo "targets=[$(IFS=,; echo "${TARGETS[*]}")]" >> $GITHUB_OUTPUT
-          echo "registries=[$(IFS=,; echo "${REGISTRIES[*]}")]" >> $GITHUB_OUTPUT
-
   publish:
-    needs: prepare-matrix
     runs-on: ubuntu-latest
-    if: ${{ needs.prepare-matrix.outputs.targets != '[]' && needs.prepare-matrix.outputs.registries != '[]' }}
-    strategy:
-      fail-fast: false
-      matrix:
-        target: ${{ fromJson(needs.prepare-matrix.outputs.targets) }}
-        registry: ${{ fromJson(needs.prepare-matrix.outputs.registries) }}
-
-    name: Publish ${{ matrix.target }} to ${{ matrix.registry }}
+    name: Publish ${{ inputs.target }} to ${{ inputs.registry }}
     permissions:
       contents: write
       packages: write
-      id-token: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download Build Artifact
-        uses: dawidd6/action-download-artifact@v6
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: ci.yml
-          branch: main
-          name: ${{ matrix.target }}-package-tarball
-          path: lib/js
-
-      - name: Setup Environment
-        uses: ./.github/actions/setup-environment
-        with:
-          target: ${{ matrix.target }}
-
-      - name: Extract Tarball
-        working-directory: lib/js
-        shell: bash
-        run: |
-          # Extract the tarball and strip the default 'package/' wrapper directory
-          tar -xzf *.tgz --strip-components=1
-
-          # Delete the tarball so it does not interfere with npm commands
-          rm *.tgz
-
-      - name: Determine NPM tag
-        id: npm-tag
-        run: |
-          VERSION="${{ github.ref_name }}"
-          if [[ $VERSION == *"-alpha"* ]]; then
-            echo "tag=alpha" >> $GITHUB_OUTPUT
-          elif [[ $VERSION == *"-beta"* ]]; then
-            echo "tag=beta" >> $GITHUB_OUTPUT
-          else
-            echo "tag=" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Build .npmrc file
-        working-directory: lib/js
-        run: |
-          case "${{ matrix.target }}" in
-            "opentok")
-              export NPM_AUTH_TOKEN="${{ secrets.NPM_TOKEN_OPENTOK }}"
-              export GH_AUTH_TOKEN="${{ secrets.GITHUB_TOKEN }}"
-              ;;
-            "vonage")
-              export NPM_AUTH_TOKEN="${{ secrets.NPM_TOKEN_VONAGE }}"
-              export GH_AUTH_TOKEN="${{ secrets.GITHUB_TOKEN }}"
-              ;;
-          esac
-
-          case "${{ matrix.registry }}" in
-            "npmjs.com")
-              export NPMRC="//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}"
-              ;;
-            "github.com")
-              export NPMRC="always-auth=true\nregistry=https://npm.pkg.github.com/\n//npm.pkg.github.com/:_authToken=${GH_AUTH_TOKEN}"
-              ;;
-          esac
-
-          printf "${NPMRC}" > .npmrc
-
-      - name: Check if version already published
-        working-directory: lib/js
-        run: |
-          PACKAGE_NAME=$(node -p "require('./package.json').name")
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
-
-          PUBLISHED_VERSION=$(npm view $PACKAGE_NAME@$PACKAGE_VERSION version 2>/dev/null || echo "")
-
-          if [ "$PUBLISHED_VERSION" == "$PACKAGE_VERSION" ]; then
-            echo "❌ Error: Version $PACKAGE_VERSION is already published on ${{ matrix.registry }}!"
-            exit 1
-          fi
-
       - name: Publish Package
-        working-directory: lib/js
-        run: |
-          TAG="${{ steps.npm-tag.outputs.tag }}"
-          PUBLISH_CMD="npm publish"
-
-          if [ "${{ inputs.dry_run }}" == "true" ]; then
-            PUBLISH_CMD="$PUBLISH_CMD --dry-run"
-          fi
-
-          if [ -n "$TAG" ]; then
-            PUBLISH_CMD="$PUBLISH_CMD --tag $TAG"
-          fi
-
-          eval $PUBLISH_CMD
-
-      - name: Summary
-        if: always()
-        run: |
-          echo "## Publish Summary: ${{ matrix.target }} 🚀" >> $GITHUB_STEP_SUMMARY
-          echo "- **Registry**: ${{ matrix.registry }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Version**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Dry Run**: ${{ inputs.dry_run }}" >> $GITHUB_STEP_SUMMARY
+        uses: ./.github/actions/publish-package
+        with:
+          target: ${{ inputs.target }}
+          registry: ${{ inputs.registry }}
+          dry_run: ${{ inputs.dry_run }}
+          tag: ${{ inputs.tag }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          npm_token: ${{ inputs.target == 'vonage' && secrets.NPM_TOKEN_VONAGE || secrets.NPM_TOKEN_OPENTOK }}

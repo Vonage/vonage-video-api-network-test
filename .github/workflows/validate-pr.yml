@@ -1,5 +1,7 @@
 name: Validate PR
 
+permissions: read-all
+
 on:
   pull_request:
     branches:

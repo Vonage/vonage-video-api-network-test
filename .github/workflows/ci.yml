@@ -9,10 +9,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
-permissions:
-  contents: write
-  pull-requests: write
-  id-token: write
+permissions: read-all
 
 jobs:
   test:
@@ -42,6 +39,8 @@ jobs:
   package:
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -53,9 +52,9 @@ jobs:
         with:
           target: 'vonage'
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          bump_version: 'true'
 
       - name: Build and Package OpenTok
         uses: ./.github/actions/build-and-package-library
         with:
           target: 'opentok'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
