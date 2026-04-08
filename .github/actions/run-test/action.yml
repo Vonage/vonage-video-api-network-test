@@ -1,0 +1,38 @@
+name: 'Test'
+description: 'Sets up private keys and runs tests'
+inputs:
+  target:
+    description: 'Target package'
+    required: true
+  vonage_private_key:
+    description: 'Private key for Vonage'
+    required: false
+  test_application_id:
+    description: 'Test application ID'
+    required: false
+  test_api_key:
+    description: 'Test API key'
+    required: false
+  test_api_secret:
+    description: 'Test API secret'
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - name: Create private key file for Vonage testing
+      if: inputs.target == 'vonage'
+      shell: bash
+      working-directory: lib/js
+      run: |
+        cat << 'EOF' > private.key
+        ${{ inputs.vonage_private_key }}
+        EOF
+
+    - name: Testing
+      shell: bash
+      working-directory: lib/js
+      run: npm run test
+      env:
+        TEST_APPLICATION_ID: ${{ inputs.test_application_id }}
+        TEST_API_KEY: ${{ inputs.test_api_key }}
+        TEST_API_SECRET: ${{ inputs.test_api_secret }}

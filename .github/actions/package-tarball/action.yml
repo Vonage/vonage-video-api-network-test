@@ -1,0 +1,20 @@
+name: 'Package'
+description: 'Packs the project and uploads the tarball artifact'
+inputs:
+  target:
+    description: 'Target package'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Pack
+      shell: bash
+      working-directory: lib/js
+      run: npm pack
+
+    - name: Upload Tarball
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.target }}-package-tarball
+        path: lib/js/*.tgz
+        retention-days: 7

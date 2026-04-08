@@ -590,6 +590,16 @@ $ npm install
 $ npm run build
 ```
 
+### Building the OpenTok module
+
+To build the OpenTok module, you need to apply the OpenTok patch and install the dependencies separately:
+
+```bash
+$ git apply ./opentok.patch
+$ npm install
+$ npm run build
+```
+
 ## Sample app
 
 See the /samples/js subdirectory (and the /samples/js/README.md file) for a sample app.

@@ -1,0 +1,54 @@
+name: 'Build and package library'
+description: 'Sets up environment, optionally versions, builds, and packages a target'
+inputs:
+  target:
+    description: 'Target package (vonage or opentok)'
+    required: true
+  bump_version:
+    description: 'Whether to run changeset version and commit'
+    required: false
+    default: 'false'
+  github_token:
+    description: 'GitHub token for versioning (required if bump_version is true)'
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    # Safegaurd: Clear out any patches or unstaged changes from previous steps
+    - name: Restore Working Tree
+      shell: bash
+      run: git restore .
+
+    - name: Setup Environment
+      uses: ./.github/actions/setup-environment
+      with:
+        target: ${{ inputs.target }}
+
+    - name: Version and Commit
+      if: inputs.bump_version == 'true'
+      working-directory: lib/js
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      run: |
+        npx changeset version
+        npm install --package-lock-only
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add -A
+        git commit -m "chore: version bump [skip ci]" || echo "No changes to commit"
+
+    - name: Build package
+      shell: bash
+      working-directory: lib/js
+      run: npm run build
+
+    - name: Package and Upload
+      uses: ./.github/actions/package-tarball
+      with:
+        target: ${{ inputs.target }}
+
+    - name: Push Version Bump
+      working-directory: lib/js
+      run: git push origin main --follow-tags || echo "No changes to push"
