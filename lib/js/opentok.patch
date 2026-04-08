@@ -1,8 +1,8 @@
 diff --git a/lib/js/README.md b/lib/js/README.md
-index eb1871d..c14da57 100644
+index 9636181..f9a362d 100644
 --- a/lib/js/README.md
 +++ b/lib/js/README.md
-@@ -1,19 +1,24 @@
+@@ -1,31 +1,36 @@
 -# Vonage Video API Network Test
  
 -[![license](https://img.shields.io/github/license/vonage/vonage-video-js-api-network-test.svg)](https://github.com/Vonage/vonage-video-js-api-network-test/blob/develop/CONTRIBUTING.md)
@@ -31,27 +31,24 @@ index eb1871d..c14da57 100644
 +For a sample that uses this module, see the [OpenTok Pre-call Test
 +tool](https://tokbox.com/developer/tools/precall/).
  
- ## Instalation
+ ## Example Usage in Node/Browserify/Webpack
  
-@@ -51,7 +56,7 @@ Replace `YOUR_GITHUB_TOKEN` with your GitHub personal access token.
- Once configured, you can use standard `npm install` command to install the package.
+ First, install the package:
  
  ```
 -$ npm install @vonage/video-client-network-test
 +$ npm install opentok-network-test-js
  ```
  
- #### Note on Package Availability
-@@ -64,7 +69,7 @@ For more information about working with GitHub Packages' NPM registry, see the [
- 
- After successful instalation, you have to load the Vonage Video API Network Test in your project. The module exports two objects:
+-Now load the Vonage Video API Network Test in your project. The module exports two objects:
++Now load the OpenTok Network Test in your project. The module exports two objects:
  
 -* NetworkTest -- The class containing methods for testing your Vonage Video API connectivity and quality.
 +* NetworkTest -- The class containing methods for testing your OpenTok connectivity and quality.
    This is the default export.
  
  * ErrorNames -- An object enumerating error name values
-@@ -72,47 +77,47 @@ After successful instalation, you have to load the Vonage Video API Network Test
+@@ -33,47 +38,47 @@ Now load the Vonage Video API Network Test in your project. The module exports t
  Using CommonJS:
  
  ```javascript
@@ -117,7 +114,7 @@ index eb1871d..c14da57 100644
      let publisherSettings = {};
      if (results.video.reason) {
        console.log('Video not supported:', results.video.reason);
-@@ -132,10 +137,10 @@ videoNetworkTest.testConnectivity().then((results) => {
+@@ -93,10 +98,10 @@ videoNetworkTest.testConnectivity().then((results) => {
        // Publish to the "real" session, using the publisherSettings object.
      }
    }).catch((error) => {
@@ -130,7 +127,7 @@ index eb1871d..c14da57 100644
  });
  ```
  
-@@ -144,20 +149,20 @@ with `audioOnly` set to `true` into the constructor:
+@@ -105,20 +110,20 @@ with `audioOnly` set to `true` into the constructor:
  
  ```javascript
  const sessionInfo = {
@@ -157,7 +154,7 @@ index eb1871d..c14da57 100644
  });
  ```
  
-@@ -194,30 +199,33 @@ The OTNetworkTest NPM module includes three public methods:
+@@ -155,30 +160,33 @@ The OTNetworkTest NPM module includes three public methods:
  
  The `OTNetworkTest()` constructor includes the following parameters:
  
@@ -201,7 +198,7 @@ index eb1871d..c14da57 100644
  
    * `token` -- A token corresponding to the test session. The role of the token must be
      either `publisher` or `moderator`. The `sessionInfo` parameter is required.
-@@ -249,8 +257,8 @@ The `OTNetworkTest()` constructor includes the following parameters:
+@@ -210,8 +218,8 @@ The `OTNetworkTest()` constructor includes the following parameters:
      to be used by the test publisher. You can obtain a list of available devices,
      including audio input devices, by calling the `OT.getDevices()` method.
  
@@ -212,7 +209,7 @@ index eb1871d..c14da57 100644
      to grant permission to the correct device. Note that changing the audio device may not
      influence the quality test score.
  
-@@ -258,27 +266,29 @@ The `OTNetworkTest()` constructor includes the following parameters:
+@@ -219,27 +227,29 @@ The `OTNetworkTest()` constructor includes the following parameters:
      to be used by the test publisher. You can obtain a list of available devices,
      including audio input devices, by calling the `OT.getDevices()` method.
  
@@ -255,7 +252,7 @@ index eb1871d..c14da57 100644
  
    * `fullHd` (Boolean) -- (Optional) Allows publishing with a resolution of 1920x1080 (1080p).
      If the camera does not support 1920x1080 resolution, the `OTNetworkTest.testConnectivity()` method
-@@ -291,7 +301,7 @@ the `ErrorNames` object (see [ErrorNames](#errornames)). For example:
+@@ -252,7 +262,7 @@ the `ErrorNames` object (see [ErrorNames](#errornames)). For example:
  
  ```javascript
  try {
@@ -264,7 +261,7 @@ index eb1871d..c14da57 100644
  } catch (error) {
    switch (error.name) {
      case ErrorNames.MISSING_OPENTOK_INSTANCE:
-@@ -300,7 +310,7 @@ try {
+@@ -261,7 +271,7 @@ try {
      case ErrorNames.INCOMPLETE_SESSON_CREDENTIALS:
      case ErrorNames.MISSING_SESSON_CREDENTIALS:
      case ErrorNames.INVALID_SESSON_CREDENTIALS:
@@ -273,7 +270,7 @@ index eb1871d..c14da57 100644
        break;
      default:
        console.error('Unknown error .');
-@@ -310,11 +320,11 @@ try {
+@@ -271,11 +281,11 @@ try {
  
  ### OTNetworkTest.testConnectivity()
  
@@ -287,7 +284,7 @@ index eb1871d..c14da57 100644
    any connectivity test failed.
  
  * `failedTests` (Array) -- If connectivity failed, this array contains an object for each
-@@ -322,23 +332,24 @@ with a `results` object that has the following two properties:
+@@ -283,23 +293,24 @@ with a `results` object that has the following two properties:
  
    * `type` -- A sting defining the failure type. It will be set to one of the following values:
  
@@ -324,7 +321,7 @@ index eb1871d..c14da57 100644
  
    * `error` -- An object defining the reason for the type of failure. This object includes
    a `message` property and a `name` property. The message property describes the error.
-@@ -349,7 +360,7 @@ with a `results` object that has the following two properties:
+@@ -310,7 +321,7 @@ with a `results` object that has the following two properties:
      For example:
  
      ```javascript
@@ -333,7 +330,7 @@ index eb1871d..c14da57 100644
        results.failedTests && results.failedTests.forEach(result) => {
          switch (failedTest.error.name) {
            case ErrorNames.FAILED_TO_OBTAIN_MEDIA_DEVICES:
-@@ -371,7 +382,8 @@ with a `results` object that has the following two properties:
+@@ -332,7 +343,8 @@ with a `results` object that has the following two properties:
  
  ### OTNetworkTest.testQuality(updateCallback)
  
@@ -343,7 +340,7 @@ index eb1871d..c14da57 100644
  
  * Whether audio and video are supported and a reason why they aren't supported (if they aren't).
  
-@@ -422,7 +434,7 @@ audio-video test), the property is set to `'audio-only'`.
+@@ -383,7 +395,7 @@ audio-video test), the property is set to `'audio-only'`.
  
  Pass in a `null` value if you do not want to register an `updateCallback` function.
  
@@ -352,7 +349,7 @@ index eb1871d..c14da57 100644
  
  #### Promise returned
  
-@@ -497,7 +509,7 @@ will be set to one of the values defined as properties of the `ErrorNames` objec
+@@ -458,7 +470,7 @@ will be set to one of the values defined as properties of the `ErrorNames` objec
  (see [Error.name values](#errorname-values)).
  
  ```javascript
@@ -361,7 +358,7 @@ index eb1871d..c14da57 100644
    // process intermediate results
  }).then((results) => {
    // Display UI based on results
-@@ -538,9 +550,9 @@ an error object (against the values defined in `ErrorNames`) to determine the ty
+@@ -499,9 +511,9 @@ an error object (against the values defined in `ErrorNames`) to determine the ty
  
  | Error.name property set to this property of ErrorNames | Description |
  | ------------------------------------------------------------------ | ----------- |
@@ -374,7 +371,7 @@ index eb1871d..c14da57 100644
  
  #### testConnectivity() errors
  
-@@ -551,22 +563,22 @@ the following:
+@@ -512,22 +524,22 @@ the following:
  
  | Error.name property set to this property of ErrorNames | Description |
  | -------------------------------------------------------------- | ----------- |
@@ -409,7 +406,7 @@ index eb1871d..c14da57 100644
  
  #### testQuality() errors
  
-@@ -576,14 +588,14 @@ method has a `name` property set to one of the following:
+@@ -537,14 +549,14 @@ method has a `name` property set to one of the following:
  | Error.name property set to this property of ErrorNames | Description |
  | -------------------------------------------------------------- | ----------- |
  |   `INVALID_ON_UPDATE_CALLBACK` | The `updateCallback` parameter is invalid. It must be a function that accepts a single parameter. |
@@ -432,7 +429,7 @@ index eb1871d..c14da57 100644
  |   `PUBLISH_TO_SESSION_ERROR` | The test encountered an unknown error while attempting to publish to a session. | 
  |   `INIT_PUBLISHER_ERROR` | The test failed to initialize a publisher. | 
  |   `PUBLISH_TO_SESSION_NOT_CONNECTED` | The test failed to publish to the test session because the client was not connected to the session. | 
-@@ -616,8 +628,8 @@ limit the range of scores from 1.0 to 4.5.
+@@ -577,8 +589,8 @@ limit the range of scores from 1.0 to 4.5.
  | 1.7 - 2.39 | Poor      |
  | 1.0 - 1.69 | Bad       |
  
@@ -443,20 +440,259 @@ index eb1871d..c14da57 100644
  for audio, which is factored into the MOS calculation.
  
  ## Building the module
-@@ -646,4 +658,4 @@ See the /samples/js subdirectory (and the /samples/js/README.md file) for a samp
+@@ -607,4 +619,4 @@ See the /samples/js subdirectory (and the /samples/js/README.md file) for a samp
  
  [itu-g107]: https://www.itu.int/rec/dologin_pub.asp?lang=s&id=T-REC-G.107-201402-S!!PDF-E
  
 -[releases-page]: https://github.com/vonage/vonage-video-js-api-network-test/releases
 +[releases-page]: https://github.com/opentok/opentok-network-test-js/releases
+diff --git a/lib/js/package-lock.json b/lib/js/package-lock.json
+index 2bbd977..f07a3a5 100644
+--- a/lib/js/package-lock.json
++++ b/lib/js/package-lock.json
+@@ -1,11 +1,11 @@
+ {
+-  "name": "@vonage/video-client-network-test",
++  "name": "@opentok/network-test-js",
+   "version": "5.0.0",
+   "lockfileVersion": 3,
+   "requires": true,
+   "packages": {
+     "": {
+-      "name": "@vonage/video-client-network-test",
++      "name": "@opentok/network-test-js",
+       "version": "5.0.0",
+       "license": "Apache-2.0",
+       "dependencies": {
+@@ -15,6 +15,7 @@
+       "devDependencies": {
+         "@changesets/changelog-github": "^0.5.2",
+         "@changesets/cli": "^2.29.8",
++        "@opentok/client": "^2.31.1",
+         "@types/expect.js": "^0.3.29",
+         "@types/jasmine": "^5.0.0",
+         "@types/jasmine-matchers": "^0.2.30",
+@@ -41,12 +42,12 @@
+         "karma-sauce-launcher": "^4.3.6",
+         "karma-sourcemap-loader": "^0.4.0",
+         "karma-webpack": "^5.0.0",
++        "opentok": "^2.16.0",
+         "terser-webpack-plugin": "^5.3.9",
+         "ts-loader": "^9.5.1",
+-        "typescript": "^5.9.3",
++        "typescript": "^5.4.5",
+         "webpack": "^5.88.1",
+         "webpack-cli": "^6.0.0",
+-        "webpack-merge": "6.0.1",
+         "webpack-node-externals": "^3.0.0"
+       }
+     },
+@@ -808,6 +809,13 @@
+         "node": ">= 8"
+       }
+     },
++    "node_modules/@opentok/client": {
++      "version": "2.33.1",
++      "resolved": "https://registry.npmjs.org/@opentok/client/-/client-2.33.1.tgz",
++      "integrity": "sha512-XhFLTYE+JO12q9r2Q8rdRufHyWvgCIfEDz9dzbe5ICuUcAmL+h4LUA9q/0s1eGmgzm3DVoBde/FNQYxYOYIeEg==",
++      "dev": true,
++      "license": "https://www.vonage.com/legal/communications-apis/terms-of-use/"
++    },
+     "node_modules/@sindresorhus/is": {
+       "version": "4.6.0",
+       "resolved": "https://registry.npmjs.org/@sindresorhus/is/-/is-4.6.0.tgz",
+@@ -6554,16 +6562,6 @@
+         "node": "*"
+       }
+     },
+-    "node_modules/karma-webpack/node_modules/webpack-merge": {
+-      "version": "4.2.2",
+-      "resolved": "https://registry.npmjs.org/webpack-merge/-/webpack-merge-4.2.2.tgz",
+-      "integrity": "sha512-TUE1UGoTX2Cd42j3krGYqObZbOD+xF7u28WB7tfUordytSjbWTIjK/8V0amkBfTYN4/pB/GIDlJZZ657BGG19g==",
+-      "dev": true,
+-      "license": "MIT",
+-      "dependencies": {
+-        "lodash": "^4.17.15"
+-      }
+-    },
+     "node_modules/karma/node_modules/brace-expansion": {
+       "version": "1.1.13",
+       "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.13.tgz",
+@@ -7298,6 +7296,16 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/nonce": {
++      "version": "1.0.4",
++      "resolved": "https://registry.npmjs.org/nonce/-/nonce-1.0.4.tgz",
++      "integrity": "sha512-FVPu+tMZPP91HDwiq1DNhn9WIhg4/uo6mXR0xXAn0IMOxDmjJOkgbH0tm7qtowvAFZofWZRX+9KWZpNURrgtSA==",
++      "dev": true,
++      "license": "Free as in Hugs",
++      "engines": {
++        "node": ">=0.6"
++      }
++    },
+     "node_modules/normalize-path": {
+       "version": "3.0.0",
+       "resolved": "https://registry.npmjs.org/normalize-path/-/normalize-path-3.0.0.tgz",
+@@ -7424,6 +7432,25 @@
+         "wrappy": "1"
+       }
+     },
++    "node_modules/opentok": {
++      "version": "2.23.1",
++      "resolved": "https://registry.npmjs.org/opentok/-/opentok-2.23.1.tgz",
++      "integrity": "sha512-aeDw0SmbjNtFYseyA5JgDsIcTsJmGe4JLIapbtNMkYyQANRfBYlfbF7V9ao3PO7w1St7Vuz3j51HmYyd+ar/Rw==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@vonage/jwt": "1.11.0",
++        "debug": "4.4.0",
++        "jsonwebtoken": "9.0.3",
++        "lodash": "4.17.21",
++        "node-fetch": "2.7.0",
++        "opentok-token": "1.1.1",
++        "uuid": "11.0.5"
++      },
++      "engines": {
++        "node": ">=4"
++      }
++    },
+     "node_modules/opentok-solutions-logging": {
+       "version": "1.1.5",
+       "resolved": "https://registry.npmjs.org/opentok-solutions-logging/-/opentok-solutions-logging-1.1.5.tgz",
+@@ -7433,6 +7460,83 @@
+         "axios": "^1.6.3"
+       }
+     },
++    "node_modules/opentok-token": {
++      "version": "1.1.1",
++      "resolved": "https://registry.npmjs.org/opentok-token/-/opentok-token-1.1.1.tgz",
++      "integrity": "sha512-/uMsmUMiGWT95zemuE9H3OWSb+1NcDmZSDzjum1oKk2KLLGkjqlPsEo8NWarH2q1rfd+cBWP8Pu+dwJS0uNHcg==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "lodash": "^4.17.11",
++        "nonce": "^1.0.3",
++        "unix-timestamp": "^0.1.2"
++      }
++    },
++    "node_modules/opentok/node_modules/@vonage/jwt": {
++      "version": "1.11.0",
++      "resolved": "https://registry.npmjs.org/@vonage/jwt/-/jwt-1.11.0.tgz",
++      "integrity": "sha512-P9KM6QYBBkW8ruC+HeOxFGVQh123KCqgVuGyWjp+VjD64WikYAfT73N5isP4rQob0umpMDjGKNOIAYsVAaRdnA==",
++      "dev": true,
++      "license": "Apache-2.0",
++      "dependencies": {
++        "debug": "^4.3.4",
++        "jsonwebtoken": "^9.0.2",
++        "uuid": "^9.0.1"
++      }
++    },
++    "node_modules/opentok/node_modules/@vonage/jwt/node_modules/uuid": {
++      "version": "9.0.1",
++      "resolved": "https://registry.npmjs.org/uuid/-/uuid-9.0.1.tgz",
++      "integrity": "sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==",
++      "dev": true,
++      "funding": [
++        "https://github.com/sponsors/broofa",
++        "https://github.com/sponsors/ctavan"
++      ],
++      "license": "MIT",
++      "bin": {
++        "uuid": "dist/bin/uuid"
++      }
++    },
++    "node_modules/opentok/node_modules/debug": {
++      "version": "4.4.0",
++      "resolved": "https://registry.npmjs.org/debug/-/debug-4.4.0.tgz",
++      "integrity": "sha512-6WTZ/IxCY/T6BALoZHaE4ctp9xm+Z5kY/pzYaCHRFeyVhojxlrm+46y68HA6hr0TcwEssoxNiDEUJQjfPZ/RYA==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "ms": "^2.1.3"
++      },
++      "engines": {
++        "node": ">=6.0"
++      },
++      "peerDependenciesMeta": {
++        "supports-color": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/opentok/node_modules/lodash": {
++      "version": "4.17.21",
++      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz",
++      "integrity": "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==",
++      "dev": true,
++      "license": "MIT"
++    },
++    "node_modules/opentok/node_modules/uuid": {
++      "version": "11.0.5",
++      "resolved": "https://registry.npmjs.org/uuid/-/uuid-11.0.5.tgz",
++      "integrity": "sha512-508e6IcKLrhxKdBbcA2b4KQZlLVp2+J5UwQ6F7Drckkc5N9ZJwFa4TgWtsww9UG8fGHbm6gbV19TdM5pQ4GaIA==",
++      "dev": true,
++      "funding": [
++        "https://github.com/sponsors/broofa",
++        "https://github.com/sponsors/ctavan"
++      ],
++      "license": "MIT",
++      "bin": {
++        "uuid": "dist/esm/bin/uuid"
++      }
++    },
+     "node_modules/optionator": {
+       "version": "0.9.4",
+       "resolved": "https://registry.npmjs.org/optionator/-/optionator-0.9.4.tgz",
+@@ -9794,6 +9898,13 @@
+         "node": ">= 4.0.0"
+       }
+     },
++    "node_modules/unix-timestamp": {
++      "version": "0.1.2",
++      "resolved": "https://registry.npmjs.org/unix-timestamp/-/unix-timestamp-0.1.2.tgz",
++      "integrity": "sha512-nSpkcoMTJWN8sup4/pAt04Rj8Psf9hV6ymtn6XWWBtGBCyKhxvkhi/MOfLn8GLfITIaRt4XFnrg9Mb3SSkT+sg==",
++      "dev": true,
++      "license": "BSD-3-Clause"
++    },
+     "node_modules/unpipe": {
+       "version": "1.0.0",
+       "resolved": "https://registry.npmjs.org/unpipe/-/unpipe-1.0.0.tgz",
+@@ -10203,7 +10314,7 @@
+         "node": ">=18"
+       }
+     },
+-    "node_modules/webpack-merge": {
++    "node_modules/webpack-cli/node_modules/webpack-merge": {
+       "version": "6.0.1",
+       "resolved": "https://registry.npmjs.org/webpack-merge/-/webpack-merge-6.0.1.tgz",
+       "integrity": "sha512-hXXvrjtx2PLYx4qruKl+kyRSLc52V+cCvMxRjmKwoA+CBbbF5GfIBtR6kCvl0fYGqTUPKB+1ktVmTHqMOzgCBg==",
+@@ -10218,6 +10329,16 @@
+         "node": ">=18.0.0"
+       }
+     },
++    "node_modules/webpack-merge": {
++      "version": "4.2.2",
++      "resolved": "https://registry.npmjs.org/webpack-merge/-/webpack-merge-4.2.2.tgz",
++      "integrity": "sha512-TUE1UGoTX2Cd42j3krGYqObZbOD+xF7u28WB7tfUordytSjbWTIjK/8V0amkBfTYN4/pB/GIDlJZZ657BGG19g==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "lodash": "^4.17.15"
++      }
++    },
+     "node_modules/webpack-node-externals": {
+       "version": "3.0.0",
+       "resolved": "https://registry.npmjs.org/webpack-node-externals/-/webpack-node-externals-3.0.0.tgz",
 diff --git a/lib/js/package.json b/lib/js/package.json
-index 62daf67..12696c3 100644
+index bbcb01a..eec63b8 100644
 --- a/lib/js/package.json
 +++ b/lib/js/package.json
 @@ -1,9 +1,9 @@
  {
 -  "name": "@vonage/video-client-network-test",
-+  "name": "@opentok/network-test-js",
++  "name": "@opentok/opentok-network-test-js",
    "version": "5.0.0",
 -  "description": "Precall network test for applications using the Vonage Video API platform.",
 -  "main": "dist/vonage/index.js",
@@ -503,7 +739,7 @@ index 62daf67..12696c3 100644
      "opentok-solutions-logging": "^1.1.1"
 @@ -52,6 +51,7 @@
      "@changesets/cli": "^2.29.8",
-     "@vonage/client-sdk-video": "2.32.1",
+     "@vonage/client-sdk-video": "2.29.2",
      "@vonage/server-sdk": "^3.20.0",
 +    "@opentok/client": "^2.31.1",
      "@types/expect.js": "^0.3.29",
