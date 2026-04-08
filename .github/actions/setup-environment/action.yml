@@ -1,0 +1,38 @@
+name: 'Setup Environment'
+description: 'Sets up Node, caches, patches, and installs dependencies'
+inputs:
+  target:
+    description: 'Target package (vonage or opentok)'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 24.x
+
+    - name: Cache node modules
+      id: cache-npm
+      uses: actions/cache@v4
+      with:
+        path: lib/js/node_modules
+        key: ${{ runner.os }}-node-${{ inputs.target }}-${{ hashFiles('lib/js/package-lock.json') }}
+
+    - name: Apply OpenTok patch
+      if: inputs.target == 'opentok'
+      shell: bash
+      working-directory: .
+      run: git apply ./lib/js/opentok.patch
+
+    - name: Install dependencies (Vonage)
+      if: inputs.target == 'vonage' && steps.cache-npm.outputs.cache-hit != 'true'
+      shell: bash
+      working-directory: lib/js
+      run: npm ci
+
+    - name: Install dependencies (OpenTok)
+      if: inputs.target == 'opentok' && steps.cache-npm.outputs.cache-hit != 'true'
+      shell: bash
+      working-directory: lib/js
+      run: npm install
