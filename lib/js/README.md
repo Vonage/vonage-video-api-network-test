@@ -15,15 +15,54 @@ to use [Vonage Video API](https://www.vonage.com/communications-apis/video). Run
 
 For a sample that uses this module, see the [Vonage Video API Pre-call Test tool](https://tools.vonage.com/video/precall/).
 
-## Example Usage in Node/Browserify/Webpack
+## Instalation
 
-First, install the package:
+### NPM
+
+You can install the package from npm registry using this command:
 
 ```
 $ npm install @vonage/video-client-network-test
 ```
 
-Now load the Vonage Video API Network Test in your project. The module exports two objects:
+### GitHub Packages
+
+On top of npm registry, `@vonage/video-client-network-test` is published to [Github Packages](https://github.com/orgs/Vonage/packages/npm/package/video-client-network-test).
+
+To install `@vonage/video-client-network-test` from GitHub Packages' NPM registry, you need to configure npm to authenticate with GitHub:
+
+**1. Create a GitHub Personal Access Token (PAT)**
+
+Generate a personal access token with `read:packages` scope from your GitHub account settings.
+
+**2. Configure your `.npmrc` file**
+
+Add the following configuration to your project's `.npmrc` file or your user-level `~/.npmrc` file:
+
+```
+//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
+@opentok:registry= https://npm.pkg.github.com
+```
+
+Replace `YOUR_GITHUB_TOKEN` with your GitHub personal access token.
+
+**3. Install the package**
+
+Once configured, you can use standard `npm install` command to install the package.
+
+```
+$ npm install @vonage/video-client-network-test
+```
+
+#### Note on Package Availability
+
+Both the traditional npm registry and GitHub Packages registry are kept in sync. You can choose either distribution method based on your organization's package management preferences. The traditional npm installation method (via `npm install @vonage/video-client-network-test` from the default registry) remains fully supported and requires no additional configuration.
+
+For more information about working with GitHub Packages' NPM registry, see the [GitHub Packages documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry).
+
+## Configuration
+
+After successful instalation, you have to load the Vonage Video API Network Test in your project. The module exports two objects:
 
 * NetworkTest -- The class containing methods for testing your Vonage Video API connectivity and quality.
   This is the default export.

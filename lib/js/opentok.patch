@@ -1,20 +1,19 @@
 diff --git a/lib/js/README.md b/lib/js/README.md
-index 9636181..f9a362d 100644
 --- a/lib/js/README.md
 +++ b/lib/js/README.md
-@@ -1,31 +1,36 @@
+@@ -1,19 +1,24 @@
 -# Vonage Video API Network Test
  
 -[![license](https://img.shields.io/github/license/vonage/vonage-video-js-api-network-test.svg)](https://github.com/Vonage/vonage-video-js-api-network-test/blob/develop/CONTRIBUTING.md)
 -[![npm](https://img.shields.io/npm/v/opentok-network-test-js.svg)](https://www.npmjs.com/package/@vonage/video-client-network-test)
 +![logo](https://raw.githubusercontent.com/opentok/opentok-network-test-js/master/media/tokbox-logo.png)
-+
+ 
 +# OpenTok Network Test
 +
 +[![Build Status](https://goo.gl/17JDLY)](https://travis-ci.com/opentok/opentok-network-test-js)
 +[![license](https://img.shields.io/github/license/opentok/opentok-network-test-js.svg)](https://github.com/opentok/opentok-network-test-js/blob/master/CONTRIBUTING.md)
 +[![npm](https://img.shields.io/npm/v/opentok-network-test-js.svg)](https://www.npmjs.com/package/opentok-network-test-js)
- 
++
  This Node module lets you check network connectivity to resources and services required
 -to use [Vonage Video API](https://www.vonage.com/communications-apis/video). Run this on a web client to get the following information:
 +to use [OpenTok](https://tokbox.com). Run this on a web client to get the following information:
@@ -31,24 +30,51 @@ index 9636181..f9a362d 100644
 +For a sample that uses this module, see the [OpenTok Pre-call Test
 +tool](https://tokbox.com/developer/tools/precall/).
  
- ## Example Usage in Node/Browserify/Webpack
+ ## Instalation
  
- First, install the package:
+@@ -22,14 +27,14 @@
+ You can install the package from npm registry using this command:
  
  ```
 -$ npm install @vonage/video-client-network-test
 +$ npm install opentok-network-test-js
  ```
  
--Now load the Vonage Video API Network Test in your project. The module exports two objects:
-+Now load the OpenTok Network Test in your project. The module exports two objects:
+ ### GitHub Packages
+ 
+-On top of npm registry, `@vonage/video-client-network-test` is published to [Github Packages](https://github.com/orgs/Vonage/packages/npm/package/video-client-network-test).
++On top of npm registry, `opentok-network-test-js` is published to [Github Packages](https://github.com/orgs/Opentok/packages/npm/opentok-network-test-js).
+ 
+-To install `@vonage/video-client-network-test` from GitHub Packages' NPM registry, you need to configure npm to authenticate with GitHub:
++To install `opentok-network-test-js` from GitHub Packages' NPM registry, you need to configure npm to authenticate with GitHub:
+ 
+ **1. Create a GitHub Personal Access Token (PAT)**
+ 
+@@ -51,12 +56,12 @@
+ Once configured, you can use standard `npm install` command to install the package.
+ 
+ ```
+-$ npm install @vonage/video-client-network-test
++$ npm install @opentok/opentok-network-test-js
+ ```
+ 
+ #### Note on Package Availability
+ 
+-Both the traditional npm registry and GitHub Packages registry are kept in sync. You can choose either distribution method based on your organization's package management preferences. The traditional npm installation method (via `npm install @vonage/video-client-network-test` from the default registry) remains fully supported and requires no additional configuration.
++Both the traditional npm registry and GitHub Packages registry are kept in sync. You can choose either distribution method based on your organization's package management preferences. The traditional npm installation method (via `npm install opentok-network-test-js` from the default registry) remains fully supported and requires no additional configuration.
+ 
+ For more information about working with GitHub Packages' NPM registry, see the [GitHub Packages documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry).
+ 
+@@ -64,7 +69,7 @@
+ 
+ After successful instalation, you have to load the Vonage Video API Network Test in your project. The module exports two objects:
  
 -* NetworkTest -- The class containing methods for testing your Vonage Video API connectivity and quality.
 +* NetworkTest -- The class containing methods for testing your OpenTok connectivity and quality.
    This is the default export.
  
  * ErrorNames -- An object enumerating error name values
-@@ -33,47 +38,47 @@ Now load the Vonage Video API Network Test in your project. The module exports t
+@@ -72,47 +77,47 @@
  Using CommonJS:
  
  ```javascript
@@ -114,7 +140,7 @@ index 9636181..f9a362d 100644
      let publisherSettings = {};
      if (results.video.reason) {
        console.log('Video not supported:', results.video.reason);
-@@ -93,10 +98,10 @@ videoNetworkTest.testConnectivity().then((results) => {
+@@ -132,10 +137,10 @@
        // Publish to the "real" session, using the publisherSettings object.
      }
    }).catch((error) => {
@@ -127,7 +153,7 @@ index 9636181..f9a362d 100644
  });
  ```
  
-@@ -105,20 +110,20 @@ with `audioOnly` set to `true` into the constructor:
+@@ -144,20 +149,20 @@
  
  ```javascript
  const sessionInfo = {
@@ -154,7 +180,7 @@ index 9636181..f9a362d 100644
  });
  ```
  
-@@ -155,30 +160,33 @@ The OTNetworkTest NPM module includes three public methods:
+@@ -194,30 +199,33 @@
  
  The `OTNetworkTest()` constructor includes the following parameters:
  
@@ -198,7 +224,7 @@ index 9636181..f9a362d 100644
  
    * `token` -- A token corresponding to the test session. The role of the token must be
      either `publisher` or `moderator`. The `sessionInfo` parameter is required.
-@@ -210,8 +218,8 @@ The `OTNetworkTest()` constructor includes the following parameters:
+@@ -249,8 +257,8 @@
      to be used by the test publisher. You can obtain a list of available devices,
      including audio input devices, by calling the `OT.getDevices()` method.
  
@@ -209,7 +235,7 @@ index 9636181..f9a362d 100644
      to grant permission to the correct device. Note that changing the audio device may not
      influence the quality test score.
  
-@@ -219,27 +227,29 @@ The `OTNetworkTest()` constructor includes the following parameters:
+@@ -258,27 +266,29 @@
      to be used by the test publisher. You can obtain a list of available devices,
      including audio input devices, by calling the `OT.getDevices()` method.
  
@@ -252,7 +278,7 @@ index 9636181..f9a362d 100644
  
    * `fullHd` (Boolean) -- (Optional) Allows publishing with a resolution of 1920x1080 (1080p).
      If the camera does not support 1920x1080 resolution, the `OTNetworkTest.testConnectivity()` method
-@@ -252,7 +262,7 @@ the `ErrorNames` object (see [ErrorNames](#errornames)). For example:
+@@ -291,7 +301,7 @@
  
  ```javascript
  try {
@@ -261,7 +287,7 @@ index 9636181..f9a362d 100644
  } catch (error) {
    switch (error.name) {
      case ErrorNames.MISSING_OPENTOK_INSTANCE:
-@@ -261,7 +271,7 @@ try {
+@@ -300,7 +310,7 @@
      case ErrorNames.INCOMPLETE_SESSON_CREDENTIALS:
      case ErrorNames.MISSING_SESSON_CREDENTIALS:
      case ErrorNames.INVALID_SESSON_CREDENTIALS:
@@ -270,7 +296,7 @@ index 9636181..f9a362d 100644
        break;
      default:
        console.error('Unknown error .');
-@@ -271,11 +281,11 @@ try {
+@@ -310,11 +320,11 @@
  
  ### OTNetworkTest.testConnectivity()
  
@@ -284,7 +310,7 @@ index 9636181..f9a362d 100644
    any connectivity test failed.
  
  * `failedTests` (Array) -- If connectivity failed, this array contains an object for each
-@@ -283,23 +293,24 @@ with a `results` object that has the following two properties:
+@@ -322,23 +332,24 @@
  
    * `type` -- A sting defining the failure type. It will be set to one of the following values:
  
@@ -321,7 +347,7 @@ index 9636181..f9a362d 100644
  
    * `error` -- An object defining the reason for the type of failure. This object includes
    a `message` property and a `name` property. The message property describes the error.
-@@ -310,7 +321,7 @@ with a `results` object that has the following two properties:
+@@ -349,7 +360,7 @@
      For example:
  
      ```javascript
@@ -330,7 +356,7 @@ index 9636181..f9a362d 100644
        results.failedTests && results.failedTests.forEach(result) => {
          switch (failedTest.error.name) {
            case ErrorNames.FAILED_TO_OBTAIN_MEDIA_DEVICES:
-@@ -332,7 +343,8 @@ with a `results` object that has the following two properties:
+@@ -371,7 +382,8 @@
  
  ### OTNetworkTest.testQuality(updateCallback)
  
@@ -340,7 +366,7 @@ index 9636181..f9a362d 100644
  
  * Whether audio and video are supported and a reason why they aren't supported (if they aren't).
  
-@@ -383,7 +395,7 @@ audio-video test), the property is set to `'audio-only'`.
+@@ -422,7 +434,7 @@
  
  Pass in a `null` value if you do not want to register an `updateCallback` function.
  
@@ -349,7 +375,7 @@ index 9636181..f9a362d 100644
  
  #### Promise returned
  
-@@ -458,7 +470,7 @@ will be set to one of the values defined as properties of the `ErrorNames` objec
+@@ -497,7 +509,7 @@
  (see [Error.name values](#errorname-values)).
  
  ```javascript
@@ -358,7 +384,7 @@ index 9636181..f9a362d 100644
    // process intermediate results
  }).then((results) => {
    // Display UI based on results
-@@ -499,9 +511,9 @@ an error object (against the values defined in `ErrorNames`) to determine the ty
+@@ -538,9 +550,9 @@
  
  | Error.name property set to this property of ErrorNames | Description |
  | ------------------------------------------------------------------ | ----------- |
@@ -371,7 +397,7 @@ index 9636181..f9a362d 100644
  
  #### testConnectivity() errors
  
-@@ -512,22 +524,22 @@ the following:
+@@ -551,22 +563,22 @@
  
  | Error.name property set to this property of ErrorNames | Description |
  | -------------------------------------------------------------- | ----------- |
@@ -406,7 +432,7 @@ index 9636181..f9a362d 100644
  
  #### testQuality() errors
  
-@@ -537,14 +549,14 @@ method has a `name` property set to one of the following:
+@@ -576,14 +588,14 @@
  | Error.name property set to this property of ErrorNames | Description |
  | -------------------------------------------------------------- | ----------- |
  |   `INVALID_ON_UPDATE_CALLBACK` | The `updateCallback` parameter is invalid. It must be a function that accepts a single parameter. |
@@ -429,7 +455,7 @@ index 9636181..f9a362d 100644
  |   `PUBLISH_TO_SESSION_ERROR` | The test encountered an unknown error while attempting to publish to a session. | 
  |   `INIT_PUBLISHER_ERROR` | The test failed to initialize a publisher. | 
  |   `PUBLISH_TO_SESSION_NOT_CONNECTED` | The test failed to publish to the test session because the client was not connected to the session. | 
-@@ -577,8 +589,8 @@ limit the range of scores from 1.0 to 4.5.
+@@ -616,8 +628,8 @@
  | 1.7 - 2.39 | Poor      |
  | 1.0 - 1.69 | Bad       |
  
@@ -440,7 +466,7 @@ index 9636181..f9a362d 100644
  for audio, which is factored into the MOS calculation.
  
  ## Building the module
-@@ -607,4 +619,4 @@ See the /samples/js subdirectory (and the /samples/js/README.md file) for a samp
+@@ -646,4 +658,4 @@
  
  [itu-g107]: https://www.itu.int/rec/dologin_pub.asp?lang=s&id=T-REC-G.107-201402-S!!PDF-E
  
@@ -739,7 +765,7 @@ index bbcb01a..eec63b8 100644
      "opentok-solutions-logging": "^1.1.1"
 @@ -52,6 +51,7 @@
      "@changesets/cli": "^2.29.8",
-     "@vonage/client-sdk-video": "2.29.2",
+     "@vonage/client-sdk-video": "2.31.1",
      "@vonage/server-sdk": "^3.20.0",
 +    "@opentok/client": "^2.31.1",
      "@types/expect.js": "^0.3.29",
