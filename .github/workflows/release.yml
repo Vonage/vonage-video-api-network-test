@@ -1,7 +1,5 @@
 name: Publish Package
 
-permissions: read-all
-
 on:
   workflow_dispatch:
     inputs:
@@ -35,6 +33,11 @@ on:
           - ''
           - 'alpha'
           - 'beta'
+      allow_replace:
+        description: 'Replace existing package version if already published'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -47,16 +50,47 @@ jobs:
     permissions:
       contents: write
       packages: write
+      actions: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Publish Package
+      - name: Publish Vonage Package
+        if: inputs.target == 'vonage'
         uses: ./.github/actions/publish-package
         with:
           target: ${{ inputs.target }}
           registry: ${{ inputs.registry }}
           dry_run: ${{ inputs.dry_run }}
           tag: ${{ inputs.tag }}
+          allow_replace: ${{ inputs.allow_replace }}
+          organization: vonage
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          npm_token: ${{ inputs.target == 'vonage' && secrets.NPM_TOKEN_VONAGE || secrets.NPM_TOKEN_OPENTOK }}
+          npm_token: ${{ secrets.NPM_TOKEN_VONAGE }}
+          github_packages_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish OpenTok Package to GitHub
+        if: inputs.target == 'opentok' && inputs.registry == 'github.com'
+        uses: ./.github/actions/publish-package
+        with:
+          target: ${{ inputs.target }}
+          registry: ${{ inputs.registry }}
+          dry_run: ${{ inputs.dry_run }}
+          tag: ${{ inputs.tag }}
+          allow_replace: ${{ inputs.allow_replace }}
+          organization: opentok
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_packages_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
+
+      - name: Publish OpenTok Package to NPM
+        if: inputs.target == 'opentok' && inputs.registry == 'npmjs.com'
+        uses: ./.github/actions/publish-package
+        with:
+          target: ${{ inputs.target }}
+          registry: ${{ inputs.registry }}
+          dry_run: ${{ inputs.dry_run }}
+          tag: ${{ inputs.tag }}
+          allow_replace: ${{ inputs.allow_replace }}
+          organization: none
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          npm_token: ${{ secrets.NPM_TOKEN_OPENTOK }}

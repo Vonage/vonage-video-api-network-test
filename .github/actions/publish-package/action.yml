@@ -8,7 +8,7 @@ inputs:
     description: 'NPM Registry to publish to.'
     required: true
   dry_run:
-    description: 'Dry run mode (true/false)'
+    description: 'Dry run mode'
     required: false
     default: 'false'
   tag:
@@ -18,44 +18,52 @@ inputs:
   npm_token:
     description: 'NPM token for publishing to registry.npmjs.org — required when registry is npmjs.com'
     required: false
+  github_packages_token:
+    description: 'PAT with write:packages scope for publishing to GitHub Packages — required when registry is github.com'
+    required: false
   github_token:
-    description: 'GitHub token for downloading artifacts and GitHub Packages auth'
+    description: 'GitHub token for downloading artifacts'
     required: true
+  allow_replace:
+    description: 'Replace existing package version if already published (default: false)'
+    required: false
+    default: 'false'
+  organization:
+    description: 'NPM scope to apply before publishing — "vonage", "opentok", or "none" for legacy unscoped packages'
+    required: false
+    default: ''
 
 runs:
   using: "composite"
   steps:
-    - name: Validate npm_token for npmjs.com
-      if: inputs.registry == 'npmjs.com'
+    - name: Validate tokens
       shell: bash
       env:
         NPM_TOKEN: ${{ inputs.npm_token }}
+        GH_PACKAGES_TOKEN: ${{ inputs.github_packages_token }}
+        REGISTRY: ${{ inputs.registry }}
       run: |
-        if [ -z "$NPM_TOKEN" ]; then
+        if [ "$REGISTRY" == "npmjs.com" ] && [ -z "$NPM_TOKEN" ]; then
           echo "❌ Error: npm_token is required when publishing to npmjs.com"
           exit 1
         fi
+        if [ "$REGISTRY" == "github.com" ] && [ -z "$GH_PACKAGES_TOKEN" ]; then
+          echo "❌ Error: github_packages_token is required when publishing to github.com"
+          exit 1
+        fi
 
-    - name: Setup Node for GitHub Packages
-      if: inputs.registry == 'github.com'
+    - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: 24.x
-        registry-url: 'https://npm.pkg.github.com/'
-
-    - name: Setup Node for NPM Registry
-      if: inputs.registry == 'npmjs.com'
-      uses: actions/setup-node@v4
-      with:
-        node-version: 24.x
-        registry-url: 'https://registry.npmjs.org/'
+        registry-url: 'https://registry.npmjs.org'
 
     - name: Download Build Artifact
       uses: dawidd6/action-download-artifact@v6
       with:
         github_token: ${{ inputs.github_token }}
         workflow: ci.yml
-        branch: main
+        branch: ${{ github.ref_name }}
         name: ${{ inputs.target }}-package-tarball
         path: lib/js
 
@@ -68,16 +76,51 @@ runs:
         # Remove tarball to prevent npm from trying to publish the file itself
         rm *.tgz
 
-    - name: Check if version already published
+    - name: Apply Organization Scope
+      if: inputs.organization != ''
       working-directory: lib/js
       shell: bash
       env:
-        GH_TOKEN: ${{ inputs.github_token }}
+        ORGANIZATION: ${{ inputs.organization }}
+      run: |
+        CURRENT_NAME=$(node -p "require('./package.json').name")
+        BASE_NAME="${CURRENT_NAME#@*/}"
+        if [ "$ORGANIZATION" == "none" ]; then
+          npm pkg set name="$BASE_NAME"
+        else
+          npm pkg set name="@${ORGANIZATION}/${BASE_NAME}"
+        fi
+
+    - name: Configure npm authentication
+      shell: bash
+      env:
         NPM_TOKEN: ${{ inputs.npm_token }}
+        GH_PACKAGES_TOKEN: ${{ inputs.github_packages_token }}
         REGISTRY: ${{ inputs.registry }}
       run: |
-        export NODE_AUTH_TOKEN=$([ "$REGISTRY" == "github.com" ] && echo "$GH_TOKEN" || echo "$NPM_TOKEN")
+        # Write auth to the user-level config (higher precedence than per-project .npmrc).
+        # setup-node@v4 sets NPM_CONFIG_USERCONFIG when registry-url is provided; fall back to ~/.npmrc.
+        NPMRC_FILE="${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
+        case "$REGISTRY" in
+          "npmjs.com")
+            echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> "$NPMRC_FILE"
+            ;;
+          "github.com")
+            {
+              echo "always-auth=true"
+              echo "registry=https://npm.pkg.github.com/"
+              echo "//npm.pkg.github.com/:_authToken=${GH_PACKAGES_TOKEN}"
+            } >> "$NPMRC_FILE"
+            ;;
+        esac
 
+    - name: Check if version already published
+      if: inputs.allow_replace != 'true'
+      working-directory: lib/js
+      shell: bash
+      env:
+        REGISTRY: ${{ inputs.registry }}
+      run: |
         PACKAGE_NAME=$(node -p "require('./package.json').name")
         PACKAGE_VERSION=$(node -p "require('./package.json').version")
         PUBLISHED_VERSION=$(npm view $PACKAGE_NAME@$PACKAGE_VERSION version 2>/dev/null || echo "")
@@ -91,15 +134,17 @@ runs:
       working-directory: lib/js
       shell: bash
       env:
-        GH_TOKEN: ${{ inputs.github_token }}
-        NPM_TOKEN: ${{ inputs.npm_token }}
-        REGISTRY: ${{ inputs.registry }}
         DRY_RUN: ${{ inputs.dry_run }}
         TAG: ${{ inputs.tag }}
+        REGISTRY: ${{ inputs.registry }}
+        NODE_AUTH_TOKEN: ${{ inputs.npm_token }}
       run: |
-        export NODE_AUTH_TOKEN=$([ "$REGISTRY" == "github.com" ] && echo "$GH_TOKEN" || echo "$NPM_TOKEN")
-
-        PUBLISH_CMD="npm publish"
+        PUBLISH_CMD="npm publish --access public"
+        if [ "$REGISTRY" == "npmjs.com" ]; then
+          PUBLISH_CMD="$PUBLISH_CMD --registry https://registry.npmjs.org"
+        else
+          PUBLISH_CMD="$PUBLISH_CMD --registry https://npm.pkg.github.com/"
+        fi
         if [ "$DRY_RUN" == "true" ]; then
           PUBLISH_CMD="$PUBLISH_CMD --dry-run"
         fi
