@@ -23,10 +23,9 @@ runs:
       if: inputs.target == 'vonage'
       shell: bash
       working-directory: lib/js
-      run: |
-        cat << 'EOF' > private.key
-        ${{ inputs.vonage_private_key }}
-        EOF
+      env:
+        VONAGE_PRIVATE_KEY: ${{ inputs.vonage_private_key }}
+      run: echo "$VONAGE_PRIVATE_KEY" > private.key
 
     - name: Testing
       shell: bash

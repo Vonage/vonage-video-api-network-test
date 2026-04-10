@@ -2,23 +2,21 @@ name: 'Build and package library'
 description: 'Sets up environment, optionally versions, builds, and packages a target'
 inputs:
   target:
-    description: 'Target package (vonage or opentok)'
+    description: 'Target package'
     required: true
-  bump_version:
-    description: 'Whether to run changeset version and commit'
-    required: false
-    default: 'false'
   github_token:
-    description: 'GitHub token for versioning (required if bump_version is true)'
+    description: 'GitHub token for committing and pushing the version bump'
     required: false
 
 runs:
   using: "composite"
   steps:
-    # Safegaurd: Clear out any patches or unstaged changes from previous steps
+    # Safeguard: Clear out any patches, unstaged changes, or leftover tarballs
     - name: Restore Working Tree
       shell: bash
-      run: git restore .
+      run: |
+        git restore .
+        rm -f lib/js/*.tgz || true
 
     - name: Setup Environment
       uses: ./.github/actions/setup-environment
@@ -26,7 +24,6 @@ runs:
         target: ${{ inputs.target }}
 
     - name: Version and Commit
-      if: inputs.bump_version == 'true'
       working-directory: lib/js
       shell: bash
       env:
@@ -51,4 +48,7 @@ runs:
 
     - name: Push Version Bump
       working-directory: lib/js
-      run: git push origin main --follow-tags || echo "No changes to push"
+      shell: bash
+      run: |
+        git pull --rebase origin main
+        git push origin main --follow-tags || echo "No changes to push"

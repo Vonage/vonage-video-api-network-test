@@ -1,55 +1,62 @@
-name: Release
+name: Publish Package
+
+permissions: read-all
 
 on:
   workflow_dispatch:
     inputs:
       target:
-        description: 'Which package do you want to release?'
+        description: 'Target package'
         required: true
         type: choice
+        default: 'vonage'
         options:
-          - vonage
-          - opentok
+          - 'vonage'
+          - 'opentok'
+      registry:
+        description: 'NPM Registry to publish to.'
+        required: true
+        type: choice
+        default: 'npmjs.com'
+        options:
+          - 'github.com'
+          - 'npmjs.com'
       dry_run:
         description: 'Dry run mode (test without publishing)'
         required: true
         type: boolean
         default: true
+      tag:
+        description: 'NPM distribution tag (e.g., alpha, beta — leave empty to publish as latest)'
+        required: false
+        type: choice
+        default: ''
+        options:
+          - ''
+          - 'alpha'
+          - 'beta'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
-permissions:
-  contents: read
-  packages: write
-  actions: read
-
 jobs:
-  release-vonage:
-    if: inputs.target == 'vonage'
+  publish:
     runs-on: ubuntu-latest
+    name: Publish ${{ inputs.target }} to ${{ inputs.registry }}
+    permissions:
+      contents: write
+      packages: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Publish Package (Vonage)
+      - name: Publish Package
         uses: ./.github/actions/publish-package
         with:
-          target: 'vonage'
+          target: ${{ inputs.target }}
+          registry: ${{ inputs.registry }}
           dry_run: ${{ inputs.dry_run }}
+          tag: ${{ inputs.tag }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-
-  release-opentok:
-    if: inputs.target == 'opentok'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Publish Package (OpenTok)
-        uses: ./.github/actions/publish-package
-        with:
-          target: 'opentok'
-          dry_run: ${{ inputs.dry_run }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          npm_token: ${{ inputs.target == 'vonage' && secrets.NPM_TOKEN_VONAGE || secrets.NPM_TOKEN_OPENTOK }}

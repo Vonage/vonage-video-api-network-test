@@ -1,25 +1,54 @@
 name: 'Publish Package'
-description: 'Downloads a pre-built artifact and publishes it to GitHub Packages'
+description: 'Downloads a pre-built artifact and publishes it to the specified registry'
 inputs:
   target:
-    description: 'Target package (vonage or opentok)'
+    description: 'Target package'
+    required: true
+  registry:
+    description: 'NPM Registry to publish to.'
     required: true
   dry_run:
     description: 'Dry run mode (true/false)'
     required: false
     default: 'false'
+  tag:
+    description: 'NPM publish tag (e.g., alpha, beta, latest)'
+    required: false
+    default: ''
+  npm_token:
+    description: 'NPM token for publishing to registry.npmjs.org — required when registry is npmjs.com'
+    required: false
   github_token:
-    description: 'GitHub token for downloading artifacts and npm auth'
+    description: 'GitHub token for downloading artifacts and GitHub Packages auth'
     required: true
 
 runs:
   using: "composite"
   steps:
-    - name: Setup Node
+    - name: Validate npm_token for npmjs.com
+      if: inputs.registry == 'npmjs.com'
+      shell: bash
+      env:
+        NPM_TOKEN: ${{ inputs.npm_token }}
+      run: |
+        if [ -z "$NPM_TOKEN" ]; then
+          echo "❌ Error: npm_token is required when publishing to npmjs.com"
+          exit 1
+        fi
+
+    - name: Setup Node for GitHub Packages
+      if: inputs.registry == 'github.com'
       uses: actions/setup-node@v4
       with:
         node-version: 24.x
         registry-url: 'https://npm.pkg.github.com/'
+
+    - name: Setup Node for NPM Registry
+      if: inputs.registry == 'npmjs.com'
+      uses: actions/setup-node@v4
+      with:
+        node-version: 24.x
+        registry-url: 'https://registry.npmjs.org/'
 
     - name: Download Build Artifact
       uses: dawidd6/action-download-artifact@v6
@@ -27,37 +56,56 @@ runs:
         github_token: ${{ inputs.github_token }}
         workflow: ci.yml
         branch: main
-        name: build-artifacts-${{ inputs.target }}
+        name: ${{ inputs.target }}-package-tarball
         path: lib/js
+
+    - name: Extract Tarball
+      working-directory: lib/js
+      shell: bash
+      run: |
+        # Extract and strip the 'package/' directory wrapper
+        tar -xzf *.tgz --strip-components=1
+        # Remove tarball to prevent npm from trying to publish the file itself
+        rm *.tgz
 
     - name: Check if version already published
       working-directory: lib/js
       shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github_token }}
+        NPM_TOKEN: ${{ inputs.npm_token }}
+        REGISTRY: ${{ inputs.registry }}
       run: |
-        # Version is already correct because it was checked out from main
+        export NODE_AUTH_TOKEN=$([ "$REGISTRY" == "github.com" ] && echo "$GH_TOKEN" || echo "$NPM_TOKEN")
+
         PACKAGE_NAME=$(node -p "require('./package.json').name")
         PACKAGE_VERSION=$(node -p "require('./package.json').version")
         PUBLISHED_VERSION=$(npm view $PACKAGE_NAME@$PACKAGE_VERSION version 2>/dev/null || echo "")
 
         if [ "$PUBLISHED_VERSION" == "$PACKAGE_VERSION" ]; then
-          echo "❌ Error: Version $PACKAGE_VERSION is already published on GitHub Packages!"
+          echo "❌ Error: Version $PACKAGE_VERSION is already published on $REGISTRY!"
           exit 1
         fi
 
-    - name: Dry-run before publishing
-      if: github.event_name == 'workflow_dispatch' && inputs.dry_run == 'true'
+    - name: Publish Package
       working-directory: lib/js
       shell: bash
       env:
-        NODE_AUTH_TOKEN: ${{ inputs.github_token }}
+        GH_TOKEN: ${{ inputs.github_token }}
+        NPM_TOKEN: ${{ inputs.npm_token }}
+        REGISTRY: ${{ inputs.registry }}
+        DRY_RUN: ${{ inputs.dry_run }}
+        TAG: ${{ inputs.tag }}
       run: |
-        echo "DRY RUN MODE"
-        npm publish --dry-run
+        export NODE_AUTH_TOKEN=$([ "$REGISTRY" == "github.com" ] && echo "$GH_TOKEN" || echo "$NPM_TOKEN")
 
-    - name: Publish to GitHub Packages
-      if: inputs.dry_run == 'false'
-      working-directory: lib/js
-      shell: bash
-      env:
-        NODE_AUTH_TOKEN: ${{ inputs.github_token }}
-      run: npm publish
+        PUBLISH_CMD="npm publish"
+        if [ "$DRY_RUN" == "true" ]; then
+          PUBLISH_CMD="$PUBLISH_CMD --dry-run"
+        fi
+        if [ -n "$TAG" ]; then
+          PUBLISH_CMD="$PUBLISH_CMD --tag $TAG"
+        fi
+
+        echo "Executing: $PUBLISH_CMD to $REGISTRY"
+        $PUBLISH_CMD
