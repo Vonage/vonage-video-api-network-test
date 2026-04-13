@@ -1,19 +1,23 @@
-name: Aggregit
-
-permissions: read-all
+name: Record Metrics
 
 on:
   schedule:
     - cron: "0 0 * * *"
 
+permissions: read-all
+
 jobs:
-  recordMetrics:
+  record-metrics:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
     steps:
-    - uses: michaeljolley/aggregit@v1
-      with:
-        githubToken: ${{ secrets.GITHUB_TOKEN }}
-        project_id: ${{ secrets.project_id }}
-        private_key: ${{ secrets.private_key }}
-        client_email: ${{ secrets.client_email }}
-        firebaseDbUrl: ${{ secrets.firebaseDbUrl }}
+      - name: Record Metrics
+        uses: michaeljolley/aggregit@v1
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          project_id: ${{ secrets.project_id }}
+          private_key: ${{ secrets.private_key }}
+          client_email: ${{ secrets.client_email }}
+          firebaseDbUrl: ${{ secrets.firebaseDbUrl }}

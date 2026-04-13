@@ -1,0 +1,25 @@
+name: 'Restore Node Modules'
+description: 'Restores node_modules from cache, or installs with npm ci on a miss'
+inputs:
+  target:
+    description: 'Target package (vonage or opentok)'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Cache
+      id: cache-npm
+      uses: actions/cache@v4
+      with:
+        path: lib/js/node_modules
+        # Patch content affects which devDependencies are installed, so it must be in the
+        # opentok key. The vonage key uses only the lockfile (no patch applied).
+        key: ${{ runner.os }}-node-${{ inputs.target }}-${{ inputs.target == 'vonage' && hashFiles('lib/js/package-lock.json') || hashFiles('lib/js/package-lock.json', 'lib/js/opentok.patch') }}
+        restore-keys: |
+          ${{ runner.os }}-node-${{ inputs.target }}-
+
+    - name: Install Dependencies
+      if: steps.cache-npm.outputs.cache-hit != 'true'
+      shell: bash
+      working-directory: lib/js
+      run: npm ci

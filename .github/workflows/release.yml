@@ -1,4 +1,4 @@
-name: Publish Package
+name: Release
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ on:
           - 'vonage'
           - 'opentok'
       registry:
-        description: 'NPM Registry to publish to.'
+        description: 'NPM registry to publish to'
         required: true
         type: choice
         default: 'npmjs.com'
@@ -25,72 +25,84 @@ on:
         type: boolean
         default: true
       tag:
-        description: 'NPM distribution tag (e.g., alpha, beta — leave empty to publish as latest)'
+        description: 'NPM distribution tag (e.g., alpha, beta, rc — leave empty to publish as latest)'
         required: false
-        type: choice
+        type: string
         default: ''
-        options:
-          - ''
-          - 'alpha'
-          - 'beta'
       allow_replace:
-        description: 'Replace existing package version if already published'
+        description: 'Skip the already-published version check. Note: npmjs.com permanently rejects republishing the same version after 72 hours regardless of this setting — only meaningful for GitHub Packages.'
         required: false
         type: boolean
         default: false
+      run_id:
+        description: 'CI run ID to publish from (find it in the Actions tab URL). Leave empty to use the latest successful run on the current branch.'
+        required: false
+        type: string
+        default: ''
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: false  # Never cancel: a publish mid-flight could leave the registry in an inconsistent state.
+
+permissions: read-all
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     name: Publish ${{ inputs.target }} to ${{ inputs.registry }}
     permissions:
-      contents: write
+      contents: read
       packages: write
       actions: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # The three steps below share these inputs — update all three if publish-package gains new ones:
+      # dry_run, tag, allow_replace, run_id, github_token
       - name: Publish Vonage Package
         if: inputs.target == 'vonage'
         uses: ./.github/actions/publish-package
         with:
-          target: ${{ inputs.target }}
+          target: vonage
           registry: ${{ inputs.registry }}
           dry_run: ${{ inputs.dry_run }}
           tag: ${{ inputs.tag }}
           allow_replace: ${{ inputs.allow_replace }}
+          run_id: ${{ inputs.run_id }}
           organization: vonage
           github_token: ${{ secrets.GITHUB_TOKEN }}
           npm_token: ${{ secrets.NPM_TOKEN_VONAGE }}
+          # @vonage packages live in this repo's org, so the built-in GITHUB_TOKEN has write:packages.
           github_packages_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish OpenTok Package to GitHub
         if: inputs.target == 'opentok' && inputs.registry == 'github.com'
         uses: ./.github/actions/publish-package
         with:
-          target: ${{ inputs.target }}
-          registry: ${{ inputs.registry }}
+          target: opentok
+          registry: github.com
           dry_run: ${{ inputs.dry_run }}
           tag: ${{ inputs.tag }}
           allow_replace: ${{ inputs.allow_replace }}
+          run_id: ${{ inputs.run_id }}
           organization: opentok
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          # @opentok packages live in a different GitHub org; GITHUB_TOKEN cannot publish
+          # across org boundaries, so a PAT with write:packages on the opentok org is required.
           github_packages_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
 
       - name: Publish OpenTok Package to NPM
         if: inputs.target == 'opentok' && inputs.registry == 'npmjs.com'
         uses: ./.github/actions/publish-package
         with:
-          target: ${{ inputs.target }}
-          registry: ${{ inputs.registry }}
+          target: opentok
+          registry: npmjs.com
           dry_run: ${{ inputs.dry_run }}
           tag: ${{ inputs.tag }}
           allow_replace: ${{ inputs.allow_replace }}
-          organization: none
+          run_id: ${{ inputs.run_id }}
+          organization: unscoped
           github_token: ${{ secrets.GITHUB_TOKEN }}
           npm_token: ${{ secrets.NPM_TOKEN_OPENTOK }}

@@ -1,39 +1,26 @@
 name: Validate PR
 
-permissions: read-all
-
 on:
   pull_request:
     branches:
       - '**'
 
+permissions: read-all
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  lint:
-    strategy:
-      fail-fast: true
-      matrix:
-        target: [vonage, opentok]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Environment
-        uses: ./.github/actions/setup-environment
-        with:
-          target: ${{ matrix.target }}
-
-      - name: Linting
-        working-directory: lib/js
-        run: npm run tslint
-
   test:
-    needs: lint
     strategy:
       fail-fast: false
       matrix:
         target: [vonage, opentok]
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -43,7 +30,14 @@ jobs:
         with:
           target: ${{ matrix.target }}
 
+      # Both targets share the same TypeScript source; linting once (vonage) is sufficient.
+      - name: Linting
+        if: matrix.target == 'vonage'
+        working-directory: lib/js
+        run: npm run tslint
+
       - name: Test
+        if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: ./.github/actions/run-test
         with:
           target: ${{ matrix.target }}
@@ -52,23 +46,56 @@ jobs:
           test_api_key: ${{ secrets.TEST_API_KEY }}
           test_api_secret: ${{ secrets.TEST_API_SECRET }}
 
+      # Upload the patched source so the build job can compile without
+      # re-running setup-environment. node_modules is excluded — the
+      # build job restores it from the Actions cache using the same key.
+      - name: Upload source artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}-source
+          path: |
+            lib/js/
+            !lib/js/node_modules/
+            !lib/js/*.tgz
+            # Defense in depth: private.key is already deleted by run-test's
+            # cleanup step, but explicitly exclude it in case the test job skipped.
+            !lib/js/private.key
+          # 1 day: only needed within the PR workflow run; not a release artifact.
+          retention-days: 1
+
   build:
     needs: test
+    if: ${{ !cancelled() }}  # Run even when test fails — build errors shouldn't be hidden behind a skipped job.
     strategy:
       fail-fast: false
       matrix:
         target: [vonage, opentok]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions: {}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      # No checkout needed: source files come from the downloaded artifact below.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          # Keep in sync with node-version in setup-environment/action.yml
+          node-version: 24.x
 
-      - name: Setup Environment
-        uses: ./.github/actions/setup-environment
+      # Must come before Restore Node Modules: the cache key hashes the post-patch
+      # lockfile, which only exists once this artifact is downloaded.
+      - name: Download source artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.target }}-source
+          path: lib/js
+
+      # Restore node_modules from the cache populated by the test job.
+      - name: Restore Node Modules
+        uses: ./.github/actions/restore-node-modules
         with:
           target: ${{ matrix.target }}
 
-      - name: Build package
-        shell: bash
+      - name: Build
         working-directory: lib/js
         run: npm run build

@@ -1,54 +1,57 @@
-name: 'Build and package library'
-description: 'Sets up environment, optionally versions, builds, and packages a target'
+name: 'Build and Package Library'
+description: 'Sets up environment, builds, and packages a target; for vonage, also bumps the version via changesets, commits, and pushes it to the branch.'
 inputs:
   target:
-    description: 'Target package'
+    description: 'Target package (vonage or opentok)'
     required: true
-  github_token:
-    description: 'GitHub token for committing and pushing the version bump'
-    required: false
 
 runs:
   using: "composite"
   steps:
-    # Safeguard: Clear out any patches, unstaged changes, or leftover tarballs
-    - name: Restore Working Tree
-      shell: bash
-      run: |
-        git restore .
-        rm -f lib/js/*.tgz || true
-
     - name: Setup Environment
       uses: ./.github/actions/setup-environment
       with:
         target: ${{ inputs.target }}
 
     - name: Version and Commit
+      id: version-and-commit
+      if: inputs.target == 'vonage'
       working-directory: lib/js
       shell: bash
-      env:
-        GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
         npx changeset version
-        npm install --package-lock-only
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git add -A
-        git commit -m "chore: version bump [skip ci]" || echo "No changes to commit"
+        if ! git diff --quiet; then
+          git diff --quiet package.json || npm install --package-lock-only
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: version bump [skip ci]"
+          echo "committed=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "committed=false" >> "$GITHUB_OUTPUT"
+        fi
 
-    - name: Build package
+    - name: Build
       shell: bash
       working-directory: lib/js
       run: npm run build
 
-    - name: Package and Upload
+    - name: Package Tarball
       uses: ./.github/actions/package-tarball
       with:
         target: ${{ inputs.target }}
 
     - name: Push Version Bump
+      if: steps.version-and-commit.outputs.committed == 'true'
       working-directory: lib/js
       shell: bash
+      env:
+        BRANCH: ${{ github.ref_name }}
       run: |
-        git pull --rebase origin main
-        git push origin main --follow-tags || echo "No changes to push"
+        for i in 1 2 3; do
+          git pull --rebase origin "$BRANCH" || { echo "❌ git pull --rebase failed"; exit 1; }
+          git push origin HEAD:"$BRANCH" && exit 0
+          [ $i -lt 3 ] && sleep $((i * 5))
+        done
+        echo "❌ git push failed after 3 attempts"
+        exit 1

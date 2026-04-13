@@ -10,29 +10,22 @@ runs:
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
+        # Keep in sync with node-version in publish-package/action.yml
+        # and the build job in validate-pr.yml
         node-version: 24.x
 
-    - name: Apply OpenTok patch
+    # Regenerate the lockfile after patching so the cache key reflects the post-patch
+    # devDependencies — aligning it with the key the build job computes from the artifact.
+    - name: Apply OpenTok patch and regenerate lockfile
       if: inputs.target == 'opentok'
       shell: bash
-      working-directory: .
-      run: git apply ./lib/js/opentok.patch
+      run: |
+        git apply ./lib/js/opentok.patch
+        # --prefix because this step also runs git apply from the repo root;
+        # composite steps can't have two working-directory values.
+        npm --prefix lib/js install --package-lock-only
 
-    - name: Cache node modules
-      id: cache-npm
-      uses: actions/cache@v4
+    - name: Restore Node Modules
+      uses: ./.github/actions/restore-node-modules
       with:
-        path: lib/js/node_modules
-        key: ${{ runner.os }}-node-${{ inputs.target }}-${{ hashFiles('lib/js/package-lock.json', 'lib/js/opentok.patch') }}
-
-    - name: Install dependencies (Vonage)
-      if: inputs.target == 'vonage' && steps.cache-npm.outputs.cache-hit != 'true'
-      shell: bash
-      working-directory: lib/js
-      run: npm ci
-
-    - name: Install dependencies (OpenTok)
-      if: inputs.target == 'opentok' && steps.cache-npm.outputs.cache-hit != 'true'
-      shell: bash
-      working-directory: lib/js
-      run: npm install
+        target: ${{ inputs.target }}
