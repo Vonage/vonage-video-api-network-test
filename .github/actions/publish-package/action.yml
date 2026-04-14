@@ -2,7 +2,7 @@ name: 'Publish Package'
 description: 'Downloads a pre-built artifact and publishes it to the specified registry'
 inputs:
   target:
-    description: 'Target package (vonage or opentok) — determines which CI artifact to download'
+    description: 'Target package (vonage or opentok) — determines which CI artifact to download and which scope to apply'
     required: true
   registry:
     description: 'NPM registry to publish to'
@@ -15,6 +15,9 @@ inputs:
     description: 'NPM publish tag (e.g., alpha, beta, latest)'
     required: false
     default: ''
+  node_version:
+    description: 'Node.js version to use (e.g. 24.x)'
+    required: true
   npm_token:
     description: 'NPM token for publishing to registry.npmjs.org — required when registry is npmjs.com'
     required: false
@@ -47,6 +50,7 @@ runs:
         GH_PACKAGES_TOKEN: ${{ inputs.github_packages_token }}
         REGISTRY: ${{ inputs.registry }}
       run: |
+        # NODE_AUTH_TOKEN is read automatically by npm when publishing.
         if [ "$REGISTRY" == "github.com" ]; then
           if [ -z "$GH_PACKAGES_TOKEN" ]; then
             echo "❌ Error: github_packages_token is required when publishing to github.com"
@@ -64,8 +68,8 @@ runs:
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
-        # Keep in sync with node-version in setup-environment/action.yml
-        node-version: 24.x
+        node-version: ${{ inputs.node_version }}
+        # Defaults to GitHub Packages when registry is not npmjs.com.
         registry-url: ${{ inputs.registry == 'npmjs.com' && 'https://registry.npmjs.org' || 'https://npm.pkg.github.com/' }}
 
     - name: Download Build Artifact

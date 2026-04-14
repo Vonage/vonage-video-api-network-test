@@ -1,8 +1,11 @@
 name: 'Build and Package Library'
-description: 'Sets up environment, builds, and packages a target; for vonage, also bumps the version via changesets, commits, and pushes it to the branch.'
+description: 'Sets up the environment, builds, and packages a target.'
 inputs:
   target:
     description: 'Target package (vonage or opentok)'
+    required: true
+  node_version:
+    description: 'Node.js version to use (e.g. 24.x)'
     required: true
 
 runs:
@@ -12,24 +15,7 @@ runs:
       uses: ./.github/actions/setup-environment
       with:
         target: ${{ inputs.target }}
-
-    - name: Version and Commit
-      id: version-and-commit
-      if: inputs.target == 'vonage'
-      working-directory: lib/js
-      shell: bash
-      run: |
-        npx changeset version
-        if ! git diff --quiet; then
-          git diff --quiet package.json || npm install --package-lock-only
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "chore: version bump [skip ci]"
-          echo "committed=true" >> "$GITHUB_OUTPUT"
-        else
-          echo "committed=false" >> "$GITHUB_OUTPUT"
-        fi
+        node_version: ${{ inputs.node_version }}
 
     - name: Build
       shell: bash
@@ -40,18 +26,3 @@ runs:
       uses: ./.github/actions/package-tarball
       with:
         target: ${{ inputs.target }}
-
-    - name: Push Version Bump
-      if: steps.version-and-commit.outputs.committed == 'true'
-      working-directory: lib/js
-      shell: bash
-      env:
-        BRANCH: ${{ github.ref_name }}
-      run: |
-        for i in 1 2 3; do
-          git pull --rebase origin "$BRANCH" || { echo "❌ git pull --rebase failed"; exit 1; }
-          git push origin HEAD:"$BRANCH" && exit 0
-          [ $i -lt 3 ] && sleep $((i * 5))
-        done
-        echo "❌ git push failed after 3 attempts"
-        exit 1

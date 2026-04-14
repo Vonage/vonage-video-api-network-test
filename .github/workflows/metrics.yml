@@ -6,12 +6,12 @@ on:
 
 permissions: read-all
 
+# Records repository metrics (stars, forks, issues, etc.) to Firebase via aggregit.
 jobs:
   record-metrics:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    permissions:
-      contents: read
+    permissions: {}  # Overrides workflow-level read-all; no repository access needed.
     steps:
       - name: Record Metrics
         uses: michaeljolley/aggregit@v1

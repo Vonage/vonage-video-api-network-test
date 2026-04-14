@@ -8,7 +8,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false  # Never cancel: a version-bump commit may be mid-push; cancelling could corrupt branch state.
+  cancel-in-progress: false  # Never cancel: package artifacts may be mid-upload.
 
 permissions: read-all
 
@@ -30,6 +30,7 @@ jobs:
         uses: ./.github/actions/setup-environment
         with:
           target: ${{ matrix.target }}
+          node_version: ${{ vars.NODE_VERSION }}
 
       - name: Test
         uses: ./.github/actions/run-test
@@ -40,41 +41,22 @@ jobs:
           test_api_key: ${{ secrets.TEST_API_KEY }}
           test_api_secret: ${{ secrets.TEST_API_SECRET }}
 
-  package-vonage:
+  package:
     needs: test
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    permissions:
-      contents: write
-    steps:
-      # fetch-depth: 0 is required for git pull --rebase (needs full graph to rebase
-      # cleanly) and git push (a shallow clone causes "shallow update not allowed" errors).
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Build and Package Vonage
-        uses: ./.github/actions/build-and-package-library
-        with:
-          target: vonage
-
-  package-opentok:
-    # Depends on package-vonage so the opentok runner checks out after
-    # the vonage version bump commit has been pushed to the branch.
-    needs: package-vonage
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [vonage, opentok]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
       contents: read
     steps:
-      # fetch-depth: 0 is NOT needed here — opentok never runs changeset or git push.
-      # package-vonage (which does need full history) runs first and pushes its commit;
-      # this job just needs the current HEAD to apply the patch and build.
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build and Package OpenTok
+      - name: Build and Package
         uses: ./.github/actions/build-and-package-library
         with:
-          target: opentok
+          target: ${{ matrix.target }}
+          node_version: ${{ vars.NODE_VERSION }}

@@ -12,8 +12,7 @@ runs:
       uses: actions/cache@v4
       with:
         path: lib/js/node_modules
-        # Patch content affects which devDependencies are installed, so it must be in the
-        # opentok key. The vonage key uses only the lockfile (no patch applied).
+        # vonage key: lockfile only. opentok key: lockfile + patch (patch affects devDependencies).
         key: ${{ runner.os }}-node-${{ inputs.target }}-${{ inputs.target == 'vonage' && hashFiles('lib/js/package-lock.json') || hashFiles('lib/js/package-lock.json', 'lib/js/opentok.patch') }}
         restore-keys: |
           ${{ runner.os }}-node-${{ inputs.target }}-

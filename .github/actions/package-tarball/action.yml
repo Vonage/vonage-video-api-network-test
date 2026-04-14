@@ -10,7 +10,7 @@ runs:
     - name: Pack
       shell: bash
       working-directory: lib/js
-      run: npm pack
+      run: npm pack  # Fails loudly on pack error; archive contents are not further verified.
 
     - name: Assert Single Tarball
       shell: bash

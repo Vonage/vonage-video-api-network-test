@@ -35,7 +35,7 @@ on:
         type: boolean
         default: false
       run_id:
-        description: 'CI run ID to publish from (find it in the Actions tab URL). Leave empty to use the latest successful run on the current branch.'
+        description: 'Numeric CI run ID to publish from (find it in the Actions tab URL). Leave empty to use the latest successful run on the current branch.'
         required: false
         type: string
         default: ''
@@ -59,8 +59,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # The three steps below share these inputs — update all three if publish-package gains new ones:
-      # dry_run, tag, allow_replace, run_id, github_token
+      # dry_run, tag, allow_replace, run_id, and github_token are shared across all three steps;
+      # update all three if publish-package gains new shared inputs.
       - name: Publish Vonage Package
         if: inputs.target == 'vonage'
         uses: ./.github/actions/publish-package
@@ -74,6 +74,7 @@ jobs:
           organization: vonage
           github_token: ${{ secrets.GITHUB_TOKEN }}
           npm_token: ${{ secrets.NPM_TOKEN_VONAGE }}
+          node_version: ${{ vars.NODE_VERSION }}
           # @vonage packages live in this repo's org, so the built-in GITHUB_TOKEN has write:packages.
           github_packages_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -92,6 +93,7 @@ jobs:
           # @opentok packages live in a different GitHub org; GITHUB_TOKEN cannot publish
           # across org boundaries, so a PAT with write:packages on the opentok org is required.
           github_packages_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
+          node_version: ${{ vars.NODE_VERSION }}
 
       - name: Publish OpenTok Package to NPM
         if: inputs.target == 'opentok' && inputs.registry == 'npmjs.com'
@@ -106,3 +108,4 @@ jobs:
           organization: unscoped
           github_token: ${{ secrets.GITHUB_TOKEN }}
           npm_token: ${{ secrets.NPM_TOKEN_OPENTOK }}
+          node_version: ${{ vars.NODE_VERSION }}

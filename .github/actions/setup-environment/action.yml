@@ -4,15 +4,16 @@ inputs:
   target:
     description: 'Target package (vonage or opentok)'
     required: true
+  node_version:
+    description: 'Node.js version to use (e.g. 24.x)'
+    required: true
 runs:
   using: "composite"
   steps:
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
-        # Keep in sync with node-version in publish-package/action.yml
-        # and the build job in validate-pr.yml
-        node-version: 24.x
+        node-version: ${{ inputs.node_version }}
 
     # Regenerate the lockfile after patching so the cache key reflects the post-patch
     # devDependencies — aligning it with the key the build job computes from the artifact.
@@ -21,8 +22,8 @@ runs:
       shell: bash
       run: |
         git apply ./lib/js/opentok.patch
-        # --prefix because this step also runs git apply from the repo root;
-        # composite steps can't have two working-directory values.
+        # --prefix runs npm from the repo root without changing working-directory,
+        # which composite action steps do not support per-step.
         npm --prefix lib/js install --package-lock-only
 
     - name: Restore Node Modules
