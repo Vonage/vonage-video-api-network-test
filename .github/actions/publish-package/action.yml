@@ -76,7 +76,7 @@ runs:
       uses: dawidd6/action-download-artifact@v6
       with:
         github_token: ${{ inputs.github_token }}
-        workflow: ci.yml
+        workflow: post-merge-validation.yml
         run_id: ${{ inputs.run_id }}
         # When run_id is provided, branch is set to '' — dawidd6 treats an explicit empty
         # string the same as omitting the parameter (no branch filter applied).

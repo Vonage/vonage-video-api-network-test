@@ -1,7 +1,8 @@
-name: CI
+name: Post Merge Validation
 
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches:
       - main
       - 'release-*'
@@ -14,6 +15,7 @@ permissions: read-all
 
 jobs:
   test:
+    if: github.event.pull_request.merged == true
     strategy:
       fail-fast: false
       matrix:
