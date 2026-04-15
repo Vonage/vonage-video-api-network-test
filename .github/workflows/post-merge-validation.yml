@@ -1,23 +1,29 @@
-name: Package
+name: Post Merge Validation
 
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches:
       - main
+      - 'release-*'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: false  # Never cancel: package artifacts may be mid-upload.
 
 permissions: read-all
 
 jobs:
   test:
+    if: github.event.pull_request.merged == true
     strategy:
       fail-fast: false
       matrix:
         target: [vonage, opentok]
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,6 +32,7 @@ jobs:
         uses: ./.github/actions/setup-environment
         with:
           target: ${{ matrix.target }}
+          node_version: ${{ vars.NODE_VERSION }}
 
       - name: Test
         uses: ./.github/actions/run-test
@@ -38,23 +45,20 @@ jobs:
 
   package:
     needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [vonage, opentok]
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
-      contents: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Build and Package Vonage
+      - name: Build and Package
         uses: ./.github/actions/build-and-package-library
         with:
-          target: 'vonage'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and Package OpenTok
-        uses: ./.github/actions/build-and-package-library
-        with:
-          target: 'opentok'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          target: ${{ matrix.target }}
+          node_version: ${{ vars.NODE_VERSION }}

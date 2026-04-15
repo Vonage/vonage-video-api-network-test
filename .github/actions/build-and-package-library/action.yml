@@ -1,54 +1,28 @@
-name: 'Build and package library'
-description: 'Sets up environment, optionally versions, builds, and packages a target'
+name: 'Build and Package Library'
+description: 'Sets up the environment, builds, and packages a target.'
 inputs:
   target:
-    description: 'Target package'
+    description: 'Target package (vonage or opentok)'
     required: true
-  github_token:
-    description: 'GitHub token for committing and pushing the version bump'
-    required: false
+  node_version:
+    description: 'Node.js version to use (e.g. 24.x)'
+    required: true
 
 runs:
   using: "composite"
   steps:
-    # Safeguard: Clear out any patches, unstaged changes, or leftover tarballs
-    - name: Restore Working Tree
-      shell: bash
-      run: |
-        git restore .
-        rm -f lib/js/*.tgz || true
-
     - name: Setup Environment
       uses: ./.github/actions/setup-environment
       with:
         target: ${{ inputs.target }}
+        node_version: ${{ inputs.node_version }}
 
-    - name: Version and Commit
-      working-directory: lib/js
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ inputs.github_token }}
-      run: |
-        npx changeset version
-        npm install --package-lock-only
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git add -A
-        git commit -m "chore: version bump [skip ci]" || echo "No changes to commit"
-
-    - name: Build package
+    - name: Build
       shell: bash
       working-directory: lib/js
       run: npm run build
 
-    - name: Package and Upload
+    - name: Package Tarball
       uses: ./.github/actions/package-tarball
       with:
         target: ${{ inputs.target }}
-
-    - name: Push Version Bump
-      working-directory: lib/js
-      shell: bash
-      run: |
-        git pull --rebase origin main
-        git push origin main --follow-tags || echo "No changes to push"

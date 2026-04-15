@@ -1,8 +1,8 @@
-name: 'Package'
-description: 'Packs the project and uploads the tarball artifact'
+name: 'Package Tarball'
+description: 'Packs the built project and uploads the tarball as a workflow artifact'
 inputs:
   target:
-    description: 'Target package'
+    description: 'Target package (vonage or opentok)'
     required: true
 runs:
   using: "composite"
@@ -10,11 +10,19 @@ runs:
     - name: Pack
       shell: bash
       working-directory: lib/js
-      run: npm pack
+      run: npm pack  # Fails loudly on pack error; archive contents are not further verified.
+
+    - name: Assert Single Tarball
+      shell: bash
+      working-directory: lib/js
+      run: |
+        count=$(find . -maxdepth 1 -name '*.tgz' | wc -l)
+        [ "$count" -eq 1 ] || { echo "❌ Expected 1 tarball, found $count"; exit 1; }
 
     - name: Upload Tarball
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.target }}-package-tarball
         path: lib/js/*.tgz
+        # 30 days: long enough to cover the gap between CI and a manual release dispatch.
         retention-days: 30

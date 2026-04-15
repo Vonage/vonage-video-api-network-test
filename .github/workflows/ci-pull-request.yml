@@ -1,0 +1,101 @@
+name: CI Pull Request
+
+on:
+  pull_request:
+
+permissions: read-all
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true  # Safe to cancel: PR runs carry no destructive side-effects.
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [vonage, opentok]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read  # Required for checkout.
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
+        with:
+          target: ${{ matrix.target }}
+          node_version: ${{ vars.NODE_VERSION }}
+
+      - name: Linting
+        working-directory: lib/js
+        run: npm run tslint
+
+      # Secrets are unavailable on fork PRs; skip tests to avoid failing with missing credentials.
+      - name: Test
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        uses: ./.github/actions/run-test
+        with:
+          target: ${{ matrix.target }}
+          vonage_private_key: ${{ secrets.VONAGE_PRIVATE_KEY }}
+          test_application_id: ${{ secrets.TEST_APPLICATION_ID }}
+          test_api_key: ${{ secrets.TEST_API_KEY }}
+          test_api_secret: ${{ secrets.TEST_API_SECRET }}
+
+      # Upload the patched source (even on failure) so the build job can compile and surface
+      # build errors independently. node_modules is excluded — restored from cache by the build job.
+      - name: Upload source artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}-source
+          path: |
+            lib/js/
+            !lib/js/node_modules/
+            !lib/js/*.tgz
+            # Defense in depth: private.key is already deleted by run-test's
+            # cleanup step, but explicitly exclude it in case the test job skipped.
+            !lib/js/private.key
+          # 1 day: only needed within the PR workflow run; not a release artifact.
+          retention-days: 1
+
+  build:
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [vonage, opentok]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read  # Required for checkout (needed to resolve local composite actions).
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Source files come from the downloaded artifact, not the checkout above.
+      # The checkout is only needed to make local composite actions available.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION }}
+
+      # Must come before Restore Node Modules: the cache key hashes the post-patch
+      # lockfile, which only exists once this artifact is downloaded.
+      - name: Download source artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.target }}-source
+          path: lib/js
+
+      # Restore node_modules from the cache populated by the test job.
+      - name: Restore Node Modules
+        uses: ./.github/actions/restore-node-modules
+        with:
+          target: ${{ matrix.target }}
+
+      - name: Build
+        working-directory: lib/js
+        run: npm run build

@@ -2,60 +2,85 @@ name: 'Publish Package'
 description: 'Downloads a pre-built artifact and publishes it to the specified registry'
 inputs:
   target:
-    description: 'Target package'
+    description: 'Target package (vonage or opentok) — determines which CI artifact to download and which scope to apply'
     required: true
   registry:
-    description: 'NPM Registry to publish to.'
+    description: 'NPM registry to publish to'
     required: true
   dry_run:
-    description: 'Dry run mode (true/false)'
+    description: 'Dry run mode — runs the publish command but nothing is pushed to the registry'
     required: false
     default: 'false'
   tag:
     description: 'NPM publish tag (e.g., alpha, beta, latest)'
     required: false
     default: ''
+  node_version:
+    description: 'Node.js version to use (e.g. 24.x)'
+    required: true
   npm_token:
     description: 'NPM token for publishing to registry.npmjs.org — required when registry is npmjs.com'
     required: false
+  github_packages_token:
+    description: 'PAT with write:packages scope for publishing to GitHub Packages — required when registry is github.com'
+    required: false
   github_token:
-    description: 'GitHub token for downloading artifacts and GitHub Packages auth'
+    description: 'GitHub token for downloading artifacts'
     required: true
+  allow_replace:
+    description: 'Skip the already-published version check. Note: npmjs.com permanently rejects republishing the same version after 72 hours regardless of this setting — only meaningful for GitHub Packages.'
+    required: false
+    default: 'false'
+  organization:
+    description: 'NPM scope to apply before publishing — "vonage", "opentok", or "unscoped" for legacy unscoped packages. Leave empty to publish with the scope already in the tarball.'
+    required: false
+    default: ''
+  run_id:
+    description: 'CI workflow run ID to download the artifact from. Leave empty to use the latest successful run on the current branch.'
+    required: false
+    default: ''
 
 runs:
   using: "composite"
   steps:
-    - name: Validate npm_token for npmjs.com
-      if: inputs.registry == 'npmjs.com'
+    - name: Resolve auth token
       shell: bash
       env:
         NPM_TOKEN: ${{ inputs.npm_token }}
+        GH_PACKAGES_TOKEN: ${{ inputs.github_packages_token }}
+        REGISTRY: ${{ inputs.registry }}
       run: |
-        if [ -z "$NPM_TOKEN" ]; then
-          echo "❌ Error: npm_token is required when publishing to npmjs.com"
-          exit 1
+        # NODE_AUTH_TOKEN is read automatically by npm when publishing.
+        if [ "$REGISTRY" == "github.com" ]; then
+          if [ -z "$GH_PACKAGES_TOKEN" ]; then
+            echo "❌ Error: github_packages_token is required when publishing to github.com"
+            exit 1
+          fi
+          echo "NODE_AUTH_TOKEN=$GH_PACKAGES_TOKEN" >> "$GITHUB_ENV"
+        else
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "❌ Error: npm_token is required when publishing to npmjs.com"
+            exit 1
+          fi
+          echo "NODE_AUTH_TOKEN=$NPM_TOKEN" >> "$GITHUB_ENV"
         fi
 
-    - name: Setup Node for GitHub Packages
-      if: inputs.registry == 'github.com'
+    - name: Setup Node
       uses: actions/setup-node@v4
       with:
-        node-version: 24.x
-        registry-url: 'https://npm.pkg.github.com/'
-
-    - name: Setup Node for NPM Registry
-      if: inputs.registry == 'npmjs.com'
-      uses: actions/setup-node@v4
-      with:
-        node-version: 24.x
-        registry-url: 'https://registry.npmjs.org/'
+        node-version: ${{ inputs.node_version }}
+        # Defaults to GitHub Packages when registry is not npmjs.com.
+        registry-url: ${{ inputs.registry == 'npmjs.com' && 'https://registry.npmjs.org' || 'https://npm.pkg.github.com/' }}
 
     - name: Download Build Artifact
       uses: dawidd6/action-download-artifact@v6
       with:
         github_token: ${{ inputs.github_token }}
-        workflow: ci.yml
-        branch: main
+        workflow: post-merge-validation.yml
+        run_id: ${{ inputs.run_id }}
+        # When run_id is provided, branch is set to '' — dawidd6 treats an explicit empty
+        # string the same as omitting the parameter (no branch filter applied).
+        branch: ${{ inputs.run_id == '' && github.ref_name || '' }}
         name: ${{ inputs.target }}-package-tarball
         path: lib/js
 
@@ -63,49 +88,75 @@ runs:
       working-directory: lib/js
       shell: bash
       run: |
-        # Extract and strip the 'package/' directory wrapper
-        tar -xzf *.tgz --strip-components=1
+        mapfile -t TARBALLS < <(find . -maxdepth 1 -name '*.tgz')
+        if [ "${#TARBALLS[@]}" -ne 1 ]; then
+          echo "❌ Expected exactly 1 tarball, found ${#TARBALLS[@]}"
+          exit 1
+        fi
+        TARBALL="${TARBALLS[0]}"
+        # Extract, stripping the package/ prefix that npm pack adds
+        tar -xzf "$TARBALL" --strip-components=1
         # Remove tarball to prevent npm from trying to publish the file itself
-        rm *.tgz
+        rm "$TARBALL"
 
-    - name: Check if version already published
+    - name: Apply Organization Scope
+      if: inputs.organization != ''
       working-directory: lib/js
       shell: bash
       env:
-        GH_TOKEN: ${{ inputs.github_token }}
-        NPM_TOKEN: ${{ inputs.npm_token }}
+        ORGANIZATION: ${{ inputs.organization }}
+      run: |
+        CURRENT_NAME=$(node -p "require('./package.json').name")
+        # Strip scope prefix only if one is present, to avoid mangling unscoped names.
+        if [[ "$CURRENT_NAME" == @*/* ]]; then
+          BASE_NAME="${CURRENT_NAME#@*/}"
+        else
+          BASE_NAME="$CURRENT_NAME"
+        fi
+        if [ "$ORGANIZATION" == "unscoped" ]; then
+          npm pkg set name="$BASE_NAME"
+        else
+          npm pkg set name="@${ORGANIZATION}/${BASE_NAME}"
+        fi
+
+    - name: Check if version already published
+      if: inputs.allow_replace != 'true'
+      working-directory: lib/js
+      shell: bash
+      env:
         REGISTRY: ${{ inputs.registry }}
       run: |
-        export NODE_AUTH_TOKEN=$([ "$REGISTRY" == "github.com" ] && echo "$GH_TOKEN" || echo "$NPM_TOKEN")
-
         PACKAGE_NAME=$(node -p "require('./package.json').name")
         PACKAGE_VERSION=$(node -p "require('./package.json').version")
-        PUBLISHED_VERSION=$(npm view $PACKAGE_NAME@$PACKAGE_VERSION version 2>/dev/null || echo "")
+
+        # .npmrc is already configured for the correct registry by Setup Node.
+        PUBLISHED_VERSION=$(npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" version 2>/dev/null || echo "")
 
         if [ "$PUBLISHED_VERSION" == "$PACKAGE_VERSION" ]; then
           echo "❌ Error: Version $PACKAGE_VERSION is already published on $REGISTRY!"
           exit 1
         fi
 
-    - name: Publish Package
+    - name: Publish
       working-directory: lib/js
       shell: bash
       env:
-        GH_TOKEN: ${{ inputs.github_token }}
-        NPM_TOKEN: ${{ inputs.npm_token }}
-        REGISTRY: ${{ inputs.registry }}
         DRY_RUN: ${{ inputs.dry_run }}
         TAG: ${{ inputs.tag }}
+        REGISTRY: ${{ inputs.registry }}
+        ALLOW_REPLACE: ${{ inputs.allow_replace }}
       run: |
-        export NODE_AUTH_TOKEN=$([ "$REGISTRY" == "github.com" ] && echo "$GH_TOKEN" || echo "$NPM_TOKEN")
-
-        PUBLISH_CMD="npm publish"
+        if [ "$ALLOW_REPLACE" == "true" ] && [ "$REGISTRY" == "npmjs.com" ]; then
+          echo "⚠️  Warning: allow_replace is set but has no effect on npmjs.com."
+          echo "   npmjs.com permanently rejects republishing the same version after 72 hours."
+        fi
+        PUBLISH_ARGS=(publish --access public)
         if [ "$DRY_RUN" == "true" ]; then
-          PUBLISH_CMD="$PUBLISH_CMD --dry-run"
+          PUBLISH_ARGS+=(--dry-run)
         fi
         if [ -n "$TAG" ]; then
-          PUBLISH_CMD="$PUBLISH_CMD --tag $TAG"
+          PUBLISH_ARGS+=(--tag "$TAG")
         fi
 
-        echo "Executing: $PUBLISH_CMD to $REGISTRY"
-        $PUBLISH_CMD
+        echo "Publishing to $REGISTRY: npm ${PUBLISH_ARGS[*]}"
+        npm "${PUBLISH_ARGS[@]}"

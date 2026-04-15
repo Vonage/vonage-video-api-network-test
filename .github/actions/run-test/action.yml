@@ -1,37 +1,63 @@
 name: 'Test'
-description: 'Sets up private keys and runs tests'
+description: 'Validates credentials, writes private keys, and runs tests'
 inputs:
   target:
     description: 'Target package'
     required: true
   vonage_private_key:
-    description: 'Private key for Vonage'
+    description: 'Private key for Vonage — required when target is vonage'
     required: false
   test_application_id:
-    description: 'Test application ID'
+    description: 'Test application ID — used by both vonage and opentok test suites'
     required: false
   test_api_key:
-    description: 'Test API key'
+    description: 'Test API key — required when target is opentok'
     required: false
   test_api_secret:
-    description: 'Test API secret'
+    description: 'Test API secret — required when target is opentok'
     required: false
 runs:
   using: "composite"
   steps:
-    - name: Create private key file for Vonage testing
-      if: inputs.target == 'vonage'
+    - name: Validate Credentials
       shell: bash
-      working-directory: lib/js
       env:
+        TARGET: ${{ inputs.target }}
         VONAGE_PRIVATE_KEY: ${{ inputs.vonage_private_key }}
-      run: echo "$VONAGE_PRIVATE_KEY" > private.key
+        TEST_API_KEY: ${{ inputs.test_api_key }}
+        TEST_API_SECRET: ${{ inputs.test_api_secret }}
+      run: |
+        if [ "$TARGET" == "vonage" ]; then
+          if [ -z "$VONAGE_PRIVATE_KEY" ]; then
+            echo "❌ vonage_private_key is empty or not set"
+            exit 1
+          fi
+          echo "$VONAGE_PRIVATE_KEY" > lib/js/private.key
+        elif [ "$TARGET" == "opentok" ]; then
+          if [ -z "$TEST_API_KEY" ] || [ -z "$TEST_API_SECRET" ]; then
+            echo "❌ test_api_key and test_api_secret are required for opentok target"
+            exit 1
+          fi
+        fi
 
-    - name: Testing
+    # TEST_APPLICATION_ID, TEST_API_KEY, and TEST_API_SECRET are used by both
+    # vonage and opentok test suites. Vonage additionally requires the private key written above.
+    - name: Run Tests
       shell: bash
       working-directory: lib/js
-      run: npm run test
       env:
         TEST_APPLICATION_ID: ${{ inputs.test_application_id }}
         TEST_API_KEY: ${{ inputs.test_api_key }}
         TEST_API_SECRET: ${{ inputs.test_api_secret }}
+      run: |
+        if [ -z "$TEST_APPLICATION_ID" ]; then
+          echo "❌ test_application_id is required for both vonage and opentok targets"
+          exit 1
+        fi
+        npm run test
+
+    - name: Delete Private Key
+      if: always() && inputs.target == 'vonage'
+      shell: bash
+      working-directory: lib/js
+      run: rm -f private.key
