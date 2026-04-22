@@ -12,7 +12,7 @@ inputs:
     required: false
     default: 'false'
   tag:
-    description: 'NPM publish tag (e.g., alpha, beta, latest)'
+    description: 'Additional tag to append to the version and use as the dist-tag (e.g., alpha → 1.2.3-alpha). Leave empty to publish the version as-is with the "latest" dist-tag.'
     required: false
     default: ''
   node_version:
@@ -27,10 +27,6 @@ inputs:
   github_token:
     description: 'GitHub token for downloading artifacts'
     required: true
-  allow_replace:
-    description: 'Skip the already-published version check. Note: npmjs.com permanently rejects republishing the same version after 72 hours regardless of this setting — only meaningful for GitHub Packages.'
-    required: false
-    default: 'false'
   organization:
     description: 'NPM scope to apply before publishing — "vonage", "opentok", or "unscoped" for legacy unscoped packages. Leave empty to publish with the scope already in the tarball.'
     required: false
@@ -119,8 +115,17 @@ runs:
           npm pkg set name="@${ORGANIZATION}/${BASE_NAME}"
         fi
 
+    - name: Apply Pre-release Tag to Version
+      if: inputs.tag != ''
+      working-directory: lib/js
+      shell: bash
+      env:
+        TAG: ${{ inputs.tag }}
+      run: |
+        CURRENT_VERSION=$(node -p "require('./package.json').version")
+        npm pkg set version="${CURRENT_VERSION}-${TAG}.${GITHUB_RUN_NUMBER}"
+
     - name: Check if version already published
-      if: inputs.allow_replace != 'true'
       working-directory: lib/js
       shell: bash
       env:
@@ -144,12 +149,7 @@ runs:
         DRY_RUN: ${{ inputs.dry_run }}
         TAG: ${{ inputs.tag }}
         REGISTRY: ${{ inputs.registry }}
-        ALLOW_REPLACE: ${{ inputs.allow_replace }}
       run: |
-        if [ "$ALLOW_REPLACE" == "true" ] && [ "$REGISTRY" == "npmjs.com" ]; then
-          echo "⚠️  Warning: allow_replace is set but has no effect on npmjs.com."
-          echo "   npmjs.com permanently rejects republishing the same version after 72 hours."
-        fi
         PUBLISH_ARGS=(publish --access public)
         if [ "$DRY_RUN" == "true" ]; then
           PUBLISH_ARGS+=(--dry-run)
