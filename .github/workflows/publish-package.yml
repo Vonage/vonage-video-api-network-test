@@ -25,15 +25,10 @@ on:
         type: boolean
         default: true
       tag:
-        description: 'NPM distribution tag (e.g., alpha, beta, rc — leave empty to publish as latest)'
+        description: 'Pre-release tag appended to the version and used as the dist-tag (e.g., alpha → 1.2.3-alpha). Leave empty to publish the version as-is with the "latest" dist-tag.'
         required: false
         type: string
         default: ''
-      allow_replace:
-        description: 'Skip the already-published version check. Note: npmjs.com permanently rejects republishing the same version after 72 hours regardless of this setting — only meaningful for GitHub Packages.'
-        required: false
-        type: boolean
-        default: false
       run_id:
         description: 'Numeric CI run ID to publish from (find it in the Actions tab URL). Leave empty to use the latest successful run on the current branch.'
         required: false
@@ -59,7 +54,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # dry_run, tag, allow_replace, run_id, and github_token are shared across all three steps;
+      # dry_run, tag, run_id, and github_token are shared across all three steps;
       # update all three if publish-package gains new shared inputs.
       - name: Publish Vonage Package
         if: inputs.target == 'vonage'
@@ -69,7 +64,6 @@ jobs:
           registry: ${{ inputs.registry }}
           dry_run: ${{ inputs.dry_run }}
           tag: ${{ inputs.tag }}
-          allow_replace: ${{ inputs.allow_replace }}
           run_id: ${{ inputs.run_id }}
           organization: vonage
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -86,7 +80,6 @@ jobs:
           registry: github.com
           dry_run: ${{ inputs.dry_run }}
           tag: ${{ inputs.tag }}
-          allow_replace: ${{ inputs.allow_replace }}
           run_id: ${{ inputs.run_id }}
           organization: opentok
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -103,7 +96,6 @@ jobs:
           registry: npmjs.com
           dry_run: ${{ inputs.dry_run }}
           tag: ${{ inputs.tag }}
-          allow_replace: ${{ inputs.allow_replace }}
           run_id: ${{ inputs.run_id }}
           organization: unscoped
           github_token: ${{ secrets.GITHUB_TOKEN }}
