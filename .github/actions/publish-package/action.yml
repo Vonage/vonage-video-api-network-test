@@ -65,8 +65,14 @@ runs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node_version }}
+        # Scope ensures the correct registry mapping in .npmrc for scoped packages on GitHub Packages.
+        scope: ${{ inputs.organization != 'unscoped' && inputs.organization != '' && format('@{0}', inputs.organization) || '' }}
         # Defaults to GitHub Packages when registry is not npmjs.com.
         registry-url: ${{ inputs.registry == 'npmjs.com' && 'https://registry.npmjs.org' || 'https://npm.pkg.github.com/' }}
+
+    - name: Clean publish directory
+      shell: bash
+      run: rm -rf lib/js && mkdir -p lib/js
 
     - name: Download Build Artifact
       uses: dawidd6/action-download-artifact@v6
@@ -95,6 +101,14 @@ runs:
         # Remove tarball to prevent npm from trying to publish the file itself
         rm "$TARBALL"
 
+    - name: Strip publishConfig registry override
+      working-directory: lib/js
+      shell: bash
+      run: |
+        # publishConfig.registry in the tarball's package.json overrides setup-node's .npmrc.
+        # Remove it so the registry configured by setup-node always takes effect.
+        npm pkg delete publishConfig.registry 2>/dev/null || true
+
     - name: Apply Organization Scope
       if: inputs.organization != ''
       working-directory: lib/js
@@ -122,8 +136,24 @@ runs:
       env:
         TAG: ${{ inputs.tag }}
       run: |
+        PACKAGE_NAME=$(node -p "require('./package.json').name")
         CURRENT_VERSION=$(node -p "require('./package.json').version")
-        npm pkg set version="${CURRENT_VERSION}-${TAG}.${GITHUB_RUN_NUMBER}"
+
+        ALL_VERSIONS=$(npm view "${PACKAGE_NAME}" versions --json 2>/dev/null || echo "[]")
+        ALL_VERSIONS="${ALL_VERSIONS:-[]}"
+
+        PRERELEASE_NUM=$(ALL_VERSIONS="$ALL_VERSIONS" BASE_VERSION="$CURRENT_VERSION" TAG_NAME="$TAG" node -e "
+          const raw = JSON.parse(process.env.ALL_VERSIONS);
+          const versions = Array.isArray(raw) ? raw : [raw];
+          const prefix = process.env.BASE_VERSION + '-' + process.env.TAG_NAME + '.';
+          const nums = versions
+            .filter(v => v.startsWith(prefix))
+            .map(v => parseInt(v.slice(prefix.length), 10))
+            .filter(n => !isNaN(n));
+          console.log(nums.length > 0 ? Math.max(...nums) + 1 : 1);
+        ")
+
+        npm pkg set version="${CURRENT_VERSION}-${TAG}.${PRERELEASE_NUM}"
 
     - name: Check if version already published
       working-directory: lib/js
