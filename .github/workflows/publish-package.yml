@@ -47,7 +47,7 @@ jobs:
     timeout-minutes: 15
     name: Publish ${{ inputs.target }} to ${{ inputs.registry }}
     permissions:
-      contents: read
+      contents: write  # Required to create tags and GitHub Releases.
       packages: write
       actions: read
     steps:
@@ -101,3 +101,63 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           npm_token: ${{ secrets.NPM_TOKEN_OPENTOK }}
           node_version: ${{ vars.NODE_VERSION }}
+
+      # Resolve the SHA of the CI run that produced the artifact so the Git tag and release
+      # point to the exact source commit, not the workflow-dispatch ref (which may differ).
+      - name: Resolve source commit SHA
+        if: ${{ !inputs.dry_run }}
+        id: source
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ inputs.run_id }}
+        run: |
+          if [ -n "$RUN_ID" ]; then
+            SHA=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" --jq '.head_sha')
+          else
+            SHA=$(gh api "/repos/$GITHUB_REPOSITORY/actions/workflows/post-merge-validation.yml/runs?branch=$GITHUB_REF_NAME&status=success&per_page=1" --jq '.workflow_runs[0].head_sha')
+          fi
+          if [ -z "$SHA" ] || [ "$SHA" = "null" ]; then
+            echo "❌ Could not resolve source commit SHA"
+            exit 1
+          fi
+          echo "sha=${SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./lib/js/package.json').version")
+          TARGET="${{ inputs.target }}"
+          TAG_NAME="${TARGET}/v${VERSION}"
+          SOURCE_SHA="${{ steps.source.outputs.sha }}"
+
+          # If this release already exists (e.g., same version published to a second registry),
+          # skip silently rather than failing.
+          if gh release view "$TAG_NAME" &>/dev/null; then
+            echo "ℹ️  Release $TAG_NAME already exists — skipping."
+            exit 0
+          fi
+
+          # Fetch all tags so we can find the previous one for accurate changelog scoping.
+          git fetch --tags --quiet
+
+          RELEASE_FLAGS=(
+            --title "${TARGET^} v${VERSION}"
+            --generate-notes
+            --target "$SOURCE_SHA"
+          )
+
+          # Scope the auto-generated changelog to only PRs since the last release of this target.
+          PREV_TAG=$(git tag -l "${TARGET}/v*" --sort=-version:refname | head -1)
+          if [ -n "$PREV_TAG" ]; then
+            RELEASE_FLAGS+=(--notes-start-tag "$PREV_TAG")
+          fi
+
+          # Mark pre-release versions (those built with a tag suffix, e.g. alpha) accordingly.
+          if [ -n "${{ inputs.tag }}" ]; then
+            RELEASE_FLAGS+=(--prerelease)
+          fi
+
+          gh release create "$TAG_NAME" "${RELEASE_FLAGS[@]}"
+          echo "✅ Created release $TAG_NAME targeting $SOURCE_SHA"
