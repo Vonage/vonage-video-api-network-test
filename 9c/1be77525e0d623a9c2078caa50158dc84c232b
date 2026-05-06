@@ -1,0 +1,30 @@
+lib/js/package-lock.json
+  ai_agent 91-93,97,128-130,135,175-177,181-182,184,186-187,228-230,235,270-272,294-296,300-301,529-531,579-581,1393-1395,1750-1752,2130-2132,2165-2167,2324-2326,2483-2485,2488,2532-2534,2653-2655,2667,2716-2718,2913-2915,2919-2921,2983-2985,3856,3932-3934,4021-4023,4055-4057,4087-4089,4094,4162-4164,4320-4322,4761-4763,5001-5003,5492-5494,5783-5785,5789,6040-6042,6048,6055-6057,6505-6507,6561-6563,6682-6684,6977-6979,7288-7290,7929-7931,8181-8183,8187,8305-8307,8495-8497,8724-8726,8731,9107-9109,9210-9212,9229-9231,9477-9479,10027-10029,10054-10056,10113-10115,10136,10239-10241,10272-10281,10506-10508
+lib/js/test/subscriberMOS.spec.ts
+  s_b7f72b0b25298a::t_e5b189fe03eef3 1-277
+lib/js/test/calculateThroughput.spec.ts
+  s_b7f72b0b25298a::t_1c7d7c54cfed02 1-175,263
+  s_b7f72b0b25298a::t_6a496832d2d88f 177-259
+lib/js/test/tsconfig.json
+  s_b7f72b0b25298a::t_a0c966fe32659a 1-10
+lib/js/src/testQuality/helpers/calculateThroughput.ts
+  ai_agent 23
+lib/js/src/testQuality/helpers/subscriberMOS.ts
+  ai_agent 66-67,86,90,132-135
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "9c1be77525e0d623a9c2078caa50158dc84c232b",
+  "prompts": {},
+  "sessions": {
+    "s_b7f72b0b25298a": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "91faefff-d490-4249-a145-ff513fcd411b",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
