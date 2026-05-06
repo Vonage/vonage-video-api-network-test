@@ -1,0 +1,26 @@
+lib/js/test/tsconfig.json
+  s_b7f72b0b25298a::t_a0c966fe32659a 1-10
+lib/js/test/subscriberMOS.spec.ts
+  s_b7f72b0b25298a::t_e5b189fe03eef3 1-277
+lib/js/src/testQuality/helpers/subscriberMOS.ts
+  ai_agent 66-67,86,90
+lib/js/test/calculateThroughput.spec.ts
+  s_b7f72b0b25298a::t_1c7d7c54cfed02 1-175,263
+  s_b7f72b0b25298a::t_6a496832d2d88f 177-259
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "e1b50b50c9e1aa806b27ed2463c3c2606ca663f8",
+  "prompts": {},
+  "sessions": {
+    "s_b7f72b0b25298a": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "91faefff-d490-4249-a145-ff513fcd411b",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
