@@ -1,0 +1,19 @@
+lib/js/test/calculateThroughput.spec.ts
+  s_b7f72b0b25298a::t_6a496832d2d88f 177,180-181,190,203-204,215,227,249-250,257-259
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "a84619bc3c7817dcb092a901b32443a816fdd6fd",
+  "prompts": {},
+  "sessions": {
+    "s_b7f72b0b25298a": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "91faefff-d490-4249-a145-ff513fcd411b",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
