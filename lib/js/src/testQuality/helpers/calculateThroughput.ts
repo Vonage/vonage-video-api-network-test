@@ -20,7 +20,7 @@ function getAverageBitrateAndPlr(type: AV,
     if (type === 'video') {
       sumBps += stat.videoKbsSent * 1000;
     } else {
-      sumBps += stat.audioStats[0].kbs * 1000;
+      sumBps += (stat.audioStats[0]?.kbs ?? 0) * 1000;
     }
   });
 
