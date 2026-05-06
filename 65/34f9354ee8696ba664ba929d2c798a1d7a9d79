@@ -1,0 +1,19 @@
+lib/js/test/tsconfig.json
+  s_b7f72b0b25298a::t_a0c966fe32659a 1-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "6534f9354ee8696ba664ba929d2c798a1d7a9d79",
+  "prompts": {},
+  "sessions": {
+    "s_b7f72b0b25298a": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "91faefff-d490-4249-a145-ff513fcd411b",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
