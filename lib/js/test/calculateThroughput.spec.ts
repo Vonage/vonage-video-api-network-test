@@ -148,7 +148,7 @@ describe('calculateThroughput', () => {
     expect(result.video.qualityLimitationReason).toBe('bandwidth');
   });
 
-  it('returns null qualityLimitationReason when all limitations are none', () => {
+  it('returns undefined qualityLimitationReason when all limitations are none', () => {
     state.subscriberStatsLog.push(
       createSubscriberStat(1000),
       createSubscriberStat(2000),
@@ -157,7 +157,7 @@ describe('calculateThroughput', () => {
 
     const result = calculateThroughput(state);
 
-    expect(result.video.qualityLimitationReason).toBeNull();
+    expect(result.video.qualityLimitationReason).toBeUndefined();
   });
 
   it('reports simulcast true when publisher stats have simulcast enabled', () => {

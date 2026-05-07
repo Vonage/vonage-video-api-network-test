@@ -75,6 +75,7 @@ samples/js/node_modules
 
 # test credentials
 /test/credentials.json
+lib/js/test/credentials.json
 
 # We're using npm (at least for now)
 yarn.lock

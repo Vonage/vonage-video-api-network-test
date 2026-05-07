@@ -98,12 +98,12 @@ describe('getUpdateCallbackStats', () => {
     it('populates video stats in audio-video phase', () => {
       const result = getUpdateCallbackStats(createSubscriberStats(), createPublisherStats(), 'audio-video');
       expect(result.video).not.toBeNull();
-      expect(result.video.bytesReceived).toBe(12000);
-      expect(result.video.packetsLost).toBe(1);
-      expect(result.video.packetsReceived).toBe(199);
-      expect(result.video.frameRate).toBe(25);
-      expect(result.video.bytesSent).toBe(2000);
-      expect(result.video.mediaRouting).toBe('Relayed (TURN/UDP)');
+      expect(result.video!.bytesReceived).toBe(12000);
+      expect(result.video!.packetsLost).toBe(1);
+      expect(result.video!.packetsReceived).toBe(199);
+      expect(result.video!.frameRate).toBe(25);
+      expect(result.video!.bytesSent).toBe(2000);
+      expect(result.video!.mediaRouting).toBe('Relayed (TURN/UDP)');
     });
 
     it('uses the subscriber stats timestamp', () => {

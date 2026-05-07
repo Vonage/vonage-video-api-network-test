@@ -480,7 +480,7 @@ index bbcb01a..eec63b8 100644
  {
 -  "name": "@vonage/video-client-network-test",
 +  "name": "@opentok/opentok-network-test-js",
-   "version": "5.1.0",
+   "version": "5.1.1",
 -  "description": "Precall network test for applications using the Vonage Video API platform.",
 -  "main": "dist/vonage/index.js",
 -  "types": "dist/vonage/index.d.ts",
@@ -524,22 +524,22 @@ index bbcb01a..eec63b8 100644
    "dependencies": {
      "axios": "^1.8.3",
      "opentok-solutions-logging": "^1.1.1"
-@@ -52,6 +51,7 @@
-     "@changesets/cli": "^2.29.8",
-     "@vonage/client-sdk-video": "2.31.1",
+@@ -61,6 +60,7 @@
+     "@vonage/client-sdk-video": "2.34.0",
      "@vonage/server-sdk": "^3.20.0",
 +    "@opentok/client": "^2.31.1",
-     "@types/expect.js": "^0.3.29",
-     "@types/jasmine": "^5.0.0",
-     "@types/jasmine-matchers": "^0.2.30",
-@@ -76,12 +76,12 @@
+     "dotenv": "^17.0.0",
+     "eslint": "^8.44.0",
+     "jasmine": "^6.0.0",
+     "jasmine-core": "^6.0.0",
+@@ -75,12 +75,12 @@
      "karma-sauce-launcher": "^4.3.6",
      "karma-sourcemap-loader": "^0.4.0",
      "karma-webpack": "^5.0.0",
 +    "opentok": "^2.16.0",
      "terser-webpack-plugin": "^5.3.9",
      "ts-loader": "^9.5.1",
--    "typescript": "^5.9.3",
+-    "typescript": "^6.0.3",
 +    "typescript": "^5.4.5",
      "webpack": "^5.88.1",
      "webpack-cli": "^6.0.0",
@@ -885,13 +885,12 @@ diff --git a/lib/js/test/setup/setup.js b/lib/js/test/setup/setup.js
 index 3cecd93..586674f 100644
 --- a/lib/js/test/setup/setup.js
 +++ b/lib/js/test/setup/setup.js
-@@ -1,60 +1,38 @@
+@@ -1,62 +1,41 @@
  import dotenv from 'dotenv';
  dotenv.config();
 -import { Vonage } from '@vonage/server-sdk';
-+import OpenTok from 'opentok';
- import fse from 'fs-extra';
 -import * as fs from 'fs';
+-import { dirname } from 'path';
 -const applicationId = process.env.TEST_APPLICATION_ID;
 -const privateKeyPath = './private.key';
 -
@@ -911,6 +910,46 @@ index 3cecd93..586674f 100644
 -  const vonage = new Vonage({
 -    applicationId,
 -    privateKey,
+-  });
+-  try {
+-    const session = await vonage.video.createSession({ mediaMode: 'routed' });
+-    const token = vonage.video.generateClientToken(session.sessionId);
+-    const { sessionId } = session;
+-    return { applicationId, sessionId, token };
+-  } catch(e) {
+-    console.error(e);
+-    throw e;
+-  }
+-}
+-
+-async function writeCredentials(credentialsArray) {
+-  const [primary, faultyLogging, faultyApi] = credentialsArray;
+-  const credentials = { primary, faultyLogging, faultyApi };
+-  const filePath = './test/credentials.json';
+-  await fs.promises.mkdir(dirname(filePath), { recursive: true });
+-  return fs.promises.writeFile(filePath, JSON.stringify(credentials, null, 2));
+-}
+-
+-async function generateCredentials(){
+-  try {
+-    const privateKey = fs.readFileSync(privateKeyPath);
+-
+-    const sessions = await Promise.all([
+-      createSessionAndToken({ applicationId, privateKey }),
+-      createSessionAndToken({ applicationId, privateKey }),
+-      createSessionAndToken({ applicationId, privateKey }),
+-    ]);
+-
+-    await writeCredentials(sessions);
+-    console.info('Generated session credentials for test.');
+-  } catch(e) {
+-    console.error('Failed to generate test credentials', e);
+-  }
+-}
+-
++import OpenTok from 'opentok';
++import * as fs from 'fs';
++import { dirname } from 'path';
 +const apiKey = process.env.TEST_API_KEY;
 +const apiSecret = process.env.TEST_API_SECRET;
 +
@@ -926,46 +965,24 @@ index 3cecd93..586674f 100644
 +        resolve({ apiKey, sessionId, token });
 +      }
 +    });
-   });
--  try {
--    const session = await vonage.video.createSession({ mediaMode: 'routed' });
--    const token = vonage.video.generateClientToken(session.sessionId);
--    const { sessionId } = session;
--    return { applicationId, sessionId, token };
--  } catch(e) {
--    console.error(e);
--    throw e;
--  }
- }
- 
--async function writeCredentials(credentialsArray) {
++  });
++}
++
 +function writeCredentials(credentialsArray) {
-   const [primary, faultyLogging, faultyApi] = credentialsArray;
-   const credentials = { primary, faultyLogging, faultyApi };
-   return fse.outputJson('./test/credentials.json', credentials);
- }
- 
--async function generateCredentials(){
--  try {
--    const privateKey = fs.readFileSync(privateKeyPath);
--
--    const sessions = await Promise.all([
--      createSessionAndToken({ applicationId, privateKey }),
--      createSessionAndToken({ applicationId, privateKey }),
--      createSessionAndToken({ applicationId, privateKey }),
--    ]);
++  const [primary, faultyLogging, faultyApi] = credentialsArray;
++  const credentials = { primary, faultyLogging, faultyApi };
++  const filePath = './test/credentials.json';
++  return fs.promises.mkdir(dirname(filePath), { recursive: true })
++    .then(() => fs.promises.writeFile(filePath, JSON.stringify(credentials, null, 2)));
++}
++
 +function generateCredentials(){
 +  const create = () => createSessionAndToken({ apiKey, apiSecret });
- 
--    await writeCredentials(sessions);
--    console.info('Generated session credentials for test.');
--  } catch(e) {
--    console.error('Failed to generate test credentials', e);
--  }
++
 +  Promise.all([create(), create(), create()])
 +    .then(writeCredentials)
 +    .then(() => console.info('Generated session credentials for test.'))
 +    .catch(e => console.error('Failed to generate test credentials', e));
- }
- 
++}
++
  generateCredentials();
