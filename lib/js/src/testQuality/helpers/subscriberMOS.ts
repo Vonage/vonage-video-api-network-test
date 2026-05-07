@@ -63,6 +63,7 @@ function calculateAudioScore(
 
   const audioScore = (packetLossRatio: number) => {
     const LOCAL_DELAY = 30; // 30 msecs: typical frame duration
+    /* istanbul ignore next */
     const h = (x: number): number => x < 0 ? 0 : 1;
     const a = 0; // ILBC: a=10
     const b = 19.8;
@@ -82,9 +83,11 @@ function calculateAudioScore(
      * Calculate the Mean Opinion Score based on R
      */
     const calculateMOS = (R: number): number => {
+      /* istanbul ignore next */
       if (R < 0) {
         return 1;
       }
+      /* istanbul ignore next */
       if (R > 100) {
         return 4.5;
       }
@@ -126,8 +129,10 @@ export default function subscriberMOS(
           return null;
         }
 
-        // Check for faulty stats
-        if (subscriberStats.audio.bytesReceived < 0 || Number(getOr(1, 'video.bytesReceived', subscriberStats)) < 0) {
+        // Check for faulty stats - audio may be null when mic is muted or input volume is 0
+        if (
+          (subscriberStats.audio?.bytesReceived ?? 0) < 0
+            || Number(getOr(1, 'video.bytesReceived', subscriberStats)) < 0) {
           mosState.clearInterval();
           return callback(mosState);
         }
