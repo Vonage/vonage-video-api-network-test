@@ -4,6 +4,8 @@ export type UpdateCallbackStats = {
   video: CallbackTrackStats & { frameRate: number; mediaRouting?: string };
   timestamp: number;
   phase: string;
+  networkCondition?: OT.NetworkCondition;
+  networkDegradationSource?: OT.NetworkDegradationSource;
 };
 
 export interface CallbackTrackStats {
