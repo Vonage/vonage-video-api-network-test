@@ -1,0 +1,21 @@
+lib/js/package-lock.json
+  ai_agent 19,21-22,922-924,956-958,970-972,976,9778-9780
+lib/js/package.json
+  s_78eccb2c9138a8::t_410b079f8e6fa3 54,56-57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "7d17606f3ad46bde70bf4c6fe2a25f8aba41b5a4",
+  "prompts": {},
+  "sessions": {
+    "s_78eccb2c9138a8": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "d199f58b-9b77-401e-828d-67b803c5bf11",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
