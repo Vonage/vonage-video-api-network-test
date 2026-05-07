@@ -11,17 +11,17 @@ export interface PreviousStreamStats {
 export async function getPublisherStats(
   publisher: OT.Publisher,
   previousStats: PublisherStats | undefined,
-): Promise<PublisherStats | null> {
+): Promise<PublisherStats | undefined> {
 
   if (typeof publisher.getRtcStatsReport !== 'function') {
-    return null;
+    return undefined;
   }
 
   try {
     const publisherStatsReport = await publisher.getRtcStatsReport();
-    return extractPublisherStats(publisherStatsReport, previousStats);
+    return extractPublisherStats(publisherStatsReport, previousStats) ?? undefined;
   } catch (error) {
-    return null;
+    return undefined;
   }
 }
 
@@ -35,7 +35,7 @@ const calculateAudioBitrate = (
   }
 
   const { currentTimestamp: previousTimestamp, byteSent: previousByteSent } = previousSsrcFrameData;
-  const byteSent = stats.bytesSent - previousByteSent;
+  const byteSent = (stats.bytesSent ?? 0) - previousByteSent;
   const timeDiff = (stats.timestamp - previousTimestamp) / 1000; // Convert to seconds
 
   return Math.round((byteSent * 8) / (1000 * timeDiff)); // Convert to bits per second
@@ -51,7 +51,7 @@ const calculateVideoBitrate = (
   }
 
   const { currentTimestamp: previousTimestamp, byteSent: previousByteSent } = previousSsrcFrameData;
-  const byteSent = stats.bytesSent - previousByteSent;
+  const byteSent = (stats.bytesSent ?? 0) - previousByteSent;
   const timeDiff = (stats.timestamp - previousTimestamp) / 1000; // Convert to seconds
 
   return Math.round((byteSent * 8) / (1000 * timeDiff)); // Convert to kbit per second
@@ -106,10 +106,11 @@ const extractOutboundRtpStats = (
   for (const stats of outboundRtpStats) {
     if (stats.kind === 'video' || stats.mediaType === 'video') {
       const kbs = calculateVideoBitrate(stats, previousStats);
-      const { ssrc, bytesSent: byteSent, timestamp: currentTimestamp } = stats;
-      const baseStats = { kbs, ssrc, byteSent, currentTimestamp };
+      const { ssrc, timestamp: currentTimestamp } = stats;
+      const baseStats = { kbs, ssrc, byteSent: stats.bytesSent ?? 0, currentTimestamp };
       videoStats.push({
         ...baseStats,
+        byteSent: stats.bytesSent ?? 0,
         qualityLimitationReason: stats.qualityLimitationReason,
         resolution: `${stats.frameWidth || 0}x${stats.frameHeight || 0}`,
         framerate: stats.framesPerSecond || 0,
@@ -119,8 +120,8 @@ const extractOutboundRtpStats = (
       });
     } else if (stats.kind === 'audio' || stats.mediaType === 'audio') {
       const kbs = calculateAudioBitrate(stats, previousStats);
-      const { ssrc, bytesSent: byteSent, timestamp: currentTimestamp } = stats;
-      const baseStats = { kbs, ssrc, byteSent, currentTimestamp };
+      const { ssrc, timestamp: currentTimestamp } = stats;
+      const baseStats = { kbs, ssrc, byteSent: stats.bytesSent ?? 0, currentTimestamp };
       audioStats.push(baseStats);
     }
   }
@@ -131,9 +132,9 @@ const extractOutboundRtpStats = (
 const extractPublisherStats = (
   publisherRtcStatsReport?: OT.PublisherRtcStatsReportArr,
   previousStats?: PublisherStats,
-): PublisherStats | null => {
+): PublisherStats | undefined => {
   if (!publisherRtcStatsReport) {
-    return null;
+    return undefined;
   }
 
   const { rtcStatsReport } = publisherRtcStatsReport[0];
@@ -152,8 +153,12 @@ const extractPublisherStats = (
     return rtcStatsArray.find(stats => stats.type === type && stats.id === id) as RTCIceCandidateStats | null;
   };
 
-  const localCandidate = findCandidateById('local-candidate', iceCandidatePairStats?.localCandidateId);
-  const remoteCandidate = findCandidateById('remote-candidate', iceCandidatePairStats?.remoteCandidateId);
+  const localCandidate = iceCandidatePairStats?.localCandidateId
+    ? findCandidateById('local-candidate', iceCandidatePairStats.localCandidateId)
+    : null;
+  const remoteCandidate = iceCandidatePairStats?.remoteCandidateId
+    ? findCandidateById('remote-candidate', iceCandidatePairStats.remoteCandidateId)
+    : null;
 
   const { videoStats, audioStats } = extractOutboundRtpStats(outboundRtpStats, previousStats);
 

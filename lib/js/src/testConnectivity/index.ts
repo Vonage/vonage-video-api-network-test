@@ -285,7 +285,7 @@ Promise<SubscribeToSessionResults> {
     const handleError = () => reject(new e.LoggingServerConnectionError());
 
     axios.post(url)
-      .then(response => response.status === 200 ? resolve(input) : handleError())
+      .then(response => response.status === 200 ? resolve(input!) : handleError())
       .catch(handleError);
 
   });
