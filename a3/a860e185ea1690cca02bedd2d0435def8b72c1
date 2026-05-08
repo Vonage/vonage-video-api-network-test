@@ -1,0 +1,20 @@
+lib/js/opentok.patch
+  s_78eccb2c9138a8::t_efdd3eed953f61 731,738
+  s_78eccb2c9138a8::t_0f0c68acfe1431 724,732-736,739
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "a3a860e185ea1690cca02bedd2d0435def8b72c1",
+  "prompts": {},
+  "sessions": {
+    "s_78eccb2c9138a8": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "d199f58b-9b77-401e-828d-67b803c5bf11",
+        "model": "unknown"
+      },
+      "human_author": null
+    }
+  }
+}
