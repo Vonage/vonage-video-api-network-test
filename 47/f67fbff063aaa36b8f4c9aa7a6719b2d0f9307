@@ -1,0 +1,19 @@
+lib/js/opentok.patch
+  s_78eccb2c9138a8::t_fbc4b07747c480 888,893,913,923-924,926-932,942,948-981,986-987
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "47f67fbff063aaa36b8f4c9aa7a6719b2d0f9307",
+  "prompts": {},
+  "sessions": {
+    "s_78eccb2c9138a8": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "d199f58b-9b77-401e-828d-67b803c5bf11",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
