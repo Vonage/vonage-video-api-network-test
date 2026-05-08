@@ -35,7 +35,10 @@ const calculateAudioBitrate = (
   }
 
   const { currentTimestamp: previousTimestamp, byteSent: previousByteSent } = previousSsrcFrameData;
-  const byteSent = (stats.bytesSent ?? 0) - previousByteSent;
+  if (stats.bytesSent == null) {
+    return 0;
+  }
+  const byteSent = stats.bytesSent - previousByteSent;
   const timeDiff = (stats.timestamp - previousTimestamp) / 1000; // Convert to seconds
 
   return Math.round((byteSent * 8) / (1000 * timeDiff)); // Convert to bits per second
@@ -51,7 +54,10 @@ const calculateVideoBitrate = (
   }
 
   const { currentTimestamp: previousTimestamp, byteSent: previousByteSent } = previousSsrcFrameData;
-  const byteSent = (stats.bytesSent ?? 0) - previousByteSent;
+  if (stats.bytesSent == null) {
+    return 0;
+  }
+  const byteSent = stats.bytesSent - previousByteSent;
   const timeDiff = (stats.timestamp - previousTimestamp) / 1000; // Convert to seconds
 
   return Math.round((byteSent * 8) / (1000 * timeDiff)); // Convert to kbit per second
@@ -110,7 +116,6 @@ const extractOutboundRtpStats = (
       const baseStats = { kbs, ssrc, byteSent: stats.bytesSent ?? 0, currentTimestamp };
       videoStats.push({
         ...baseStats,
-        byteSent: stats.bytesSent ?? 0,
         qualityLimitationReason: stats.qualityLimitationReason,
         resolution: `${stats.frameWidth || 0}x${stats.frameHeight || 0}`,
         framerate: stats.framesPerSecond || 0,

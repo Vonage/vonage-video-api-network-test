@@ -721,16 +721,22 @@ index 55ae29c..d0cae9b 100644
      session.connect(token, (error?: OT.OTError) => {
        if (errorHasName(error, OTErrorType.OT_AUTHENTICATION_ERROR)) {
          reject(new e.ConnectToSessionTokenError());
-@@ -273,7 +273,7 @@ function checkSubscribeToSession({ session, publisher }: PublishToSessionResults
+@@ -273,13 +273,13 @@ function checkSubscribeToSession({ session, publisher }: PublishToSessionResults
  }
  
  /**
 - * Attempt to connect to the Vonage client logging server
 + * Attempt to connect to the tokbox client logging server
   */
+ function checkLoggingServer(OTInstance: typeof OT, options?: NetworkTestOptions): Promise<void>;
+ function checkLoggingServer(
+   OTInstance: typeof OT,
+   options: NetworkTestOptions | undefined,
+   input: SubscribeToSessionResults):
+ Promise<SubscribeToSessionResults>;
  function checkLoggingServer(OTInstance: typeof OT, options?: NetworkTestOptions, input?: SubscribeToSessionResults):
- Promise<SubscribeToSessionResults> {
-@@ -292,7 +292,7 @@ Promise<SubscribeToSessionResults> {
+ Promise<SubscribeToSessionResults | void> {
+@@ -298,7 +298,7 @@ Promise<SubscribeToSessionResults | void> {
  }
  
  /**
