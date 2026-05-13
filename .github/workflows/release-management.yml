@@ -17,6 +17,34 @@ jobs:
       contents: write      # Required to create and update the draft release.
       pull-requests: write  # Required to apply labels to pull requests.
     steps:
+      # Checkout is only needed on push events for the baseline check below.
+      # Release Drafter itself works entirely via the GitHub API and needs no checkout.
+      - name: Checkout repository
+        if: github.event_name == 'push'
+        uses: actions/checkout@v4
+
+      # Guards against the first-ever run: if no published release exists, Release Drafter
+      # would scan the entire PR history. A baseline release anchors it so only PRs merged
+      # after this point are included in the next release's changelog.
+      - name: Create baseline release if none exist
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          RELEASE_COUNT=$(gh release list --exclude-drafts --json tagName --jq 'length')
+          if [ "$RELEASE_COUNT" -eq 0 ]; then
+            # Try the package source first, then the repo root, then fall back to 0.0.0.
+            VERSION=$(node -p "require('./lib/js/package.json').version" 2>/dev/null || \
+                      node -p "require('./package.json').version" 2>/dev/null || \
+                      echo "0.0.0")
+            echo "No published releases found — creating baseline at v${VERSION}"
+            gh release create "v${VERSION}" \
+              --title "v${VERSION}" \
+              --notes "Baseline release — marks the starting point for automated changelog generation. PRs merged after this point will appear in the next release." \
+              --target "${{ github.event.before }}"
+          fi
+
       - name: Update release draft
         uses: release-drafter/release-drafter@v6
         env:
