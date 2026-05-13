@@ -118,12 +118,24 @@ jobs:
           echo "package_name=$NAME" >> "$GITHUB_OUTPUT"
           echo "tag=${{ inputs.target }}-v${VERSION}" >> "$GITHUB_OUTPUT"
 
-      - name: Create GitHub Release
+      # Promotes the Release Drafter draft if one exists (accumulated changelog from all
+      # PR merges since the last release). Falls back to a fresh release with auto-generated
+      # notes if no draft is found (e.g., first release or draft was manually deleted).
+      - name: Publish GitHub Release
         if: ${{ !fromJSON(inputs.dry_run) }}
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.release-meta.outputs.tag }}
-          name: "${{ inputs.target }} v${{ steps.release-meta.outputs.version }}"
-          # Automatically generates changelog from PRs merged since the previous release tag.
-          # Category labels are configured in .github/release.yml.
-          generate_release_notes: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.release-meta.outputs.tag }}
+          TITLE: "${{ inputs.target }} v${{ steps.release-meta.outputs.version }}"
+        shell: bash
+        run: |
+          DRAFT_TAG=$(gh release list --json tagName,isDraft \
+            --jq '[.[] | select(.isDraft==true)] | first | .tagName // empty')
+
+          if [ -n "$DRAFT_TAG" ]; then
+            echo "Promoting draft '$DRAFT_TAG' → '$TAG'"
+            gh release edit "$DRAFT_TAG" --tag "$TAG" --title "$TITLE" --draft=false
+          else
+            echo "No draft found — creating release '$TAG'"
+            gh release create "$TAG" --title "$TITLE" --generate-notes
+          fi
