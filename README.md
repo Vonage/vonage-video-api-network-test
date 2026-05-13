@@ -18,11 +18,12 @@
 
 ## 📦 Monorepo Consolidation
 
-Merged from three previously separate branding-specific repositories:
+Merged from four previously separate branding-specific repositories:
 
 - [opentok-network-test-js](https://github.com/opentok/opentok-network-test-js) — the OpenTok-branded library
 - [vonage-video-api-network-test](https://github.com/Vonage/vonage-video-api-network-test) — the Vonage-branded library
 - [opentok-network-test](https://github.com/opentok/opentok-network-test) - repository of Network Test examples for Android and iOS
+- [vonage-video-api-network-test-samples](https://github.com/Vonage/vonage-video-api-network-test-samples) - repository of Network Test examples for Web
 
 The library supports both `@vonage/video-client-network-test` (Vonage) and `opentok-network-test-js` (OpenTok) distributions — see [`samples/js/README.md`](samples/js/README.md) for details on building for each brand.
 
