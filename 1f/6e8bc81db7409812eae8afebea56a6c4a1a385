@@ -1,0 +1,21 @@
+.github/workflows/release-management.yml
+  s_3383b500941060::t_4717860641bb86 8-11
+  s_3383b500941060::t_c8aefdd5bcfcd9 55
+  s_3383b500941060::t_bdb3fdafb93119 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "1f6e8bc81db7409812eae8afebea56a6c4a1a385",
+  "prompts": {},
+  "sessions": {
+    "s_3383b500941060": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "906f5b88-98cd-4482-af59-093cdadc2f9e",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
