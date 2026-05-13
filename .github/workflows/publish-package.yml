@@ -123,8 +123,8 @@ jobs:
       # Promotes the Release Drafter draft if one exists (accumulated changelog from all
       # PR merges since the last release). Falls back to a fresh release with auto-generated
       # notes if no draft is found (e.g., first release or draft was manually deleted).
-      # If a release for this version already exists (i.e., a sibling target was published
-      # first), this step is skipped — the GitHub Release is already in place.
+      # Idempotent: if the release already exists (a sibling target published first),
+      # this step is a no-op — all four publish targets share the same version tag.
       - name: Publish GitHub Release
         if: ${{ !fromJSON(inputs.dry_run) }}
         env:
@@ -133,22 +133,18 @@ jobs:
           VERSION: ${{ steps.release-meta.outputs.version }}
         shell: bash
         run: |
-          # If a published release for this version already exists, a sibling target was
-          # published first. Nothing to do — the shared release is already in place.
-          EXISTING=$(gh release view "$TAG" --json isDraft --jq '.isDraft' 2>/dev/null || echo "")
-          if [ "$EXISTING" == "false" ]; then
-            echo "Release $TAG already published by a previous target run — skipping."
+          if gh release view "$TAG" &>/dev/null; then
+            echo "Release $TAG already exists — skipping."
             exit 0
           fi
 
-          TITLE="v${VERSION}"
           DRAFT_TAG=$(gh release list --json tagName,isDraft \
             --jq '[.[] | select(.isDraft==true)] | first | .tagName // empty')
 
           if [ -n "$DRAFT_TAG" ]; then
             echo "Promoting draft '$DRAFT_TAG' → '$TAG'"
-            gh release edit "$DRAFT_TAG" --tag "$TAG" --title "$TITLE" --draft=false
+            gh release edit "$DRAFT_TAG" --tag "$TAG" --title "v${VERSION}" --draft=false
           else
             echo "No draft found — creating release '$TAG'"
-            gh release create "$TAG" --title "$TITLE" --generate-notes
+            gh release create "$TAG" --title "v${VERSION}" --generate-notes
           fi
