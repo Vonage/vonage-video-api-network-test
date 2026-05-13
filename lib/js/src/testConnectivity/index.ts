@@ -275,8 +275,14 @@ function checkSubscribeToSession({ session, publisher }: PublishToSessionResults
 /**
  * Attempt to connect to the Vonage client logging server
  */
+function checkLoggingServer(OTInstance: typeof OT, options?: NetworkTestOptions): Promise<void>;
+function checkLoggingServer(
+  OTInstance: typeof OT,
+  options: NetworkTestOptions | undefined,
+  input: SubscribeToSessionResults):
+Promise<SubscribeToSessionResults>;
 function checkLoggingServer(OTInstance: typeof OT, options?: NetworkTestOptions, input?: SubscribeToSessionResults):
-Promise<SubscribeToSessionResults> {
+Promise<SubscribeToSessionResults | void> {
   return new Promise((resolve, reject) => {
     const loggingUrl =
       `${getOr('', 'properties.loggingURL', OTInstance)}/logging/ClientEvent`; // https://hlg.tokbox.com/prod

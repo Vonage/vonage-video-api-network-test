@@ -158,7 +158,7 @@ describe('subscriberMOS', () => {
     capturedIntervalCallback!();
     await flushPromises();
 
-    expect(mockListener).toHaveBeenCalledWith(undefined, stats, null);
+    expect(mockListener).toHaveBeenCalledWith(undefined, stats, undefined);
   });
 
   it('clears interval when subscriber is destroyed', () => {

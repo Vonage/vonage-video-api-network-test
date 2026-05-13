@@ -42,7 +42,10 @@ interface QualityTestResultsBuilder {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface QualityTestResults extends HasAudioVideo<AverageStats> { }
+export interface QualityTestResults extends HasAudioVideo<AverageStats> {
+  networkCondition?: OT.NetworkCondition;
+  networkDegradationSource?: OT.NetworkDegradationSource;
+}
 
 type MOSResultsCallback = (state: MOSState) => void;
 type DeviceMap = { [deviceId: string]: OT.Device };
@@ -258,12 +261,18 @@ function buildResults(builder: QualityTestResultsBuilder): QualityTestResults {
     builder.state.stats.video.mediaRouting = lastPublisherStats.mediaRouting;
   }
 
+  const lastSubscriberStats = builder.state.subscriberStatsLog[builder.state.subscriberStatsLog.length - 1];
+  const networkCondition = lastSubscriberStats?.mediaLink?.transport?.networkCondition;
+  const networkDegradationSource = lastSubscriberStats?.mediaLink?.networkDegradationSource;
+
   return {
     audio: pick(baseProps, builder.state.stats.audio),
     video: pick(baseProps.concat([
       'frameRate', 'qualityLimitationReason', 'recommendedResolution', 'recommendedFrameRate', 'mediaRouting',
     ]),
     builder.state.stats.video),
+    ...(networkCondition !== undefined && { networkCondition }),
+    ...(networkDegradationSource !== undefined && { networkDegradationSource }),
   };
 }
 

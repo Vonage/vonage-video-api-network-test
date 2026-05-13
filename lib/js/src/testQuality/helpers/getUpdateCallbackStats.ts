@@ -33,6 +33,8 @@ const getUpdateCallbackStats = (
     audio: audioCallbackStats,
     video: videoCallbackStats,
     timestamp: subscriberStats.timestamp,
+    networkCondition: subscriberStats.mediaLink?.transport?.networkCondition,
+    networkDegradationSource: subscriberStats.mediaLink?.networkDegradationSource,
   };
 };
 

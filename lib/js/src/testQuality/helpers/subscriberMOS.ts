@@ -54,7 +54,7 @@ function calculateVideoScore(subscriber: OT.Subscriber, stats: OT.SubscriberStat
 }
 
 function calculateAudioScore(
-  subscriber: OT.Subscriber, publisherStats: PublisherStats | null,
+  subscriber: OT.Subscriber, publisherStats: PublisherStats | undefined,
   stats: OT.SubscriberStats[]): number {
   const getDelay = (): number => {
     // Return default delay until proper calculation

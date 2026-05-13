@@ -2,7 +2,7 @@ export interface VideoStats {
   ssrc: number;
   byteSent: number;
   kbs: number;
-  qualityLimitationReason: string;
+  qualityLimitationReason: string | undefined;
   resolution: string;
   framerate: number;
   active: boolean;
