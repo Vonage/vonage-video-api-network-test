@@ -47,7 +47,7 @@ jobs:
     timeout-minutes: 15
     name: Publish ${{ inputs.target }} to ${{ inputs.registry }}
     permissions:
-      contents: read
+      contents: write  # Required to create tags and GitHub Releases.
       packages: write
       actions: read
     steps:
@@ -57,6 +57,7 @@ jobs:
       # dry_run, tag, run_id, and github_token are shared across all three steps;
       # update all three if publish-package gains new shared inputs.
       - name: Publish Vonage Package
+        id: publish-vonage
         if: inputs.target == 'vonage'
         uses: ./.github/actions/publish-package
         with:
@@ -73,6 +74,7 @@ jobs:
           github_packages_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish OpenTok Package to GitHub
+        id: publish-opentok-github
         if: inputs.target == 'opentok' && inputs.registry == 'github.com'
         uses: ./.github/actions/publish-package
         with:
@@ -89,6 +91,7 @@ jobs:
           node_version: ${{ vars.NODE_VERSION }}
 
       - name: Publish OpenTok Package to NPM
+        id: publish-opentok-npm
         if: inputs.target == 'opentok' && inputs.registry == 'npmjs.com'
         uses: ./.github/actions/publish-package
         with:
@@ -101,3 +104,26 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           npm_token: ${{ secrets.NPM_TOKEN_OPENTOK }}
           node_version: ${{ vars.NODE_VERSION }}
+
+      # Reads the final version and name written to lib/js/package.json by the publish action.
+      # Skipped entirely on dry runs — no tag or release is created.
+      - name: Resolve published version
+        if: ${{ !fromJSON(inputs.dry_run) }}
+        id: release-meta
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./lib/js/package.json').version")
+          NAME=$(node -p "require('./lib/js/package.json').name")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "package_name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "tag=${{ inputs.target }}-v${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        if: ${{ !fromJSON(inputs.dry_run) }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release-meta.outputs.tag }}
+          name: "${{ inputs.target }} v${{ steps.release-meta.outputs.version }}"
+          # Automatically generates changelog from PRs merged since the previous release tag.
+          # Category labels are configured in .github/release.yml.
+          generate_release_notes: true
