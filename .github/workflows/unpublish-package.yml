@@ -96,8 +96,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          VERSION="${INPUT_VERSION:-$(npm view "@${GH_ORG}/${PACKAGE_NAME}" dist-tags.latest \
-            --registry https://npm.pkg.github.com 2>/dev/null || echo '')}"
+          # Resolve "latest" via the GitHub Packages API (no separate npm auth needed).
+          LATEST_VERSION=$(gh api "/orgs/${GH_ORG}/packages/npm/${PACKAGE_NAME}/versions" \
+            --jq 'sort_by(.created_at) | last | .name' 2>/dev/null || echo '')
+          VERSION="${INPUT_VERSION:-${LATEST_VERSION}}"
           if [ -z "$VERSION" ]; then
             echo "⚠️  Could not resolve version for @${GH_ORG}/${PACKAGE_NAME} on GitHub Packages — skipping."
             exit 0
@@ -171,8 +173,10 @@ jobs:
           GH_TOKEN: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
         shell: bash
         run: |
-          VERSION="${INPUT_VERSION:-$(npm view "@${GH_ORG}/${PACKAGE_NAME}" dist-tags.latest \
-            --registry https://npm.pkg.github.com 2>/dev/null || echo '')}"
+          # Resolve "latest" via the GitHub Packages API (no separate npm auth needed).
+          LATEST_VERSION=$(gh api "/orgs/${GH_ORG}/packages/npm/${PACKAGE_NAME}/versions" \
+            --jq 'sort_by(.created_at) | last | .name' 2>/dev/null || echo '')
+          VERSION="${INPUT_VERSION:-${LATEST_VERSION}}"
           if [ -z "$VERSION" ]; then
             echo "⚠️  Could not resolve version for @${GH_ORG}/${PACKAGE_NAME} on GitHub Packages — skipping."
             exit 0
