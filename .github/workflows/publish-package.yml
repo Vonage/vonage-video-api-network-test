@@ -116,26 +116,35 @@ jobs:
           NAME=$(node -p "require('./lib/js/package.json').name")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "package_name=$NAME" >> "$GITHUB_OUTPUT"
-          echo "tag=${{ inputs.target }}-v${VERSION}" >> "$GITHUB_OUTPUT"
+          # All targets (vonage, opentok) share the same version tag so that publishing
+          # vonage and opentok variants of the same version produces a single GitHub Release.
+          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
 
       # Promotes the Release Drafter draft if one exists (accumulated changelog from all
       # PR merges since the last release). Falls back to a fresh release with auto-generated
       # notes if no draft is found (e.g., first release or draft was manually deleted).
+      # Idempotent: if the release already exists (a sibling target published first),
+      # this step is a no-op — all four publish targets share the same version tag.
       - name: Publish GitHub Release
         if: ${{ !fromJSON(inputs.dry_run) }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.release-meta.outputs.tag }}
-          TITLE: "${{ inputs.target }} v${{ steps.release-meta.outputs.version }}"
+          VERSION: ${{ steps.release-meta.outputs.version }}
         shell: bash
         run: |
+          if gh release view "$TAG" &>/dev/null; then
+            echo "Release $TAG already exists — skipping."
+            exit 0
+          fi
+
           DRAFT_TAG=$(gh release list --json tagName,isDraft \
             --jq '[.[] | select(.isDraft==true)] | first | .tagName // empty')
 
           if [ -n "$DRAFT_TAG" ]; then
             echo "Promoting draft '$DRAFT_TAG' → '$TAG'"
-            gh release edit "$DRAFT_TAG" --tag "$TAG" --title "$TITLE" --draft=false
+            gh release edit "$DRAFT_TAG" --tag "$TAG" --title "v${VERSION}" --draft=false
           else
             echo "No draft found — creating release '$TAG'"
-            gh release create "$TAG" --title "$TITLE" --generate-notes
+            gh release create "$TAG" --title "v${VERSION}" --generate-notes
           fi
