@@ -1,0 +1,24 @@
+.github/workflows/publish-package.yml
+  s_fbcba06542f628::t_94188cc1de4599 68,86,103,122
+lib/js/opentok.patch
+  s_fbcba06542f628::t_1db6643d9c86b6 483
+.github/actions/publish-package/action.yml
+  s_fbcba06542f628::t_008f00ea595115 38-41
+  s_fbcba06542f628::t_5df8b771012992 173,182-188
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "66c9ea83b13ed10a977cfb561bd4e3f37bff5a17",
+  "prompts": {},
+  "sessions": {
+    "s_fbcba06542f628": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "7ed4fc55-0d34-4b20-811f-ab51acae166a",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "Zed <hi@zed.dev>"
+    }
+  }
+}
