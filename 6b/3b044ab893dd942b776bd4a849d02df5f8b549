@@ -1,0 +1,21 @@
+.github/workflows/publish-package.yml
+  s_fbcba06542f628::t_4a4cc34ce6e625 123-130,133-140,144-147
+.github/actions/publish-package/action.yml
+  s_fbcba06542f628::t_91c046c758651f 39-43,164,177-180,184
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "6b3b044ab893dd942b776bd4a849d02df5f8b549",
+  "prompts": {},
+  "sessions": {
+    "s_fbcba06542f628": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "7ed4fc55-0d34-4b20-811f-ab51acae166a",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "Zed <hi@zed.dev>"
+    }
+  }
+}
