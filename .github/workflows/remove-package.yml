@@ -15,10 +15,9 @@ on:
           - 'opentok-network-test-js → npmjs.com'
           - '@opentok/opentok-network-test-js → GitHub Packages'
       version:
-        description: 'Package version to remove. Leave empty to use the latest published version.'
+        description: 'Version to remove (e.g. 5.1.1). Leave empty to remove the latest published version.'
         required: false
         type: string
-        default: ''
       dry_run:
         description: 'Dry run — print what would happen without removing'
         required: true
