@@ -38,6 +38,12 @@ jobs:
     permissions:
       packages: write  # Required to delete GitHub Packages versions.
     steps:
+      - name: Setup Node.js and npm auth
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
       - name: '@vonage/video-client-network-test → npmjs.com'
         if: inputs.target == 'all' || inputs.target == '@vonage/video-client-network-test → npmjs.com'
         env:
