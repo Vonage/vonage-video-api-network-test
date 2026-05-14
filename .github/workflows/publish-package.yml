@@ -65,6 +65,7 @@ jobs:
           npm_token: ${{ secrets.NPM_TOKEN_VONAGE }}
           node_version: ${{ vars.NODE_VERSION }}
           github_packages_token: ${{ secrets.GITHUB_TOKEN }}
+          skip_if_published: ${{ inputs.target == 'all' }}
 
       - name: '@vonage/video-client-network-test → GitHub Packages'
         id: vonage-github
@@ -82,6 +83,7 @@ jobs:
           node_version: ${{ vars.NODE_VERSION }}
           # @vonage packages live in this repo's org, so the built-in GITHUB_TOKEN has write:packages.
           github_packages_token: ${{ secrets.GITHUB_TOKEN }}
+          skip_if_published: ${{ inputs.target == 'all' }}
 
       - name: 'opentok-network-test-js → npmjs.com'
         id: opentok-npmjs
@@ -98,6 +100,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           npm_token: ${{ secrets.NPM_TOKEN_OPENTOK }}
           node_version: ${{ vars.NODE_VERSION }}
+          skip_if_published: ${{ inputs.target == 'all' }}
 
       - name: '@opentok/opentok-network-test-js → GitHub Packages'
         id: opentok-github
@@ -116,6 +119,7 @@ jobs:
           # @opentok packages live in a different GitHub org; GITHUB_TOKEN cannot publish
           # across org boundaries, so a PAT with write:packages on the opentok org is required.
           github_packages_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
+          skip_if_published: ${{ inputs.target == 'all' }}
 
       - name: Summary
         if: always()
