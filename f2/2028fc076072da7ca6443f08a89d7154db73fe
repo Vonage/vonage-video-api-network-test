@@ -1,0 +1,23 @@
+lib/js/tsconfig.json
+  s_fbcba06542f628::t_c316632bba7ef2 15-16
+lib/js/opentok.patch
+  s_fbcba06542f628::t_5700a3faa22b03 995-1020
+lib/js/webpack.config.js
+  s_fbcba06542f628::t_a6d8224fe9343b 28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "f22028fc076072da7ca6443f08a89d7154db73fe",
+  "prompts": {},
+  "sessions": {
+    "s_fbcba06542f628": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "7ed4fc55-0d34-4b20-811f-ab51acae166a",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "Zed <hi@zed.dev>"
+    }
+  }
+}
