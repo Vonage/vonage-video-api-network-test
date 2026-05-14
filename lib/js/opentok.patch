@@ -992,3 +992,29 @@ index 3cecd93..586674f 100644
 +}
 +
  generateCredentials();
+diff --git a/lib/js/webpack.config.js b/lib/js/webpack.config.js
+--- a/lib/js/webpack.config.js
++++ b/lib/js/webpack.config.js
+@@ -25,7 +25,7 @@ export default {
+   },
+   output: {
+     filename: 'index.js',
+-    path: resolve(dirName, 'dist/vonage'),
++    path: resolve(dirName, 'dist'),
+     library: {
+       name: 'OpenTokNetworkConnectivity',
+       type: 'umd',
+diff --git a/lib/js/tsconfig.json b/lib/js/tsconfig.json
+--- a/lib/js/tsconfig.json
++++ b/lib/js/tsconfig.json
+@@ -12,7 +12,7 @@
+     "skipLibCheck": true,
+     "resolveJsonModule": true,
+     "esModuleInterop": true,
+-    "rootDir": "./src",
+-    "outDir": "./dist/vonage"
++    "rootDir": "./src",
++    "outDir": "./dist"
+   },
+   "files": [
+     "src/index.ts",
