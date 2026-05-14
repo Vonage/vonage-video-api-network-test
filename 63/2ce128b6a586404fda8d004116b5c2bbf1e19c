@@ -1,0 +1,19 @@
+.github/workflows/remove-package-version.yml
+  s_fbcba06542f628::t_017b82615f5784 1-105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "632ce128b6a586404fda8d004116b5c2bbf1e19c",
+  "prompts": {},
+  "sessions": {
+    "s_fbcba06542f628": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "7ed4fc55-0d34-4b20-811f-ab51acae166a",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "Zed <hi@zed.dev>"
+    }
+  }
+}
