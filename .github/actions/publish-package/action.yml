@@ -160,6 +160,7 @@ runs:
       shell: bash
       env:
         REGISTRY: ${{ inputs.registry }}
+        DRY_RUN: ${{ inputs.dry_run }}
       run: |
         PACKAGE_NAME=$(node -p "require('./package.json').name")
         PACKAGE_VERSION=$(node -p "require('./package.json').version")
@@ -168,8 +169,12 @@ runs:
         PUBLISHED_VERSION=$(npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" version 2>/dev/null || echo "")
 
         if [ "$PUBLISHED_VERSION" == "$PACKAGE_VERSION" ]; then
-          echo "❌ Error: Version $PACKAGE_VERSION is already published on $REGISTRY!"
-          exit 1
+          if [ "$DRY_RUN" == "true" ]; then
+            echo "⚠️ Warning: Version $PACKAGE_VERSION is already published on $REGISTRY (dry run — continuing anyway)."
+          else
+            echo "❌ Error: Version $PACKAGE_VERSION is already published on $REGISTRY!"
+            exit 1
+          fi
         fi
 
     - name: Publish
