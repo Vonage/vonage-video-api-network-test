@@ -120,20 +120,31 @@ jobs:
       - name: Summary
         if: always()
         env:
-          VONAGE_NPMJS:    ${{ steps.vonage-npmjs.outcome }}
-          VONAGE_GITHUB:   ${{ steps.vonage-github.outcome }}
-          OPENTOK_NPMJS:   ${{ steps.opentok-npmjs.outcome }}
-          OPENTOK_GITHUB:  ${{ steps.opentok-github.outcome }}
+          VONAGE_NPMJS:        ${{ steps.vonage-npmjs.outcome }}
+          VONAGE_GITHUB:       ${{ steps.vonage-github.outcome }}
+          OPENTOK_NPMJS:       ${{ steps.opentok-npmjs.outcome }}
+          OPENTOK_GITHUB:      ${{ steps.opentok-github.outcome }}
+          VONAGE_NPMJS_SKIP:   ${{ steps.vonage-npmjs.outputs.already_published }}
+          VONAGE_GITHUB_SKIP:  ${{ steps.vonage-github.outputs.already_published }}
+          OPENTOK_NPMJS_SKIP:  ${{ steps.opentok-npmjs.outputs.already_published }}
+          OPENTOK_GITHUB_SKIP: ${{ steps.opentok-github.outputs.already_published }}
         shell: bash
         run: |
-          icon() { [ "$1" == "success" ] && echo "✅" || [ "$1" == "skipped" ] && echo "⏭️" || echo "❌"; }
+          status() {
+            local outcome="$1" skip="$2"
+            if   [ "$outcome" == "skipped" ];                            then echo "⏭️ \`not selected\`"
+            elif [ "$outcome" == "success" ] && [ "$skip" == "true" ];   then echo "ℹ️ \`already published, skipped\`"
+            elif [ "$outcome" == "success" ];                            then echo "✅ \`published\`"
+            else                                                              echo "❌ \`$outcome\`"
+            fi
+          }
           echo "### Publish Summary" >> "$GITHUB_STEP_SUMMARY"
           echo "| Variant | Outcome |" >> "$GITHUB_STEP_SUMMARY"
           echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| \`@vonage/video-client-network-test\` → npmjs.com       | $(icon "$VONAGE_NPMJS") \`$VONAGE_NPMJS\` |"   >> "$GITHUB_STEP_SUMMARY"
-          echo "| \`@vonage/video-client-network-test\` → GitHub Packages | $(icon "$VONAGE_GITHUB") \`$VONAGE_GITHUB\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| \`opentok-network-test-js\` → npmjs.com                 | $(icon "$OPENTOK_NPMJS") \`$OPENTOK_NPMJS\` |"   >> "$GITHUB_STEP_SUMMARY"
-          echo "| \`@opentok/opentok-network-test-js\` → GitHub Packages  | $(icon "$OPENTOK_GITHUB") \`$OPENTOK_GITHUB\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| \`@vonage/video-client-network-test\` → npmjs.com       | $(status "$VONAGE_NPMJS" "$VONAGE_NPMJS_SKIP") |"   >> "$GITHUB_STEP_SUMMARY"
+          echo "| \`@vonage/video-client-network-test\` → GitHub Packages | $(status "$VONAGE_GITHUB" "$VONAGE_GITHUB_SKIP") |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| \`opentok-network-test-js\` → npmjs.com                 | $(status "$OPENTOK_NPMJS" "$OPENTOK_NPMJS_SKIP") |"   >> "$GITHUB_STEP_SUMMARY"
+          echo "| \`@opentok/opentok-network-test-js\` → GitHub Packages  | $(status "$OPENTOK_GITHUB" "$OPENTOK_GITHUB_SKIP") |" >> "$GITHUB_STEP_SUMMARY"
 
           # Fail the job if any selected step failed (skipped = not selected, which is fine).
           if [ "$VONAGE_NPMJS" == "failure" ] || [ "$VONAGE_GITHUB" == "failure" ] || \
