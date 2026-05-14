@@ -22,7 +22,7 @@
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
-    "@vonage/video-client-network-test": "../../../dist",
+    "@vonage/video-client-network-test": "../../lib/js",
     "highcharts": "^9.0.0"
   }
 }
