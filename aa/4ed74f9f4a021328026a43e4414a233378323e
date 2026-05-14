@@ -1,0 +1,19 @@
+samples/js/package.json
+  s_fbcba06542f628::t_704b528cd70f46 25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "aa4ed74f9f4a021328026a43e4414a233378323e",
+  "prompts": {},
+  "sessions": {
+    "s_fbcba06542f628": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "7ed4fc55-0d34-4b20-811f-ab51acae166a",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "Zed <hi@zed.dev>"
+    }
+  }
+}
