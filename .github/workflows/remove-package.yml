@@ -1,10 +1,10 @@
-name: Remove Package Version
+name: Unpublish Package Version
 
 on:
   workflow_dispatch:
     inputs:
       target:
-        description: 'Package variant to remove'
+        description: 'Package variant to unpublish'
         required: true
         type: choice
         default: 'all'
@@ -15,11 +15,11 @@ on:
           - 'opentok-network-test-js → npmjs.com'
           - '@opentok/opentok-network-test-js → GitHub Packages'
       version:
-        description: 'Version to remove (e.g. 5.1.1). Leave empty to remove the latest published version.'
+        description: 'Version to unpublish (e.g. 5.1.1). Leave empty to unpublish the version currently tagged as "latest".'
         required: false
         type: string
       dry_run:
-        description: 'Dry run — print what would happen without removing'
+        description: 'Dry run — print what would happen without unpublishing'
         required: true
         type: boolean
         default: true
@@ -31,10 +31,10 @@ concurrency:
 permissions: read-all
 
 jobs:
-  remove:
+  unpublish:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    name: Remove v${{ inputs.version || 'latest' }} (${{ inputs.target }})
+    name: Unpublish v${{ inputs.version || 'latest' }} (${{ inputs.target }})
     permissions:
       packages: write  # Required to delete GitHub Packages versions.
     steps:
@@ -90,8 +90,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          VERSION="${INPUT_VERSION:-$(gh api "/orgs/${GH_ORG}/packages/npm/${PACKAGE_NAME}/versions" \
-            --jq 'sort_by(.created_at) | last | .name' 2>/dev/null || echo '')}"
+          VERSION="${INPUT_VERSION:-$(npm view "@${GH_ORG}/${PACKAGE_NAME}" dist-tags.latest \
+            --registry https://npm.pkg.github.com 2>/dev/null || echo '')}"
           if [ -z "$VERSION" ]; then
             echo "⚠️  Could not resolve version for @${GH_ORG}/${PACKAGE_NAME} on GitHub Packages — skipping."
             exit 0
@@ -165,8 +165,8 @@ jobs:
           GH_TOKEN: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
         shell: bash
         run: |
-          VERSION="${INPUT_VERSION:-$(gh api "/orgs/${GH_ORG}/packages/npm/${PACKAGE_NAME}/versions" \
-            --jq 'sort_by(.created_at) | last | .name' 2>/dev/null || echo '')}"
+          VERSION="${INPUT_VERSION:-$(npm view "@${GH_ORG}/${PACKAGE_NAME}" dist-tags.latest \
+            --registry https://npm.pkg.github.com 2>/dev/null || echo '')}"
           if [ -z "$VERSION" ]; then
             echo "⚠️  Could not resolve version for @${GH_ORG}/${PACKAGE_NAME} on GitHub Packages — skipping."
             exit 0
