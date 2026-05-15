@@ -1,0 +1,39 @@
+.github/scripts/smoke-test-api.sh
+  s_4e210b06534398::t_acdc9442c9cd4b 1-67
+.github/scripts/resolve-published-version.sh
+  s_4e210b06534398::t_578bf92d045b15 1-14
+.github/scripts/extract-umd-bundle.sh
+  s_4e210b06534398::t_c36d77f0547273 1-24
+.github/scripts/publish-outcomes-summary.sh
+  s_4e210b06534398::t_614f7e385181a1 2-5,7-10,13-22,25-28,31-39,41
+.github/workflows/ci-pull-request.yml
+  s_4e210b06534398::t_75143d1ac3f33d 138-140
+.github/workflows/post-merge-validation.yml
+  s_4e210b06534398::t_c2f08d50cc7d35 283
+.github/actions/smoke-test-package/action.yml
+  s_4e210b06534398::t_475ec31e58fe55 35
+.github/workflows/publish-package.yml
+  s_4e210b06534398::t_62dcc2cfdc4dc7 156-158,163-172,180
+.github/scripts/check-pr-label.sh
+  s_4e210b06534398::t_08de44b930dc67 1-24
+.github/workflows/pr-label-check.yml
+  s_4e210b06534398::t_9830c52251d384 31
+.github/scripts/check-committed-dist.sh
+  s_4e210b06534398::t_4216db557b5ee0 2-3,6-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "505fda6bd7f85949ed57b2f1e8bd0794bdf13543",
+  "prompts": {},
+  "sessions": {
+    "s_4e210b06534398": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "e21afc18-ac4f-4120-983e-8b659e00cbda",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
