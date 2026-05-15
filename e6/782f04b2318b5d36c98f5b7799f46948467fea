@@ -1,0 +1,22 @@
+lib/js/karma.conf.js
+  s_4e210b06534398::t_0f5ff973e667db 3-6
+  s_4e210b06534398::t_3af3c67d8c8f69 78-80
+lib/js/tsconfig.test.json
+  s_4e210b06534398::t_7e6cdc0bbaa7c0 1-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "e6782f04b2318b5d36c98f5b7799f46948467fea",
+  "prompts": {},
+  "sessions": {
+    "s_4e210b06534398": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "e21afc18-ac4f-4120-983e-8b659e00cbda",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
