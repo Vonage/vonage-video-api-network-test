@@ -34,6 +34,7 @@ case "$MODE" in
     rm "$TARBALL"
     ;;
   dist)
+    rm -rf lib/js/dist
     mkdir -p lib/js/dist
     tar xzf "$TARBALL" --wildcards --strip-components=2 -C lib/js/dist 'package/dist/*'
     echo "Extracted dist:"
