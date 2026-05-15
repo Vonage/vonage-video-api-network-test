@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Allow test files (./test/) and source files (./src/) to coexist
+    // without triggering TS6059 ("file not under rootDir")
+    "rootDir": "./"
+  },
+  "include": [
+    "./src/**/*",
+    "./test/**/*"
+  ]
+}

@@ -476,21 +476,24 @@ diff --git a/lib/js/package.json b/lib/js/package.json
 index bbcb01a..eec63b8 100644
 --- a/lib/js/package.json
 +++ b/lib/js/package.json
-@@ -1,9 +1,9 @@
+@@ -1,12 +1,12 @@
  {
 -  "name": "@vonage/video-client-network-test",
 +  "name": "@opentok/opentok-network-test-js",
-   "version": "5.1.3",
+   "version": "5.1.2",
 -  "description": "Precall network test for applications using the Vonage Video API platform.",
--  "main": "dist/vonage/index.js",
--  "types": "dist/vonage/index.d.ts",
+-  "main": "dist/index.js",
+-  "types": "dist/index.d.ts",
 +  "description": "Precall network test for applications using the OpenTok platform.",
 +  "main": "dist/index.js",
 +  "types": "dist/index.d.ts",
+   "files": [
+     "dist/"
+   ],
    "scripts": {
      "build:js": "rm -rf dist && webpack --config webpack.config.js  --stats-error-details",
      "build:types": "tsc --project ./tsconfig.json",
-@@ -18,18 +18,17 @@
+@@ -21,18 +21,17 @@
      "tslint": "eslint . --ext .js,.ts",
      "tslint-fix": "eslint . --ext .js,.ts --fix"
    },
@@ -992,29 +995,3 @@ index 3cecd93..586674f 100644
 +}
 +
  generateCredentials();
-diff --git a/lib/js/webpack.config.js b/lib/js/webpack.config.js
---- a/lib/js/webpack.config.js
-+++ b/lib/js/webpack.config.js
-@@ -25,7 +25,7 @@ export default {
-   },
-   output: {
-     filename: 'index.js',
--    path: resolve(dirName, 'dist/vonage'),
-+    path: resolve(dirName, 'dist'),
-     library: {
-       name: 'OpenTokNetworkConnectivity',
-       type: 'umd',
-diff --git a/lib/js/tsconfig.json b/lib/js/tsconfig.json
---- a/lib/js/tsconfig.json
-+++ b/lib/js/tsconfig.json
-@@ -12,7 +12,7 @@
-     "skipLibCheck": true,
-     "resolveJsonModule": true,
-     "esModuleInterop": true,
--    "rootDir": "./src",
--    "outDir": "./dist/vonage"
-+    "rootDir": "./src",
-+    "outDir": "./dist"
-   },
-   "files": [
-     "src/index.ts",
