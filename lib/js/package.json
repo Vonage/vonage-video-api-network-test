@@ -4,6 +4,9 @@
   "description": "Precall network test for applications using the Vonage Video API platform.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
   "scripts": {
     "build:js": "rm -rf dist && webpack --config webpack.config.js  --stats-error-details",
     "build:types": "tsc --project ./tsconfig.json",
