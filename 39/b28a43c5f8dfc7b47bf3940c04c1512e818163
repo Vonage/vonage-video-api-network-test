@@ -1,0 +1,26 @@
+.github/workflows/ci-pull-request.yml
+  s_fbcba06542f628::t_6de80535bf626d 36-39
+  s_fbcba06542f628::t_f5e8f6eabdaec2 106-131
+.github/workflows/pr-label-check.yml
+  s_fbcba06542f628::t_6fa49b9588692e 1-42
+.github/workflows/publish-package.yml
+  s_fbcba06542f628::t_d7dc267d9ed17e 58-85
+.github/release-drafter.yml
+  s_fbcba06542f628::t_02b56e48acac66 27,30-31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "39b28a43c5f8dfc7b47bf3940c04c1512e818163",
+  "prompts": {},
+  "sessions": {
+    "s_fbcba06542f628": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "7ed4fc55-0d34-4b20-811f-ab51acae166a",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
