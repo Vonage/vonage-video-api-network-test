@@ -1,0 +1,23 @@
+lib/js/opentok.patch
+  s_4e210b06534398::t_9df61e4648623b 479,490-492,496
+lib/js/package.json
+  s_4e210b06534398::t_da07cb0423f419 7-9
+.github/workflows/post-merge-validation.yml
+  s_4e210b06534398::t_bb1aff2d3bbc68 86-88,90
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "d9a98b1964f8ce05a69ca5b43b1ee387ab7e2a4d",
+  "prompts": {},
+  "sessions": {
+    "s_4e210b06534398": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "e21afc18-ac4f-4120-983e-8b659e00cbda",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
