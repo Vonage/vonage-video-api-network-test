@@ -50,36 +50,28 @@ runs:
         NPM_TOKEN: ${{ inputs.npm_token }}
         GH_PACKAGES_TOKEN: ${{ inputs.github_packages_token }}
         REGISTRY: ${{ inputs.registry }}
-      run: |
-        # NODE_AUTH_TOKEN is read automatically by npm when publishing.
-        if [ "$REGISTRY" == "github.com" ]; then
-          if [ -z "$GH_PACKAGES_TOKEN" ]; then
-            echo "❌ Error: github_packages_token is required when publishing to github.com"
-            exit 1
-          fi
-          echo "NODE_AUTH_TOKEN=$GH_PACKAGES_TOKEN" >> "$GITHUB_ENV"
-        else
-          if [ -z "$NPM_TOKEN" ]; then
-            echo "❌ Error: npm_token is required when publishing to npmjs.com"
-            exit 1
-          fi
-          echo "NODE_AUTH_TOKEN=$NPM_TOKEN" >> "$GITHUB_ENV"
-        fi
+      run: bash "$GITHUB_WORKSPACE/.github/scripts/resolve-auth-token.sh"
 
+    # Configures .npmrc with the registry URL and NODE_AUTH_TOKEN placeholder.
+    # The scope parameter is needed for GitHub Packages: setup-node writes
+    # `<scope>:registry=https://npm.pkg.github.com/` which routes scoped packages to
+    # GitHub Packages. It is intentionally left empty for unscoped packages (opentok → npmjs.com)
+    # to avoid creating a conflicting scoped registry mapping.
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node_version }}
-        # Scope ensures the correct registry mapping in .npmrc for scoped packages on GitHub Packages.
+        # Produces @<org>:registry=... in .npmrc. Empty when organization is 'unscoped' or ''.
         scope: ${{ inputs.organization != 'unscoped' && inputs.organization != '' && format('@{0}', inputs.organization) || '' }}
-        # Defaults to GitHub Packages when registry is not npmjs.com.
         registry-url: ${{ inputs.registry == 'npmjs.com' && 'https://registry.npmjs.org' || 'https://npm.pkg.github.com/' }}
 
+    # Wipes any stale content from previous runs in the same workspace before the artifact
+    # download populates lib/js/ — prevents old files from leaking through unexpectedly.
     - name: Clean publish directory
       shell: bash
       run: rm -rf lib/js && mkdir -p lib/js
 
-    - name: Download Build Artifact
+    - name: Download pre-built tarball
       uses: dawidd6/action-download-artifact@v6
       with:
         github_token: ${{ inputs.github_token }}
@@ -94,17 +86,7 @@ runs:
     - name: Extract Tarball
       working-directory: lib/js
       shell: bash
-      run: |
-        mapfile -t TARBALLS < <(find . -maxdepth 1 -name '*.tgz')
-        if [ "${#TARBALLS[@]}" -ne 1 ]; then
-          echo "❌ Expected exactly 1 tarball, found ${#TARBALLS[@]}"
-          exit 1
-        fi
-        TARBALL="${TARBALLS[0]}"
-        # Extract, stripping the package/ prefix that npm pack adds
-        tar -xzf "$TARBALL" --strip-components=1
-        # Remove tarball to prevent npm from trying to publish the file itself
-        rm "$TARBALL"
+      run: bash "$GITHUB_WORKSPACE/.github/scripts/extract-tarball.sh"
 
     - name: Strip publishConfig registry override
       working-directory: lib/js
@@ -120,19 +102,7 @@ runs:
       shell: bash
       env:
         ORGANIZATION: ${{ inputs.organization }}
-      run: |
-        CURRENT_NAME=$(node -p "require('./package.json').name")
-        # Strip scope prefix only if one is present, to avoid mangling unscoped names.
-        if [[ "$CURRENT_NAME" == @*/* ]]; then
-          BASE_NAME="${CURRENT_NAME#@*/}"
-        else
-          BASE_NAME="$CURRENT_NAME"
-        fi
-        if [ "$ORGANIZATION" == "unscoped" ]; then
-          npm pkg set name="$BASE_NAME"
-        else
-          npm pkg set name="@${ORGANIZATION}/${BASE_NAME}"
-        fi
+      run: bash "$GITHUB_WORKSPACE/.github/scripts/apply-organization-scope.sh"
 
     - name: Apply Pre-release Tag to Version
       if: inputs.tag != ''
@@ -140,25 +110,7 @@ runs:
       shell: bash
       env:
         TAG: ${{ inputs.tag }}
-      run: |
-        PACKAGE_NAME=$(node -p "require('./package.json').name")
-        CURRENT_VERSION=$(node -p "require('./package.json').version")
-
-        ALL_VERSIONS=$(npm view "${PACKAGE_NAME}" versions --json 2>/dev/null || echo "[]")
-        ALL_VERSIONS="${ALL_VERSIONS:-[]}"
-
-        PRERELEASE_NUM=$(ALL_VERSIONS="$ALL_VERSIONS" BASE_VERSION="$CURRENT_VERSION" TAG_NAME="$TAG" node -e "
-          const raw = JSON.parse(process.env.ALL_VERSIONS);
-          const versions = Array.isArray(raw) ? raw : [raw];
-          const prefix = process.env.BASE_VERSION + '-' + process.env.TAG_NAME + '.';
-          const nums = versions
-            .filter(v => v.startsWith(prefix))
-            .map(v => parseInt(v.slice(prefix.length), 10))
-            .filter(n => !isNaN(n));
-          console.log(nums.length > 0 ? Math.max(...nums) + 1 : 1);
-        ")
-
-        npm pkg set version="${CURRENT_VERSION}-${TAG}.${PRERELEASE_NUM}"
+      run: bash "$GITHUB_WORKSPACE/.github/scripts/apply-prerelease-tag.sh"
 
     - name: Check if version already published
       id: version-check
@@ -167,20 +119,11 @@ runs:
       shell: bash
       env:
         REGISTRY: ${{ inputs.registry }}
-      run: |
-        PACKAGE_NAME=$(node -p "require('./package.json').name")
-        PACKAGE_VERSION=$(node -p "require('./package.json').version")
+      run: bash "$GITHUB_WORKSPACE/.github/scripts/check-version-published.sh"
 
-        # .npmrc is already configured for the correct registry by Setup Node.
-        PUBLISHED_VERSION=$(npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" version 2>/dev/null || echo "")
-
-        if [ "$PUBLISHED_VERSION" == "$PACKAGE_VERSION" ]; then
-          echo "ℹ️ Version $PACKAGE_VERSION is already published on $REGISTRY — skipping."
-          echo "already_published=true" >> "$GITHUB_OUTPUT"
-        else
-          echo "already_published=false" >> "$GITHUB_OUTPUT"
-        fi
-
+    # Runs unless the version was already published. The condition uses `!= 'true'` rather
+    # than `== 'false'` so this step also runs when version-check was skipped entirely
+    # (dry_run=true) — a skipped step outputs '' (empty string), not 'false'.
     - name: Publish
       if: steps.version-check.outputs.already_published != 'true'
       working-directory: lib/js
@@ -189,18 +132,4 @@ runs:
         DRY_RUN: ${{ inputs.dry_run }}
         TAG: ${{ inputs.tag }}
         REGISTRY: ${{ inputs.registry }}
-      run: |
-        if [ "$DRY_RUN" == "true" ]; then
-          # npm publish --dry-run contacts the registry and rejects duplicate versions,
-          # making it unusable for testing against already-published artifacts.
-          # npm pack --dry-run is fully local and shows the same tarball summary.
-          echo "Dry run: showing package contents (no registry contact)"
-          npm pack --dry-run
-        else
-          PUBLISH_ARGS=(publish --access public)
-          if [ -n "$TAG" ]; then
-            PUBLISH_ARGS+=(--tag "$TAG")
-          fi
-          echo "Publishing to $REGISTRY: npm ${PUBLISH_ARGS[*]}"
-          npm "${PUBLISH_ARGS[@]}"
-        fi
+      run: bash "$GITHUB_WORKSPACE/.github/scripts/npm-publish.sh"

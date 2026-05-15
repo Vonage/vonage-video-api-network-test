@@ -1,5 +1,15 @@
 name: Release Drafter
 
+# Runs on every push to main (to update the draft release changelog) and on pull request
+# events (to auto-label PRs with the appropriate semver bump category).
+#
+# On pull_request_target events: Release Drafter reads the PR's labels and applies a
+# semver bump label (major/minor/patch) based on the configured label categories.
+#
+# On push to main: Release Drafter creates or updates a draft GitHub Release with an
+# auto-generated changelog from all PRs merged since the last published release. The draft
+# is promoted to a real release by the Publish Package workflow when a version is published.
+
 on:
   push:
     branches:
@@ -11,6 +21,15 @@ on:
       - synchronize
 
 permissions: read-all
+
+concurrency:
+  # Release Drafter always rescans the full PR history from scratch, so the latest run
+  # always produces the complete and correct result. Serializing all runs (push + PR events)
+  # prevents concurrent writes from corrupting the draft release body. cancel-in-progress: true
+  # means a newer event (e.g., a second PR merge) will supersede an in-progress run —
+  # safe here because the next run will include everything the cancelled run would have.
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
 
 jobs:
   draft:
@@ -33,24 +52,9 @@ jobs:
         if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BEFORE: ${{ github.event.before }}
         shell: bash
-        run: |
-          RELEASE_COUNT=$(gh release list --exclude-drafts --json tagName --jq 'length' 2>/dev/null || echo "0")
-          if [ "${RELEASE_COUNT:-0}" -eq 0 ]; then
-            # Try the package source first, then the repo root, then fall back to 0.0.0.
-            VERSION=$(node -p "require('./lib/js/package.json').version" 2>/dev/null || \
-                      node -p "require('./package.json').version" 2>/dev/null || \
-                      echo "0.0.0")
-            # github.event.before is 0000...0 on the very first push (no previous commit).
-            # Fall back to the current HEAD SHA in that case.
-            BEFORE="${{ github.event.before }}"
-            TARGET=$([[ "$BEFORE" =~ ^0+$ ]] && echo "${{ github.sha }}" || echo "$BEFORE")
-            echo "No published releases found — creating baseline at v${VERSION} (target: $TARGET)"
-            gh release create "v${VERSION}" \
-              --title "v${VERSION}" \
-              --notes "Baseline release — marks the starting point for automated changelog generation. PRs merged after this point will appear in the next release." \
-              --target "$TARGET"
-          fi
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/create-baseline-release.sh"
 
       - name: Update release draft
         uses: release-drafter/release-drafter@v6

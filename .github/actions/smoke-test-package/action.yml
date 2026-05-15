@@ -24,7 +24,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Install and test
+    - name: Install package and verify exported API
       shell: bash
       env:
         PACKAGE_NAME: ${{ inputs.package_name }}
@@ -32,57 +32,4 @@ runs:
         REGISTRY: ${{ inputs.registry }}
         SCOPE: ${{ inputs.scope }}
         TOKEN: ${{ inputs.auth_token }}
-      run: |
-        DIR=$(mktemp -d) && cd "$DIR"
-        npm init -y --quiet
-
-        if [ "$REGISTRY" == "github" ]; then
-          printf '%s:registry=https://npm.pkg.github.com/\n//npm.pkg.github.com/:_authToken=%s\n' \
-            "$SCOPE" "$TOKEN" > .npmrc
-        fi
-
-        npm install "${PACKAGE_NAME}@${VERSION}" --quiet
-
-        # ESM + function call test
-        node --input-type=module << 'SMOKE'
-        import { readFileSync } from 'node:fs';
-        import { runInThisContext } from 'node:vm';
-
-        const pkgName = process.env.PACKAGE_NAME;
-        const pkg = JSON.parse(readFileSync(`./node_modules/${pkgName}/package.json`, 'utf-8'));
-        const code = readFileSync(`./node_modules/${pkgName}/${pkg.main}`, 'utf-8');
-
-        // UMD bundle sets globalThis.OpenTokNetworkConnectivity (self===globalThis in Node.js 24+)
-        globalThis.self ??= globalThis;
-        runInThisContext(code);
-
-        const bundle = globalThis.OpenTokNetworkConnectivity;
-        const NT = bundle?.default ?? bundle;
-        if (typeof NT !== 'function') {
-          console.error('❌ NetworkTest not exported, got:', typeof NT);
-          process.exit(1);
-        }
-
-        // Verify constructor input validation — no browser APIs involved here
-        try {
-          new NT(null, { applicationId: 'a', sessionId: 'b', token: 'c' });
-          console.error('❌ Expected MissingOpenTokInstanceError, nothing was thrown');
-          process.exit(1);
-        } catch (e) {
-          if (e.name !== 'MissingOpenTokInstanceError') {
-            console.error('❌ Wrong error thrown:', e.name, '-', e.message);
-            process.exit(1);
-          }
-        }
-        console.log('✅ NetworkTest exported and constructor validation correct');
-        SMOKE
-
-        # Gap 5: CJS compatibility check
-        CJS_OUT=$(node -e "require(process.env.PACKAGE_NAME)" 2>&1 || true)
-        if echo "$CJS_OUT" | grep -qE 'ERR_REQUIRE_ESM|ERR_REQUIRE_MODULE'; then
-          echo "::notice::CJS require() not supported for ${PACKAGE_NAME} — known issue (type:module + UMD mismatch, tracked for future fix)"
-        elif [ -z "$CJS_OUT" ]; then
-          echo "✅ CJS require() succeeded"
-        else
-          echo "⚠️ CJS require() result: $CJS_OUT"
-        fi
+      run: bash "$GITHUB_WORKSPACE/.github/scripts/smoke-test-api.sh"

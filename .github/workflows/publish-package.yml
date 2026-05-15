@@ -1,5 +1,18 @@
 name: Publish Package
 
+# Manually triggered workflow for releasing packages to npm registries.
+#
+# Pipeline:
+#   publish    — downloads a pre-built CI tarball, mutates it (applies scope + version tag),
+#                then publishes up to four package/registry combinations in sequence.
+#                Each publish step uses continue-on-error so a failure in one variant does
+#                not prevent the others from running. A Summary step at the end evaluates
+#                all outcomes and fails the job if any selected variant errored or produced
+#                an unexpected duplicate-version publish.
+#   smoke-test — installs each newly published variant from its live registry and validates
+#                the exported API. Only runs for variants that were actually published in
+#                this run (not dry-run, and not silently skipped as already-published).
+
 on:
   workflow_dispatch:
     inputs:
@@ -31,8 +44,12 @@ on:
         default: ''
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false  # Never cancel: a publish mid-flight could leave the registry in an inconsistent state.
+  # Publishing is a global registry operation, not branch-scoped. Removing the branch ref
+  # from the group key ensures two simultaneous dispatches — even from different branches —
+  # are always serialized. cancel-in-progress: false prevents a queued publish from being
+  # silently dropped while an earlier one is mid-flight.
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 permissions: read-all
 
@@ -60,32 +77,14 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if ! RUN_JSON=$(gh api "repos/${{ github.repository }}/actions/runs/${{ inputs.run_id }}" 2>&1); then
-            echo "::error::Could not fetch run ${{ inputs.run_id }}: $RUN_JSON"
-            exit 1
-          fi
-          WORKFLOW=$(echo "$RUN_JSON" | jq -r '.name')
-          CONCLUSION=$(echo "$RUN_JSON" | jq -r '.conclusion')
-          STATUS=$(echo "$RUN_JSON"   | jq -r '.status')
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ inputs.run_id }}
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/validate-run-id.sh"
 
-          echo "Run ID:     ${{ inputs.run_id }}"
-          echo "Workflow:   $WORKFLOW"
-          echo "Status:     $STATUS"
-          echo "Conclusion: $CONCLUSION"
-
-          if [ "$WORKFLOW" != "Post Merge Validation" ]; then
-            echo "::error::run_id ${{ inputs.run_id }} belongs to '$WORKFLOW'."
-            echo "::error::Only artifacts from a successful 'Post Merge Validation' run may be published."
-            exit 1
-          fi
-          if [ "$CONCLUSION" != "success" ]; then
-            echo "::error::run_id ${{ inputs.run_id }} did not succeed (conclusion: $CONCLUSION)."
-            echo "::error::Cannot publish from a failed or incomplete run."
-            exit 1
-          fi
-          echo "✅ Verified: run ${{ inputs.run_id }} is a successful Post Merge Validation run"
-
+      # The four steps below cover every combination of package name × registry.
+      # Each step is guarded by an `if:` condition derived from the `target` input so that
+      # only the selected variant(s) run. `continue-on-error: true` allows a failure in one
+      # variant to be captured in the Summary rather than aborting the remaining variants.
       - name: '@vonage/video-client-network-test → npmjs.com'
         id: vonage-npmjs
         if: inputs.target == 'all' || inputs.target == '@vonage/video-client-network-test → npmjs.com'
@@ -154,74 +153,23 @@ jobs:
           # across org boundaries, so a PAT with write:packages on the opentok org is required.
           github_packages_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
 
-      - name: Compute publish outcomes
+      # Computes job-level boolean outputs (consumed by the smoke-test job), writes the
+      # publish summary table, and fails if any errors or unexpected duplicates occurred.
+      - name: Publish outcomes and summary
         id: outcomes
         if: always()
         shell: bash
         env:
-          VN_OUTCOME: ${{ steps.vonage-npmjs.outcome }}
-          VN_SKIP:    ${{ steps.vonage-npmjs.outputs.already_published }}
-          VG_OUTCOME: ${{ steps.vonage-github.outcome }}
-          VG_SKIP:    ${{ steps.vonage-github.outputs.already_published }}
-          ON_OUTCOME: ${{ steps.opentok-npmjs.outcome }}
-          ON_SKIP:    ${{ steps.opentok-npmjs.outputs.already_published }}
-          OG_OUTCOME: ${{ steps.opentok-github.outcome }}
-          OG_SKIP:    ${{ steps.opentok-github.outputs.already_published }}
-        run: |
-          # "published" = step succeeded AND was not skipped due to already-published
-          published() { [ "$1" == "success" ] && [ "$2" != "true" ] && echo "true" || echo "false"; }
-          echo "vonage-npmjs=$(published "$VN_OUTCOME" "$VN_SKIP")"   >> "$GITHUB_OUTPUT"
-          echo "vonage-github=$(published "$VG_OUTCOME" "$VG_SKIP")"  >> "$GITHUB_OUTPUT"
-          echo "opentok-npmjs=$(published "$ON_OUTCOME" "$ON_SKIP")"  >> "$GITHUB_OUTPUT"
-          echo "opentok-github=$(published "$OG_OUTCOME" "$OG_SKIP")" >> "$GITHUB_OUTPUT"
-
-      - name: Summary
-        if: always()
-        env:
-          TARGET:              ${{ inputs.target }}
-          VONAGE_NPMJS:        ${{ steps.vonage-npmjs.outcome }}
-          VONAGE_GITHUB:       ${{ steps.vonage-github.outcome }}
-          OPENTOK_NPMJS:       ${{ steps.opentok-npmjs.outcome }}
-          OPENTOK_GITHUB:      ${{ steps.opentok-github.outcome }}
-          VONAGE_NPMJS_SKIP:   ${{ steps.vonage-npmjs.outputs.already_published }}
-          VONAGE_GITHUB_SKIP:  ${{ steps.vonage-github.outputs.already_published }}
-          OPENTOK_NPMJS_SKIP:  ${{ steps.opentok-npmjs.outputs.already_published }}
-          OPENTOK_GITHUB_SKIP: ${{ steps.opentok-github.outputs.already_published }}
-        shell: bash
-        run: |
-          status() {
-            local outcome="$1" skip="$2"
-            if   [ "$outcome" == "skipped" ];                            then echo "⏭️ \`not selected\`"
-            elif [ "$outcome" == "success" ] && [ "$skip" == "true" ];   then echo "ℹ️ \`already published, skipped\`"
-            elif [ "$outcome" == "success" ];                            then echo "✅ \`published\`"
-            else                                                              echo "❌ \`$outcome\`"
-            fi
-          }
-          echo "### Publish Summary" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Variant | Outcome |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| \`@vonage/video-client-network-test\` → npmjs.com       | $(status "$VONAGE_NPMJS" "$VONAGE_NPMJS_SKIP") |"   >> "$GITHUB_STEP_SUMMARY"
-          echo "| \`@vonage/video-client-network-test\` → GitHub Packages | $(status "$VONAGE_GITHUB" "$VONAGE_GITHUB_SKIP") |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| \`opentok-network-test-js\` → npmjs.com                 | $(status "$OPENTOK_NPMJS" "$OPENTOK_NPMJS_SKIP") |"   >> "$GITHUB_STEP_SUMMARY"
-          echo "| \`@opentok/opentok-network-test-js\` → GitHub Packages  | $(status "$OPENTOK_GITHUB" "$OPENTOK_GITHUB_SKIP") |" >> "$GITHUB_STEP_SUMMARY"
-
-          # Fail the job if any selected step failed (skipped = not selected, which is fine).
-          fails() { [ "$1" == "failure" ] || [ "$1" == "cancelled" ]; }
-          if fails "$VONAGE_NPMJS" || fails "$VONAGE_GITHUB" || \
-             fails "$OPENTOK_NPMJS" || fails "$OPENTOK_GITHUB"; then
-            echo "::error::One or more publish steps failed — see summary above."
-            exit 1
-          fi
-
-          # When publishing a specific target (not "all"), treat already-published as an error:
-          # the user explicitly chose a single variant, so a duplicate publish is unexpected.
-          if [ "$TARGET" != "all" ]; then
-            if [ "$VONAGE_NPMJS_SKIP" == "true" ] || [ "$VONAGE_GITHUB_SKIP" == "true" ] || \
-               [ "$OPENTOK_NPMJS_SKIP" == "true" ] || [ "$OPENTOK_GITHUB_SKIP" == "true" ]; then
-              echo "::error::Version is already published — cannot re-publish with a specific target."
-              exit 1
-            fi
-          fi
+          TARGET:               ${{ inputs.target }}
+          VONAGE_NPMJS:         ${{ steps.vonage-npmjs.outcome }}
+          VONAGE_NPMJS_SKIP:    ${{ steps.vonage-npmjs.outputs.already_published }}
+          VONAGE_GITHUB:        ${{ steps.vonage-github.outcome }}
+          VONAGE_GITHUB_SKIP:   ${{ steps.vonage-github.outputs.already_published }}
+          OPENTOK_NPMJS:        ${{ steps.opentok-npmjs.outcome }}
+          OPENTOK_NPMJS_SKIP:   ${{ steps.opentok-npmjs.outputs.already_published }}
+          OPENTOK_GITHUB:       ${{ steps.opentok-github.outcome }}
+          OPENTOK_GITHUB_SKIP:  ${{ steps.opentok-github.outputs.already_published }}
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/publish-outcomes-summary.sh"
 
       # Reads the final version and name written to lib/js/package.json by the publish action.
       # Skipped entirely on dry runs — no tag or release is created.
@@ -229,14 +177,7 @@ jobs:
         if: ${{ !fromJSON(inputs.dry_run) }}
         id: release-meta
         shell: bash
-        run: |
-          VERSION=$(node -p "require('./lib/js/package.json').version")
-          NAME=$(node -p "require('./lib/js/package.json').name")
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "package_name=$NAME" >> "$GITHUB_OUTPUT"
-          # All targets share the same version tag so that publishing vonage and opentok
-          # variants of the same version produces a single GitHub Release.
-          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/resolve-published-version.sh"
 
       # Promotes the Release Drafter draft if one exists (accumulated changelog from all
       # PR merges since the last release). Falls back to a fresh release with auto-generated
@@ -250,23 +191,11 @@ jobs:
           TAG: ${{ steps.release-meta.outputs.tag }}
           VERSION: ${{ steps.release-meta.outputs.version }}
         shell: bash
-        run: |
-          if gh release view "$TAG" &>/dev/null; then
-            echo "Release $TAG already exists — skipping."
-            exit 0
-          fi
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/github-release.sh"
 
-          DRAFT_TAG=$(gh release list --json tagName,isDraft \
-            --jq '[.[] | select(.isDraft==true)] | first | .tagName // empty')
-
-          if [ -n "$DRAFT_TAG" ]; then
-            echo "Promoting draft '$DRAFT_TAG' → '$TAG'"
-            gh release edit "$DRAFT_TAG" --tag "$TAG" --title "v${VERSION}" --draft=false
-          else
-            echo "No draft found — creating release '$TAG'"
-            gh release create "$TAG" --title "v${VERSION}" --generate-notes
-          fi
-
+  # Runs after a real publish (skipped entirely on dry runs). Installs each variant that was
+  # successfully published in this run from its live registry and validates the exported
+  # NetworkTest constructor to confirm the package is fully functional post-publish.
   smoke-test:
     name: Smoke Test v${{ needs.publish.outputs.version }} (${{ inputs.target }})
     needs: publish
@@ -274,7 +203,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
-      packages: read
+      contents: read   # required by actions/checkout and composite action resolution
+      packages: read   # required to install from GitHub Packages registry
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -284,6 +214,9 @@ jobs:
         with:
           node-version: ${{ vars.NODE_VERSION }}
 
+      # Each step only runs if the corresponding publish output indicates a real publish
+      # occurred in this run (not a dry run, not an already-published skip).
+      # continue-on-error allows the summary to capture all outcomes even if one install fails.
       - name: '@vonage/video-client-network-test → npmjs.com'
         id: smoke-vonage-npmjs
         if: needs.publish.outputs.vonage-npmjs-published == 'true'
@@ -326,7 +259,7 @@ jobs:
           scope: '@opentok'
           auth_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
 
-      - name: Summary
+      - name: Smoke test summary
         if: always()
         env:
           VN: ${{ steps.smoke-vonage-npmjs.outcome }}
@@ -334,24 +267,4 @@ jobs:
           ON: ${{ steps.smoke-opentok-npmjs.outcome }}
           OG: ${{ steps.smoke-opentok-github.outcome }}
         shell: bash
-        run: |
-          status() {
-            case "$1" in
-              success)   echo "✅ \`ok\`" ;;
-              skipped)   echo "⏭️ \`not published\`" ;;
-              *)         echo "❌ \`$1\`" ;;
-            esac
-          }
-          echo "### Smoke Test Summary" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Variant | ESM + Function Call |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| \`@vonage/video-client-network-test\` → npmjs.com       | $(status "$VN") |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| \`@vonage/video-client-network-test\` → GitHub Packages | $(status "$VG") |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| \`opentok-network-test-js\` → npmjs.com                 | $(status "$ON") |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| \`@opentok/opentok-network-test-js\` → GitHub Packages  | $(status "$OG") |" >> "$GITHUB_STEP_SUMMARY"
-
-          fails() { [ "$1" == "failure" ] || [ "$1" == "cancelled" ]; }
-          if fails "$VN" || fails "$VG" || fails "$ON" || fails "$OG"; then
-            echo "::error::One or more smoke tests failed — see summary above."
-            exit 1
-          fi
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/smoke-test-summary.sh"

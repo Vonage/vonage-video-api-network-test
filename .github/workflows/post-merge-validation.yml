@@ -1,5 +1,17 @@
 name: Post Merge Validation
 
+# Runs on every merge to main or a release branch.
+#
+# Pipeline:
+#   test         → integration tests against live Vonage/OpenTok infrastructure (vonage + opentok, parallel)
+#   package      → builds the library and packs it into a .tgz tarball artifact (vonage + opentok, parallel)
+#   verify       → validates the tarball: publint conformance, size guard, and local install (parallel per target)
+#   sample-build → type-checks and webpack-builds the samples/js app against the vonage tarball
+#   test-dist    → runs Karma tests against the dist bundle extracted from the tarball (parallel per target)
+#   browser-test → loads the UMD bundle in a real Chromium instance via Playwright (parallel per target)
+#
+# All post-package jobs run in parallel and are independent of each other.
+
 on:
   push:
     branches:
@@ -14,7 +26,9 @@ permissions: read-all
 
 jobs:
   test:
+    name: Integration Tests (${{ matrix.target }})
     strategy:
+      # Run both targets concurrently; a failure in one should not block the other.
       fail-fast: false
       matrix:
         target: [vonage, opentok]
@@ -42,8 +56,10 @@ jobs:
           test_api_secret: ${{ secrets.TEST_API_SECRET }}
 
   package:
+    name: Build & Package (${{ matrix.target }})
     needs: test
     strategy:
+      # Both targets produce independent artifacts; continue building even if one fails.
       fail-fast: false
       matrix:
         target: [vonage, opentok]
@@ -62,6 +78,7 @@ jobs:
           node_version: ${{ vars.NODE_VERSION }}
 
   verify:
+    name: Tarball Verification (${{ matrix.target }})
     needs: package
     strategy:
       fail-fast: false
@@ -72,6 +89,13 @@ jobs:
     permissions:
       contents: read
     steps:
+      # Only .github/scripts/ is needed — no source files are required for tarball verification.
+      - name: Checkout scripts
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+
       - name: Download tarball
         uses: actions/download-artifact@v4
         with:
@@ -83,7 +107,7 @@ jobs:
         with:
           node-version: ${{ vars.NODE_VERSION }}
 
-      - name: Find tarball
+      - name: Locate tarball
         id: tarball
         shell: bash
         run: |
@@ -95,7 +119,9 @@ jobs:
           echo "path=$TARBALL" >> "$GITHUB_OUTPUT"
           echo "Found: $TARBALL"
 
-      - name: publint
+      # Checks that package.json exports, main, module, and types fields are correctly
+      # specified and that every referenced file exists within the tarball.
+      - name: Validate package exports (publint)
         shell: bash
         env:
           TARBALL: ${{ steps.tarball.outputs.path }}
@@ -103,25 +129,16 @@ jobs:
           echo "Running publint on: $TARBALL"
           npx --yes publint "$TARBALL"
 
-      - name: Tarball size check
+      # Guards against accidentally shipping node_modules or producing an empty dist.
+      - name: Check tarball size
         shell: bash
         env:
           TARBALL: ${{ steps.tarball.outputs.path }}
-        run: |
-          SIZE_KB=$(du -k "$TARBALL" | cut -f1)
-          FILE_COUNT=$(tar tzf "$TARBALL" | wc -l)
-          echo "Tarball size: ${SIZE_KB}KB, files: $FILE_COUNT"
-          if [ "$SIZE_KB" -gt 2000 ]; then
-            echo "::error::Tarball is ${SIZE_KB}KB — suspiciously large, possible node_modules inclusion"
-            exit 1
-          fi
-          if [ "$SIZE_KB" -lt 5 ]; then
-            echo "::error::Tarball is ${SIZE_KB}KB — suspiciously small, dist may be missing"
-            exit 1
-          fi
-          echo "✅ Size OK (${SIZE_KB}KB, $FILE_COUNT files)"
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/check-tarball-size.sh"
 
-      - name: Local install from tarball
+      # Verifies the tarball can be installed as a dependency — catches malformed tarballs
+      # that pass publint but fail during npm install (e.g., broken symlinks or missing files).
+      - name: Install tarball into a clean project
         shell: bash
         env:
           TARBALL: ${{ steps.tarball.outputs.path }}
@@ -156,42 +173,36 @@ jobs:
           name: vonage-package-tarball
           path: lib/js
 
+      # Tests the sample app against the packaged artifact rather than the checked-out source,
+      # ensuring the dist bundle inside the tarball satisfies the sample's type and webpack requirements.
       - name: Extract dist from tarball
         shell: bash
-        run: |
-          TARBALL=$(find lib/js -maxdepth 1 -name '*.tgz' | head -1)
-          mkdir -p lib/js/dist
-          tar xzf "$TARBALL" --wildcards --strip-components=2 -C lib/js/dist 'package/dist/*'
-          echo "Extracted:"
-          find lib/js/dist -type f | sort
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/extract-dist-from-tarball.sh"
 
       - name: Install sample dependencies
         shell: bash
         working-directory: samples/js
         run: npm install
 
-      - name: Type check sample
+      - name: Type-check samples/js
         shell: bash
         working-directory: samples/js
         run: npm run typecheck
 
-      - name: Build sample (webpack)
+      - name: Build sample app with webpack
         shell: bash
         working-directory: samples/js
         run: npm run build
 
       - name: Verify bundle was produced
         shell: bash
-        run: |
-          SIZE=$(du -k samples/js/bundle.js | cut -f1)
-          echo "bundle.js: ${SIZE}KB"
-          if [ "$SIZE" -lt 10 ]; then
-            echo "::error::bundle.js is ${SIZE}KB — suspiciously small"
-            exit 1
-          fi
-          echo "✅ Sample built successfully (${SIZE}KB)"
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/verify-bundle.sh"
 
+  # Replaces the checked-out lib/js/dist/ with the dist directory from the tarball artifact,
+  # then runs the same Karma suite that normally runs against the source build. This confirms
+  # the bundled output behaves identically to the pre-bundle source code.
   test-dist:
+    name: Dist Bundle Tests (${{ matrix.target }})
     needs: package
     strategy:
       fail-fast: false
@@ -219,19 +230,18 @@ jobs:
 
       - name: Extract dist from tarball
         shell: bash
-        run: |
-          TARBALL=$(find lib/js -maxdepth 1 -name '*.tgz' | head -1)
-          mkdir -p lib/js/dist
-          tar xzf "$TARBALL" --wildcards --strip-components=2 -C lib/js/dist 'package/dist/*'
-          echo "Extracted dist:"
-          find lib/js/dist -type f | sort
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/extract-dist-from-tarball.sh"
 
-      - name: Run dist tests
+      - name: Run Karma tests against dist bundle
         shell: bash
         working-directory: lib/js
         run: npm run karma:dist
 
+  # Tests the UMD bundle (dist/index.js) in a real Chromium browser via Playwright.
+  # This validates behaviour that Node.js-based tests cannot cover: DOM APIs, UMD globals,
+  # and browser-specific JavaScript engine differences.
   browser-test:
+    name: Browser Test — Chromium (${{ matrix.target }})
     needs: package
     strategy:
       fail-fast: false
@@ -242,6 +252,16 @@ jobs:
     permissions:
       contents: read
     steps:
+      # Only the Playwright test script is needed — no full source checkout required.
+      # Playwright is installed into .github/scripts/ so that ESM import resolution finds
+      # node_modules/ relative to browser-test.mjs (ESM resolves imports relative to the
+      # script's location on disk, not the process working directory).
+      - name: Checkout scripts
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+
       - name: Download tarball
         uses: actions/download-artifact@v4
         with:
@@ -253,83 +273,26 @@ jobs:
         with:
           node-version: ${{ vars.NODE_VERSION }}
 
-      - name: Extract dist from tarball
+      # Extracts the entire package into /tmp/pw-test and locates the UMD bundle.
+      # Unlike extract-dist-from-tarball.sh (which writes into lib/js/dist/), this step
+      # extracts to a standalone directory so Playwright can serve the file to Chromium
+      # without interfering with the rest of the workspace.
+      - name: Extract UMD bundle from tarball
         id: extract
         shell: bash
-        run: |
-          TARBALL=$(find lib/js -maxdepth 1 -name '*.tgz' | head -1)
-          if [ -z "$TARBALL" ]; then
-            echo "::error::No tarball found in lib/js/"
-            exit 1
-          fi
-          mkdir -p /tmp/pw-test
-          tar xzf "$TARBALL" -C /tmp/pw-test --strip-components=1
-          BUNDLE=$(find /tmp/pw-test/dist -name 'index.js' ! -name '*.map' | head -1)
-          if [ -z "$BUNDLE" ]; then
-            echo "::error::No index.js found in extracted dist — tarball may be malformed"
-            find /tmp/pw-test -type f | sort
-            exit 1
-          fi
-          echo "bundle=$BUNDLE" >> "$GITHUB_OUTPUT"
-          echo "Bundle: $BUNDLE"
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/extract-umd-bundle.sh"
 
-      - name: Install Playwright
+      - name: Install Playwright and Chromium
+        working-directory: .github/scripts
         shell: bash
         run: |
-          cd /tmp/pw-test
           npm init -y
           npm install playwright
           npx playwright install chromium --with-deps
 
-      - name: Browser test (Gap 4 — UMD bundle in real browser)
+      - name: Test UMD bundle in real browser (Chromium)
+        working-directory: .github/scripts
         shell: bash
         env:
           BUNDLE: ${{ steps.extract.outputs.bundle }}
-        run: |
-          cd /tmp/pw-test
-          cat > browser-test.mjs << 'SCRIPT'
-          import { chromium } from 'playwright';
-
-          const bundle = process.env.BUNDLE;
-          const browser = await chromium.launch();
-          const page = await browser.newPage();
-
-          page.on('pageerror', err => { console.error('Page error:', err.message); });
-
-          await page.addScriptTag({ path: bundle });
-
-          const result = await page.evaluate(() => {
-            const bundle = window.OpenTokNetworkConnectivity;
-            const NT = bundle?.default ?? bundle;
-            if (typeof NT !== 'function') return 'not-a-constructor:' + typeof NT;
-
-            // Test 1: null OT instance → MissingOpenTokInstanceError
-            try {
-              new NT(null, { applicationId: 'a', sessionId: 'b', token: 'c' });
-              return 'test1:should-have-thrown';
-            } catch (e) {
-              if (e.name !== 'MissingOpenTokInstanceError') return 'test1:wrong-error:' + e.name;
-            }
-
-            // Test 2: null credentials → MissingSessionCredentialsError
-            const fakeOT = { initSession: () => {} };
-            try {
-              new NT(fakeOT, null);
-              return 'test2:should-have-thrown';
-            } catch (e) {
-              if (e.name !== 'MissingSessionCredentialsError') return 'test2:wrong-error:' + e.name;
-            }
-
-            return 'pass';
-          });
-
-          await browser.close();
-
-          if (result !== 'pass') {
-            console.error('❌ Browser test failed:', result);
-            process.exit(1);
-          }
-          console.log('✅ Browser test passed — NetworkTest constructor validation works in real Chromium');
-          SCRIPT
-
-          node browser-test.mjs
+        run: node browser-test.mjs

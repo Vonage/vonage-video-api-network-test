@@ -1,5 +1,5 @@
 name: 'Setup Environment'
-description: 'Sets up Node, caches, patches, and installs dependencies'
+description: 'Sets up Node.js, applies the OpenTok source patch (opentok target only), regenerates the lockfile so the cache key is consistent, and restores node_modules from cache'
 inputs:
   target:
     description: 'Target package (vonage or opentok)'
@@ -15,15 +15,17 @@ runs:
       with:
         node-version: ${{ inputs.node_version }}
 
-    # Regenerate the lockfile after patching so the cache key reflects the post-patch
-    # devDependencies — aligning it with the key the build job computes from the artifact.
-    - name: Apply OpenTok patch and regenerate lockfile
+    # The opentok.patch swaps the vonage SDK dependency for the legacy OpenTok SDK in
+    # lib/js/package.json. The lockfile must be regenerated after patching so the cache key
+    # (which hashes the lockfile) matches the key the downstream build job will compute
+    # from the uploaded source artifact — without this, the build job gets a cache miss.
+    - name: Apply OpenTok source patch and regenerate lockfile
       if: inputs.target == 'opentok'
       shell: bash
       run: |
         git apply ./lib/js/opentok.patch
-        # --prefix runs npm from the repo root without changing working-directory,
-        # which composite action steps do not support per-step.
+        # --prefix runs npm from the repo root; composite action steps cannot set
+        # working-directory per step, so --prefix is the workaround here.
         npm --prefix lib/js install --package-lock-only
 
     - name: Restore Node Modules

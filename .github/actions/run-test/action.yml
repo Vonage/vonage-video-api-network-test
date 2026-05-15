@@ -1,5 +1,5 @@
-name: 'Test'
-description: 'Validates credentials, writes private keys, and runs tests'
+name: 'Run Integration Tests'
+description: 'Validates test credentials, writes the Vonage private key to disk, runs the test suite against live infrastructure, and removes the key afterwards'
 inputs:
   target:
     description: 'Target package'
@@ -19,26 +19,14 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Validate Credentials
+    - name: Validate and write test credentials
       shell: bash
       env:
         TARGET: ${{ inputs.target }}
         VONAGE_PRIVATE_KEY: ${{ inputs.vonage_private_key }}
         TEST_API_KEY: ${{ inputs.test_api_key }}
         TEST_API_SECRET: ${{ inputs.test_api_secret }}
-      run: |
-        if [ "$TARGET" == "vonage" ]; then
-          if [ -z "$VONAGE_PRIVATE_KEY" ]; then
-            echo "❌ vonage_private_key is empty or not set"
-            exit 1
-          fi
-          echo "$VONAGE_PRIVATE_KEY" > lib/js/private.key
-        elif [ "$TARGET" == "opentok" ]; then
-          if [ -z "$TEST_API_KEY" ] || [ -z "$TEST_API_SECRET" ]; then
-            echo "❌ test_api_key and test_api_secret are required for opentok target"
-            exit 1
-          fi
-        fi
+      run: bash "$GITHUB_WORKSPACE/.github/scripts/validate-test-credentials.sh"
 
     # TEST_APPLICATION_ID, TEST_API_KEY, and TEST_API_SECRET are used by both
     # vonage and opentok test suites. Vonage additionally requires the private key written above.
@@ -56,7 +44,9 @@ runs:
         fi
         npm run test
 
-    - name: Delete Private Key
+    # Runs even if the test step failed, ensuring the private key is never left on the
+    # runner disk regardless of the test outcome (post-step cleanup guarantee).
+    - name: Delete private key
       if: always() && inputs.target == 'vonage'
       shell: bash
       working-directory: lib/js
