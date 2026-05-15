@@ -60,3 +60,40 @@ jobs:
         with:
           target: ${{ matrix.target }}
           node_version: ${{ vars.NODE_VERSION }}
+
+  verify:
+    needs: package
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [vonage, opentok]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Download tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.target }}-package-tarball
+          path: lib/js
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION }}
+
+      - name: publint
+        shell: bash
+        run: |
+          TARBALL=$(find lib/js -maxdepth 1 -name '*.tgz' | head -1)
+          echo "Running publint on: $TARBALL"
+          npx --yes publint "$TARBALL"
+
+      - name: attw (are the types wrong)
+        continue-on-error: true  # "type":"module" vs UMD — known issue, informational only until resolved
+        shell: bash
+        run: |
+          TARBALL=$(find lib/js -maxdepth 1 -name '*.tgz' | head -1)
+          echo "Running attw on: $TARBALL"
+          npx --yes @arethetypeswrong/cli "$TARBALL"
