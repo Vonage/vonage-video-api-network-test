@@ -476,7 +476,7 @@ diff --git a/lib/js/package.json b/lib/js/package.json
 index bbcb01a..eec63b8 100644
 --- a/lib/js/package.json
 +++ b/lib/js/package.json
-@@ -1,9 +1,9 @@
+@@ -1,12 +1,12 @@
  {
 -  "name": "@vonage/video-client-network-test",
 +  "name": "@opentok/opentok-network-test-js",
@@ -487,10 +487,13 @@ index bbcb01a..eec63b8 100644
 +  "description": "Precall network test for applications using the OpenTok platform.",
 +  "main": "dist/index.js",
 +  "types": "dist/index.d.ts",
+   "files": [
+     "dist/"
+   ],
    "scripts": {
      "build:js": "rm -rf dist && webpack --config webpack.config.js  --stats-error-details",
      "build:types": "tsc --project ./tsconfig.json",
-@@ -18,18 +18,17 @@
+@@ -21,18 +21,17 @@
      "tslint": "eslint . --ext .js,.ts",
      "tslint-fix": "eslint . --ext .js,.ts --fix"
    },

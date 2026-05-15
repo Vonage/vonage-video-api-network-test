@@ -83,9 +83,11 @@ jobs:
         shell: bash
         run: |
           TARBALL=$(find tarball -name '*.tgz' | head -1)
-          if ! tar tzf "$TARBALL" | grep -qE 'package/dist/index\.js$'; then
+          # Capture listing into a variable to avoid tar SIGPIPE under pipefail
+          CONTENTS=$(tar tzf "$TARBALL")
+          if ! echo "$CONTENTS" | grep -qE 'package/dist/index\.js$'; then
             echo "❌ dist/index.js not found in tarball — build output path mismatch"
-            tar tzf "$TARBALL" | grep 'dist/' || echo "(no dist/ entries at all)"
+            echo "$CONTENTS" | grep 'dist/' || echo "(no dist/ entries at all)"
             exit 1
           fi
           echo "✅ dist/index.js present in $TARBALL"
