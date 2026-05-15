@@ -1,0 +1,19 @@
+.github/actions/package-tarball/action.yml
+  s_4e210b06534398::t_92e6da2d286677 13-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "07290574de48938daf4c655072fc5a59785c3482",
+  "prompts": {},
+  "sessions": {
+    "s_4e210b06534398": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "e21afc18-ac4f-4120-983e-8b659e00cbda",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
