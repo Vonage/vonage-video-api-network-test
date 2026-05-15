@@ -166,6 +166,7 @@ runs:
 
     - name: Check if version already published
       id: version-check
+      if: ${{ !fromJSON(inputs.dry_run) }}
       working-directory: lib/js
       shell: bash
       env:
