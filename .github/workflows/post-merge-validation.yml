@@ -60,3 +60,32 @@ jobs:
         with:
           target: ${{ matrix.target }}
           node_version: ${{ vars.NODE_VERSION }}
+
+  verify-artifacts:
+    name: Verify ${{ matrix.target }} tarball
+    needs: package
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [vonage, opentok]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+    steps:
+      - name: Download tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.target }}-package-tarball
+          path: tarball
+
+      - name: Verify tarball contains dist/index.js
+        shell: bash
+        run: |
+          TARBALL=$(find tarball -name '*.tgz' | head -1)
+          if ! tar tzf "$TARBALL" | grep -qE 'package/dist/index\.js$'; then
+            echo "❌ dist/index.js not found in tarball — build output path mismatch"
+            tar tzf "$TARBALL" | grep 'dist/' || echo "(no dist/ entries at all)"
+            exit 1
+          fi
+          echo "✅ dist/index.js present in $TARBALL"

@@ -7,13 +7,14 @@
     "allowJs": false,                                           /* Allow javascript files to be compiled. */
     "declaration": true,                                        /* Generates corresponding '.d.ts' file. */
     "declarationMap": true,
+    "emitDeclarationOnly": true,
     "sourceMap": true,                        /* Generates corresponding '.map' file. */
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "rootDir": "./",
-    "outDir": "../../dist"
+    "rootDir": "./src",
+    "outDir": "./dist"
   },
   "files": [
     "src/index.ts",

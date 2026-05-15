@@ -480,10 +480,10 @@ index bbcb01a..eec63b8 100644
  {
 -  "name": "@vonage/video-client-network-test",
 +  "name": "@opentok/opentok-network-test-js",
-   "version": "5.1.1",
+   "version": "5.1.2",
 -  "description": "Precall network test for applications using the Vonage Video API platform.",
--  "main": "dist/vonage/index.js",
--  "types": "dist/vonage/index.d.ts",
+-  "main": "dist/index.js",
+-  "types": "dist/index.d.ts",
 +  "description": "Precall network test for applications using the OpenTok platform.",
 +  "main": "dist/index.js",
 +  "types": "dist/index.d.ts",
@@ -992,3 +992,4 @@ index 3cecd93..586674f 100644
 +}
 +
  generateCredentials();
+
