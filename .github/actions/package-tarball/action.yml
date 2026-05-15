@@ -10,7 +10,20 @@ runs:
     - name: Pack
       shell: bash
       working-directory: lib/js
-      run: npm pack  # Fails loudly on pack error; archive contents are not further verified.
+      run: |
+        # UMD bundles use module.exports / AMD / globals — not ESM exports.
+        # "type": "module" is needed by the build tooling (webpack.config.js,
+        # karma.conf.js) but must not ship in the tarball, or Node.js and some
+        # bundlers will treat the UMD file as ESM and find no named exports.
+        # The opentok.patch already strips this field for the opentok variant;
+        # we do the equivalent here for the vonage variant.
+        node -e "
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          delete p.type;
+          fs.writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');
+        "
+        npm pack  # Fails loudly on pack error; archive contents are not further verified.
 
     - name: Assert Single Tarball
       shell: bash
