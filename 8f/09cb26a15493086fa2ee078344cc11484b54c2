@@ -1,0 +1,96 @@
+.github/scripts/validate-run-id.sh
+  s_4e210b06534398::t_644862d093798c 1-28
+.github/actions/smoke-test-package/action.yml
+  s_4e210b06534398::t_b9705d2fc256c6 27,39-40,48-52,86-89
+.github/scripts/smoke-test-summary.sh
+  s_4e210b06534398::t_7d8fb69646b7c5 1-24
+.github/workflows/post-merge-validation.yml
+  s_4e210b06534398::t_be330452a4fdb9 93-98,137
+  s_4e210b06534398::t_14297665becf94 81,92,110,122-124,132-133,139-141
+  s_4e210b06534398::t_4f63d86998f5a2 180,199,233
+  s_4e210b06534398::t_29762f1410707a 301,309,313
+  s_4e210b06534398::t_2b8351001f83b6 3-14
+  s_4e210b06534398::t_894482f7b05683 29,31,59,62
+  s_4e210b06534398::t_8ad93d9cd86f02 259-264
+  s_4e210b06534398::t_578d64661c2806 240-242,244,255-258,276-280,300,308
+  s_4e210b06534398::t_7858a51f4983fd 176-177,187,192
+  s_4e210b06534398::t_dbf6b26230c7f2 201-203,205,235
+.github/scripts/browser-test.mjs
+  s_4e210b06534398::t_0d4d5bb335f9f8 1-42
+.github/scripts/extract-tarball.sh
+  s_4e210b06534398::t_58f4b22ece9624 1-14
+.github/workflows/ci-pull-request.yml
+  s_4e210b06534398::t_d763b5685bab6e 81
+  s_4e210b06534398::t_5a09cde3686fd8 3-13
+  s_4e210b06534398::t_976696d26ca079 25
+.github/scripts/apply-organization-scope.sh
+  s_4e210b06534398::t_8ec9f44ac3106d 1-17
+.github/scripts/next-prerelease-number.mjs
+  s_4e210b06534398::t_d9aec2aeec9fd5 1-11
+.github/scripts/apply-prerelease-tag.sh
+  s_4e210b06534398::t_5064a76079c4a7 1-17
+.github/scripts/compute-publish-outcomes.sh
+  s_4e210b06534398::t_566bebea5bc2ea 1-11
+.github/scripts/extract-dist-from-tarball.sh
+  s_4e210b06534398::t_784d1673dd232f 1-10
+.github/actions/run-test/action.yml
+  s_4e210b06534398::t_42059bdea4da63 1-2
+  s_4e210b06534398::t_2be7a293128c0d 29
+  s_4e210b06534398::t_924b140842c07f 22
+  s_4e210b06534398::t_1c8c6bc6460925 47-49
+.github/scripts/publish-summary.sh
+  s_4e210b06534398::t_4ad1a7c4c425f6 1-39
+.github/scripts/validate-test-credentials.sh
+  s_4e210b06534398::t_7fb791b262efe7 1-16
+.github/scripts/npm-publish.sh
+  s_4e210b06534398::t_16aaba0e2fb56a 1-19
+.github/workflows/release-management.yml
+  s_4e210b06534398::t_d9c74491ff4d53 46,48
+  s_4e210b06534398::t_62971adaea198f 3-12
+.github/actions/setup-environment/action.yml
+  s_4e210b06534398::t_a800595f733d9d 2
+  s_4e210b06534398::t_4e8dd5c82dc1ba 18-22,27-28
+.github/workflows/publish-package.yml
+  s_4e210b06534398::t_9fbec97ab215ed 170-173
+  s_4e210b06534398::t_8ecbf4d939d169 152-154
+  s_4e210b06534398::t_315c241c7e4352 282
+  s_4e210b06534398::t_896c5635b302fe 76-78,168,186,215,290
+  s_4e210b06534398::t_a7f46927432938 3-15
+  s_4e210b06534398::t_ff341207bb6f4d 237-239
+  s_4e210b06534398::t_fd204b54ab0876 80-83
+  s_4e210b06534398::t_8db0c3bac176e3 217-219
+.github/scripts/verify-bundle.sh
+  s_4e210b06534398::t_0f6cee9263be00 1-11
+.github/scripts/resolve-auth-token.sh
+  s_4e210b06534398::t_d0314b2ca062f3 1-17
+.github/scripts/create-baseline-release.sh
+  s_4e210b06534398::t_d95340c81ead94 1-23
+.github/scripts/github-release.sh
+  s_4e210b06534398::t_52f3ad21a0535c 1-21
+.github/scripts/check-version-published.sh
+  s_4e210b06534398::t_1a32b621824190 1-17
+.github/actions/publish-package/action.yml
+  s_4e210b06534398::t_441ea5f936b629 55-59,64
+  s_4e210b06534398::t_ce93937733cc79 74
+  s_4e210b06534398::t_a13da4d9e29ebf 124-126
+  s_4e210b06534398::t_e612ef3b1146f4 53,89,105,113,122,135
+  s_4e210b06534398::t_a1e1bc4bac1ed4 68-69
+.github/scripts/check-tarball-size.sh
+  s_4e210b06534398::t_8d5cb1ff48ec6a 1-16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "8f09cb26a15493086fa2ee078344cc11484b54c2",
+  "prompts": {},
+  "sessions": {
+    "s_4e210b06534398": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "e21afc18-ac4f-4120-983e-8b659e00cbda",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
