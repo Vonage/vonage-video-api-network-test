@@ -1,0 +1,19 @@
+.github/workflows/remove-package.yml
+  s_4e210b06534398::t_11921c1930839c 1-195
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "6a82358ac32f27d94f7ad38981722cfb85f8939f",
+  "prompts": {},
+  "sessions": {
+    "s_4e210b06534398": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "e21afc18-ac4f-4120-983e-8b659e00cbda",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
