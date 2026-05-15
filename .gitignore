@@ -68,6 +68,7 @@ private.key
 
 # sample
 sample/bundle.js
+samples/js/bundle.js
 sample/src/js/config.js
 sample/node_modules
 

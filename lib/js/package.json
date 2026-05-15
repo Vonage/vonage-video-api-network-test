@@ -1,9 +1,9 @@
 {
   "name": "@vonage/video-client-network-test",
-  "version": "5.1.1",
+  "version": "5.1.2",
   "description": "Precall network test for applications using the Vonage Video API platform.",
-  "main": "dist/vonage/index.js",
-  "types": "dist/vonage/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build:js": "rm -rf dist && webpack --config webpack.config.js  --stats-error-details",
     "build:types": "tsc --project ./tsconfig.json",

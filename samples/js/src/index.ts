@@ -1,4 +1,4 @@
-import NetworkTest, {ErrorNames, QualityTestResults} from '@vonage/video-client-network-test';
+import NetworkTest, {ErrorNames} from '@vonage/video-client-network-test';
 import createChart from './chart.js';
 import * as ConnectivityUI from './connectivity-ui.js';
 import config from './config.js';
@@ -95,7 +95,7 @@ function testQuality() {
         ConnectivityUI.hideStopButton();
         videoNetworkTest.stop();
     });
-    videoNetworkTest.testQuality(function updateCallback(stats: QualityTestResults) {
+    videoNetworkTest.testQuality(function updateCallback(stats) {
         ConnectivityUI.checkToDisplayStopButton();
         ConnectivityUI.graphIntermediateStats('audio', stats);
         ConnectivityUI.graphIntermediateStats('video', stats);
