@@ -55,6 +55,37 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Validate run_id source
+        if: inputs.run_id != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! RUN_JSON=$(gh api "repos/${{ github.repository }}/actions/runs/${{ inputs.run_id }}" 2>&1); then
+            echo "::error::Could not fetch run ${{ inputs.run_id }}: $RUN_JSON"
+            exit 1
+          fi
+          WORKFLOW=$(echo "$RUN_JSON" | jq -r '.name')
+          CONCLUSION=$(echo "$RUN_JSON" | jq -r '.conclusion')
+          STATUS=$(echo "$RUN_JSON"   | jq -r '.status')
+
+          echo "Run ID:     ${{ inputs.run_id }}"
+          echo "Workflow:   $WORKFLOW"
+          echo "Status:     $STATUS"
+          echo "Conclusion: $CONCLUSION"
+
+          if [ "$WORKFLOW" != "Post Merge Validation" ]; then
+            echo "::error::run_id ${{ inputs.run_id }} belongs to '$WORKFLOW'."
+            echo "::error::Only artifacts from a successful 'Post Merge Validation' run may be published."
+            exit 1
+          fi
+          if [ "$CONCLUSION" != "success" ]; then
+            echo "::error::run_id ${{ inputs.run_id }} did not succeed (conclusion: $CONCLUSION)."
+            echo "::error::Cannot publish from a failed or incomplete run."
+            exit 1
+          fi
+          echo "✅ Verified: run ${{ inputs.run_id }} is a successful Post Merge Validation run"
+
       - name: '@vonage/video-client-network-test → npmjs.com'
         id: vonage-npmjs
         if: inputs.target == 'all' || inputs.target == '@vonage/video-client-network-test → npmjs.com'
@@ -71,7 +102,6 @@ jobs:
           npm_token: ${{ secrets.NPM_TOKEN_VONAGE }}
           node_version: ${{ vars.NODE_VERSION }}
           github_packages_token: ${{ secrets.GITHUB_TOKEN }}
-          skip_if_published: ${{ inputs.target == 'all' }}
 
       - name: '@vonage/video-client-network-test → GitHub Packages'
         id: vonage-github
@@ -89,7 +119,6 @@ jobs:
           node_version: ${{ vars.NODE_VERSION }}
           # @vonage packages live in this repo's org, so the built-in GITHUB_TOKEN has write:packages.
           github_packages_token: ${{ secrets.GITHUB_TOKEN }}
-          skip_if_published: ${{ inputs.target == 'all' }}
 
       - name: 'opentok-network-test-js → npmjs.com'
         id: opentok-npmjs
@@ -106,7 +135,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           npm_token: ${{ secrets.NPM_TOKEN_OPENTOK }}
           node_version: ${{ vars.NODE_VERSION }}
-          skip_if_published: ${{ inputs.target == 'all' }}
 
       - name: '@opentok/opentok-network-test-js → GitHub Packages'
         id: opentok-github
@@ -125,7 +153,6 @@ jobs:
           # @opentok packages live in a different GitHub org; GITHUB_TOKEN cannot publish
           # across org boundaries, so a PAT with write:packages on the opentok org is required.
           github_packages_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
-          skip_if_published: ${{ inputs.target == 'all' }}
 
       - name: Compute publish outcomes
         id: outcomes
@@ -151,6 +178,7 @@ jobs:
       - name: Summary
         if: always()
         env:
+          TARGET:              ${{ inputs.target }}
           VONAGE_NPMJS:        ${{ steps.vonage-npmjs.outcome }}
           VONAGE_GITHUB:       ${{ steps.vonage-github.outcome }}
           OPENTOK_NPMJS:       ${{ steps.opentok-npmjs.outcome }}
@@ -178,10 +206,21 @@ jobs:
           echo "| \`@opentok/opentok-network-test-js\` → GitHub Packages  | $(status "$OPENTOK_GITHUB" "$OPENTOK_GITHUB_SKIP") |" >> "$GITHUB_STEP_SUMMARY"
 
           # Fail the job if any selected step failed (skipped = not selected, which is fine).
-          if [ "$VONAGE_NPMJS" == "failure" ] || [ "$VONAGE_GITHUB" == "failure" ] || \
-             [ "$OPENTOK_NPMJS" == "failure" ] || [ "$OPENTOK_GITHUB" == "failure" ]; then
+          fails() { [ "$1" == "failure" ] || [ "$1" == "cancelled" ]; }
+          if fails "$VONAGE_NPMJS" || fails "$VONAGE_GITHUB" || \
+             fails "$OPENTOK_NPMJS" || fails "$OPENTOK_GITHUB"; then
             echo "::error::One or more publish steps failed — see summary above."
             exit 1
+          fi
+
+          # When publishing a specific target (not "all"), treat already-published as an error:
+          # the user explicitly chose a single variant, so a duplicate publish is unexpected.
+          if [ "$TARGET" != "all" ]; then
+            if [ "$VONAGE_NPMJS_SKIP" == "true" ] || [ "$VONAGE_GITHUB_SKIP" == "true" ] || \
+               [ "$OPENTOK_NPMJS_SKIP" == "true" ] || [ "$OPENTOK_GITHUB_SKIP" == "true" ]; then
+              echo "::error::Version is already published — cannot re-publish with a specific target."
+              exit 1
+            fi
           fi
 
       # Reads the final version and name written to lib/js/package.json by the publish action.
@@ -237,6 +276,9 @@ jobs:
     permissions:
       packages: read
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -246,217 +288,43 @@ jobs:
         id: smoke-vonage-npmjs
         if: needs.publish.outputs.vonage-npmjs-published == 'true'
         continue-on-error: true
-        env:
-          VERSION: ${{ needs.publish.outputs.version }}
-        shell: bash
-        run: |
-          DIR=$(mktemp -d) && cd "$DIR"
-          npm init -y --quiet
-          npm install "@vonage/video-client-network-test@${VERSION}" --quiet
-          node --input-type=module << 'SMOKE'
-          import { readFileSync } from 'node:fs';
-          import { runInThisContext } from 'node:vm';
-
-          const pkg = JSON.parse(readFileSync('./node_modules/@vonage/video-client-network-test/package.json', 'utf-8'));
-          const code = readFileSync(`./node_modules/@vonage/video-client-network-test/${pkg.main}`, 'utf-8');
-
-          // UMD bundle sets globalThis.OpenTokNetworkConnectivity (self===globalThis in Node.js 24+)
-          globalThis.self ??= globalThis;
-          runInThisContext(code);
-
-          const bundle = globalThis.OpenTokNetworkConnectivity;
-          const NT = bundle?.default ?? bundle;
-          if (typeof NT !== 'function') {
-            console.error('❌ NetworkTest not exported, got:', typeof NT);
-            process.exit(1);
-          }
-
-          // Verify constructor input validation — no browser APIs involved here
-          try {
-            new NT(null, { applicationId: 'a', sessionId: 'b', token: 'c' });
-            console.error('❌ Expected MissingOpenTokInstanceError, nothing was thrown');
-            process.exit(1);
-          } catch (e) {
-            if (e.name !== 'MissingOpenTokInstanceError') {
-              console.error('❌ Wrong error thrown:', e.name, '-', e.message);
-              process.exit(1);
-            }
-          }
-          console.log('✅ NetworkTest exported and constructor validation correct');
-          SMOKE
-
-          # Gap 5: CJS require() compatibility check
-          CJS_OUT=$(node -e 'require("@vonage/video-client-network-test")' 2>&1 || true)
-          if echo "$CJS_OUT" | grep -qE 'ERR_REQUIRE_ESM|ERR_REQUIRE_MODULE'; then
-            echo "::notice::CJS require() not supported for @vonage/video-client-network-test — known issue (type:module + UMD mismatch, tracked for future fix)"
-          elif [ -z "$CJS_OUT" ]; then
-            echo "✅ CJS require() succeeded"
-          else
-            echo "⚠️ CJS require() result: $CJS_OUT"
-          fi
+        uses: ./.github/actions/smoke-test-package
+        with:
+          package_name: '@vonage/video-client-network-test'
+          version: ${{ needs.publish.outputs.version }}
 
       - name: '@vonage/video-client-network-test → GitHub Packages'
         id: smoke-vonage-github
         if: needs.publish.outputs.vonage-github-published == 'true'
         continue-on-error: true
-        env:
-          VERSION: ${{ needs.publish.outputs.version }}
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: |
-          DIR=$(mktemp -d) && cd "$DIR"
-          npm init -y --quiet
-          printf '@vonage:registry=https://npm.pkg.github.com/\n//npm.pkg.github.com/:_authToken=%s\n' "$NODE_AUTH_TOKEN" > .npmrc
-          npm install "@vonage/video-client-network-test@${VERSION}" --quiet
-          node --input-type=module << 'SMOKE'
-          import { readFileSync } from 'node:fs';
-          import { runInThisContext } from 'node:vm';
-
-          const pkg = JSON.parse(readFileSync('./node_modules/@vonage/video-client-network-test/package.json', 'utf-8'));
-          const code = readFileSync(`./node_modules/@vonage/video-client-network-test/${pkg.main}`, 'utf-8');
-
-          // UMD bundle sets globalThis.OpenTokNetworkConnectivity (self===globalThis in Node.js 24+)
-          globalThis.self ??= globalThis;
-          runInThisContext(code);
-
-          const bundle = globalThis.OpenTokNetworkConnectivity;
-          const NT = bundle?.default ?? bundle;
-          if (typeof NT !== 'function') {
-            console.error('❌ NetworkTest not exported, got:', typeof NT);
-            process.exit(1);
-          }
-
-          // Verify constructor input validation — no browser APIs involved here
-          try {
-            new NT(null, { applicationId: 'a', sessionId: 'b', token: 'c' });
-            console.error('❌ Expected MissingOpenTokInstanceError, nothing was thrown');
-            process.exit(1);
-          } catch (e) {
-            if (e.name !== 'MissingOpenTokInstanceError') {
-              console.error('❌ Wrong error thrown:', e.name, '-', e.message);
-              process.exit(1);
-            }
-          }
-          console.log('✅ NetworkTest exported and constructor validation correct');
-          SMOKE
-
-          # Gap 5: CJS require() compatibility check
-          CJS_OUT=$(node -e 'require("@vonage/video-client-network-test")' 2>&1 || true)
-          if echo "$CJS_OUT" | grep -qE 'ERR_REQUIRE_ESM|ERR_REQUIRE_MODULE'; then
-            echo "::notice::CJS require() not supported for @vonage/video-client-network-test — known issue (type:module + UMD mismatch, tracked for future fix)"
-          elif [ -z "$CJS_OUT" ]; then
-            echo "✅ CJS require() succeeded"
-          else
-            echo "⚠️ CJS require() result: $CJS_OUT"
-          fi
+        uses: ./.github/actions/smoke-test-package
+        with:
+          package_name: '@vonage/video-client-network-test'
+          version: ${{ needs.publish.outputs.version }}
+          registry: github
+          scope: '@vonage'
+          auth_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'opentok-network-test-js → npmjs.com'
         id: smoke-opentok-npmjs
         if: needs.publish.outputs.opentok-npmjs-published == 'true'
         continue-on-error: true
-        env:
-          VERSION: ${{ needs.publish.outputs.version }}
-        shell: bash
-        run: |
-          DIR=$(mktemp -d) && cd "$DIR"
-          npm init -y --quiet
-          npm install "opentok-network-test-js@${VERSION}" --quiet
-          node --input-type=module << 'SMOKE'
-          import { readFileSync } from 'node:fs';
-          import { runInThisContext } from 'node:vm';
-
-          const pkg = JSON.parse(readFileSync('./node_modules/opentok-network-test-js/package.json', 'utf-8'));
-          const code = readFileSync(`./node_modules/opentok-network-test-js/${pkg.main}`, 'utf-8');
-
-          // UMD bundle sets globalThis.OpenTokNetworkConnectivity (self===globalThis in Node.js 24+)
-          globalThis.self ??= globalThis;
-          runInThisContext(code);
-
-          const bundle = globalThis.OpenTokNetworkConnectivity;
-          const NT = bundle?.default ?? bundle;
-          if (typeof NT !== 'function') {
-            console.error('❌ NetworkTest not exported, got:', typeof NT);
-            process.exit(1);
-          }
-
-          // Verify constructor input validation — no browser APIs involved here
-          try {
-            new NT(null, { applicationId: 'a', sessionId: 'b', token: 'c' });
-            console.error('❌ Expected MissingOpenTokInstanceError, nothing was thrown');
-            process.exit(1);
-          } catch (e) {
-            if (e.name !== 'MissingOpenTokInstanceError') {
-              console.error('❌ Wrong error thrown:', e.name, '-', e.message);
-              process.exit(1);
-            }
-          }
-          console.log('✅ NetworkTest exported and constructor validation correct');
-          SMOKE
-
-          # Gap 5: CJS require() compatibility check
-          CJS_OUT=$(node -e 'require("opentok-network-test-js")' 2>&1 || true)
-          if echo "$CJS_OUT" | grep -qE 'ERR_REQUIRE_ESM|ERR_REQUIRE_MODULE'; then
-            echo "::notice::CJS require() not supported for opentok-network-test-js — known issue (type:module + UMD mismatch, tracked for future fix)"
-          elif [ -z "$CJS_OUT" ]; then
-            echo "✅ CJS require() succeeded"
-          else
-            echo "⚠️ CJS require() result: $CJS_OUT"
-          fi
+        uses: ./.github/actions/smoke-test-package
+        with:
+          package_name: opentok-network-test-js
+          version: ${{ needs.publish.outputs.version }}
 
       - name: '@opentok/opentok-network-test-js → GitHub Packages'
         id: smoke-opentok-github
         if: needs.publish.outputs.opentok-github-published == 'true'
         continue-on-error: true
-        env:
-          VERSION: ${{ needs.publish.outputs.version }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
-        shell: bash
-        run: |
-          DIR=$(mktemp -d) && cd "$DIR"
-          npm init -y --quiet
-          printf '@opentok:registry=https://npm.pkg.github.com/\n//npm.pkg.github.com/:_authToken=%s\n' "$NODE_AUTH_TOKEN" > .npmrc
-          npm install "@opentok/opentok-network-test-js@${VERSION}" --quiet
-          node --input-type=module << 'SMOKE'
-          import { readFileSync } from 'node:fs';
-          import { runInThisContext } from 'node:vm';
-
-          const pkg = JSON.parse(readFileSync('./node_modules/@opentok/opentok-network-test-js/package.json', 'utf-8'));
-          const code = readFileSync(`./node_modules/@opentok/opentok-network-test-js/${pkg.main}`, 'utf-8');
-
-          // UMD bundle sets globalThis.OpenTokNetworkConnectivity (self===globalThis in Node.js 24+)
-          globalThis.self ??= globalThis;
-          runInThisContext(code);
-
-          const bundle = globalThis.OpenTokNetworkConnectivity;
-          const NT = bundle?.default ?? bundle;
-          if (typeof NT !== 'function') {
-            console.error('❌ NetworkTest not exported, got:', typeof NT);
-            process.exit(1);
-          }
-
-          // Verify constructor input validation — no browser APIs involved here
-          try {
-            new NT(null, { applicationId: 'a', sessionId: 'b', token: 'c' });
-            console.error('❌ Expected MissingOpenTokInstanceError, nothing was thrown');
-            process.exit(1);
-          } catch (e) {
-            if (e.name !== 'MissingOpenTokInstanceError') {
-              console.error('❌ Wrong error thrown:', e.name, '-', e.message);
-              process.exit(1);
-            }
-          }
-          console.log('✅ NetworkTest exported and constructor validation correct');
-          SMOKE
-
-          # Gap 5: CJS require() compatibility check
-          CJS_OUT=$(node -e 'require("@opentok/opentok-network-test-js")' 2>&1 || true)
-          if echo "$CJS_OUT" | grep -qE 'ERR_REQUIRE_ESM|ERR_REQUIRE_MODULE'; then
-            echo "::notice::CJS require() not supported for @opentok/opentok-network-test-js — known issue (type:module + UMD mismatch, tracked for future fix)"
-          elif [ -z "$CJS_OUT" ]; then
-            echo "✅ CJS require() succeeded"
-          else
-            echo "⚠️ CJS require() result: $CJS_OUT"
-          fi
+        uses: ./.github/actions/smoke-test-package
+        with:
+          package_name: '@opentok/opentok-network-test-js'
+          version: ${{ needs.publish.outputs.version }}
+          registry: github
+          scope: '@opentok'
+          auth_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
 
       - name: Summary
         if: always()
@@ -469,9 +337,9 @@ jobs:
         run: |
           status() {
             case "$1" in
-              success) echo "✅ \`ok\`" ;;
-              skipped) echo "⏭️ \`not published\`" ;;
-              *)        echo "❌ \`$1\`" ;;
+              success)   echo "✅ \`ok\`" ;;
+              skipped)   echo "⏭️ \`not published\`" ;;
+              *)         echo "❌ \`$1\`" ;;
             esac
           }
           echo "### Smoke Test Summary" >> "$GITHUB_STEP_SUMMARY"
@@ -482,8 +350,8 @@ jobs:
           echo "| \`opentok-network-test-js\` → npmjs.com                 | $(status "$ON") |" >> "$GITHUB_STEP_SUMMARY"
           echo "| \`@opentok/opentok-network-test-js\` → GitHub Packages  | $(status "$OG") |" >> "$GITHUB_STEP_SUMMARY"
 
-          if [ "$VN" == "failure" ] || [ "$VG" == "failure" ] || \
-             [ "$ON" == "failure" ] || [ "$OG" == "failure" ]; then
+          fails() { [ "$1" == "failure" ] || [ "$1" == "cancelled" ]; }
+          if fails "$VN" || fails "$VG" || fails "$ON" || fails "$OG"; then
             echo "::error::One or more smoke tests failed — see summary above."
             exit 1
           fi

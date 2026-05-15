@@ -83,17 +83,31 @@ jobs:
         with:
           node-version: ${{ vars.NODE_VERSION }}
 
-      - name: publint
+      - name: Find tarball
+        id: tarball
         shell: bash
         run: |
           TARBALL=$(find lib/js -maxdepth 1 -name '*.tgz' | head -1)
+          if [ -z "$TARBALL" ]; then
+            echo "::error::No tarball found in lib/js/ — the package job may have failed"
+            exit 1
+          fi
+          echo "path=$TARBALL" >> "$GITHUB_OUTPUT"
+          echo "Found: $TARBALL"
+
+      - name: publint
+        shell: bash
+        env:
+          TARBALL: ${{ steps.tarball.outputs.path }}
+        run: |
           echo "Running publint on: $TARBALL"
           npx --yes publint "$TARBALL"
 
       - name: Tarball size check
         shell: bash
+        env:
+          TARBALL: ${{ steps.tarball.outputs.path }}
         run: |
-          TARBALL=$(find lib/js -maxdepth 1 -name '*.tgz' | head -1)
           SIZE_KB=$(du -k "$TARBALL" | cut -f1)
           FILE_COUNT=$(tar tzf "$TARBALL" | wc -l)
           echo "Tarball size: ${SIZE_KB}KB, files: $FILE_COUNT"
@@ -109,8 +123,9 @@ jobs:
 
       - name: Local install from tarball
         shell: bash
+        env:
+          TARBALL: ${{ steps.tarball.outputs.path }}
         run: |
-          TARBALL=$(find lib/js -maxdepth 1 -name '*.tgz' | head -1)
           TARBALL_ABS=$(realpath "$TARBALL")
           DIR=$(mktemp -d)
           cd "$DIR"
@@ -243,9 +258,18 @@ jobs:
         shell: bash
         run: |
           TARBALL=$(find lib/js -maxdepth 1 -name '*.tgz' | head -1)
+          if [ -z "$TARBALL" ]; then
+            echo "::error::No tarball found in lib/js/"
+            exit 1
+          fi
           mkdir -p /tmp/pw-test
           tar xzf "$TARBALL" -C /tmp/pw-test --strip-components=1
           BUNDLE=$(find /tmp/pw-test/dist -name 'index.js' ! -name '*.map' | head -1)
+          if [ -z "$BUNDLE" ]; then
+            echo "::error::No index.js found in extracted dist — tarball may be malformed"
+            find /tmp/pw-test -type f | sort
+            exit 1
+          fi
           echo "bundle=$BUNDLE" >> "$GITHUB_OUTPUT"
           echo "Bundle: $BUNDLE"
 

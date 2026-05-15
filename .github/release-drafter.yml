@@ -24,7 +24,11 @@ categories:
       - 'dependencies'
   - title: '🏗️ Other Changes'
     labels:
+      - 'other'
       - '*'
+
+exclude-labels:
+  - 'skip-changelog'
 
 # Automatically label PRs based on conventional commit prefixes in the PR title.
 autolabeler:
