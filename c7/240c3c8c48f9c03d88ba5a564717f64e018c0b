@@ -1,0 +1,29 @@
+lib/js/webpack.config.js
+  ai_agent 19-21
+lib/js/test/dist-tests/dist.spec.ts
+  s_fbcba06542f628::t_df89ab745d583f 1-61
+.github/workflows/publish-package.yml
+  ai_agent 256-296,311-351,364-404,419-459,478
+lib/js/package.json
+  ai_agent 14,16
+lib/js/karma.conf.dist.mjs
+  ai_agent 1-114
+lib/js/tsconfig.json
+  ai_agent 10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "c7240c3c8c48f9c03d88ba5a564717f64e018c0b",
+  "prompts": {},
+  "sessions": {
+    "s_fbcba06542f628": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "7ed4fc55-0d34-4b20-811f-ab51acae166a",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
