@@ -1,0 +1,21 @@
+samples/js/package.json
+  s_fbcba06542f628::t_35f56390879e8f 6-7
+.github/workflows/post-merge-validation.yml
+  s_fbcba06542f628::t_3cb8024af7bbb2 121-178
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "8a4964c496cd6a823958d323da426dec974c5713",
+  "prompts": {},
+  "sessions": {
+    "s_fbcba06542f628": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "7ed4fc55-0d34-4b20-811f-ab51acae166a",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
