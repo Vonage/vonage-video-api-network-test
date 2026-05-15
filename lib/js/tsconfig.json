@@ -7,6 +7,7 @@
     "allowJs": false,                                           /* Allow javascript files to be compiled. */
     "declaration": true,                                        /* Generates corresponding '.d.ts' file. */
     "declarationMap": true,
+    "emitDeclarationOnly": true,
     "sourceMap": true,                        /* Generates corresponding '.map' file. */
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
