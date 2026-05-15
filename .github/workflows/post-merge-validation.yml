@@ -71,11 +71,32 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build and Package
-        uses: ./.github/actions/build-and-package-library
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
         with:
           target: ${{ matrix.target }}
           node_version: ${{ vars.NODE_VERSION }}
+
+      - name: Build
+        shell: bash
+        working-directory: lib/js
+        run: npm run build
+
+      - name: Pack
+        shell: bash
+        working-directory: lib/js
+        run: |
+          npm pack
+          count=$(find . -maxdepth 1 -name '*.tgz' | wc -l)
+          [ "$count" -eq 1 ] || { echo "❌ Expected 1 tarball, found $count"; exit 1; }
+
+      - name: Upload Tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}-package-tarball
+          path: lib/js/*.tgz
+          # 30 days: long enough to cover the gap between CI and a manual release dispatch.
+          retention-days: 30
 
   verify:
     name: Tarball Verification (${{ matrix.target }})
@@ -134,7 +155,7 @@ jobs:
         shell: bash
         env:
           TARBALL: ${{ steps.tarball.outputs.path }}
-        run: bash "$GITHUB_WORKSPACE/.github/scripts/check-tarball-size.sh"
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/check-size.sh" "$TARBALL" 5 2000
 
       # Verifies the tarball can be installed as a dependency — catches malformed tarballs
       # that pass publint but fail during npm install (e.g., broken symlinks or missing files).
@@ -177,7 +198,7 @@ jobs:
       # ensuring the dist bundle inside the tarball satisfies the sample's type and webpack requirements.
       - name: Extract dist from tarball
         shell: bash
-        run: bash "$GITHUB_WORKSPACE/.github/scripts/extract-dist-from-tarball.sh"
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/extract-tarball.sh" --mode=dist
 
       - name: Install sample dependencies
         shell: bash
@@ -196,7 +217,7 @@ jobs:
 
       - name: Verify bundle was produced
         shell: bash
-        run: bash "$GITHUB_WORKSPACE/.github/scripts/verify-bundle.sh"
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/check-size.sh" samples/js/bundle.js 10 50000
 
   # Replaces the checked-out lib/js/dist/ with the dist directory from the tarball artifact,
   # then runs the same Karma suite that normally runs against the source build. This confirms
@@ -230,7 +251,7 @@ jobs:
 
       - name: Extract dist from tarball
         shell: bash
-        run: bash "$GITHUB_WORKSPACE/.github/scripts/extract-dist-from-tarball.sh"
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/extract-tarball.sh" --mode=dist
 
       - name: Run Karma tests against dist bundle
         shell: bash
@@ -274,13 +295,13 @@ jobs:
           node-version: ${{ vars.NODE_VERSION }}
 
       # Extracts the entire package into /tmp/pw-test and locates the UMD bundle.
-      # Unlike extract-dist-from-tarball.sh (which writes into lib/js/dist/), this step
-      # extracts to a standalone directory so Playwright can serve the file to Chromium
-      # without interfering with the rest of the workspace.
+      # Unlike --mode=dist (which writes into lib/js/dist/), umd mode extracts to a
+      # standalone directory so Playwright can serve the file to Chromium without
+      # interfering with the rest of the workspace.
       - name: Extract UMD bundle from tarball
         id: extract
         shell: bash
-        run: bash "$GITHUB_WORKSPACE/.github/scripts/extract-umd-bundle.sh"
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/extract-tarball.sh" --mode=umd
 
       - name: Install Playwright and Chromium
         working-directory: .github/scripts

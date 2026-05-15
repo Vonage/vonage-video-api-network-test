@@ -26,7 +26,19 @@ runs:
         VONAGE_PRIVATE_KEY: ${{ inputs.vonage_private_key }}
         TEST_API_KEY: ${{ inputs.test_api_key }}
         TEST_API_SECRET: ${{ inputs.test_api_secret }}
-      run: bash "$GITHUB_WORKSPACE/.github/scripts/validate-test-credentials.sh"
+      run: |
+        if [ "$TARGET" == "vonage" ]; then
+          if [ -z "$VONAGE_PRIVATE_KEY" ]; then
+            echo "❌ vonage_private_key is empty or not set"
+            exit 1
+          fi
+          echo "$VONAGE_PRIVATE_KEY" > lib/js/private.key
+        elif [ "$TARGET" == "opentok" ]; then
+          if [ -z "$TEST_API_KEY" ] || [ -z "$TEST_API_SECRET" ]; then
+            echo "❌ test_api_key and test_api_secret are required for opentok target"
+            exit 1
+          fi
+        fi
 
     # TEST_APPLICATION_ID, TEST_API_KEY, and TEST_API_SECRET are used by both
     # vonage and opentok test suites. Vonage additionally requires the private key written above.

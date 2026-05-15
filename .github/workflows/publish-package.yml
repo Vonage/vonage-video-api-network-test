@@ -177,7 +177,14 @@ jobs:
         if: ${{ !fromJSON(inputs.dry_run) }}
         id: release-meta
         shell: bash
-        run: bash "$GITHUB_WORKSPACE/.github/scripts/resolve-published-version.sh"
+        run: |
+          VERSION=$(node -p "require('./lib/js/package.json').version")
+          NAME=$(node -p "require('./lib/js/package.json').name")
+          echo "version=$VERSION"   >> "$GITHUB_OUTPUT"
+          echo "package_name=$NAME" >> "$GITHUB_OUTPUT"
+          # All targets share the same version tag so that publishing vonage and opentok
+          # variants of the same version produces a single GitHub Release.
+          echo "tag=v${VERSION}"    >> "$GITHUB_OUTPUT"
 
       # Promotes the Release Drafter draft if one exists (accumulated changelog from all
       # PR merges since the last release). Falls back to a fresh release with auto-generated
@@ -267,4 +274,25 @@ jobs:
           ON: ${{ steps.smoke-opentok-npmjs.outcome }}
           OG: ${{ steps.smoke-opentok-github.outcome }}
         shell: bash
-        run: bash "$GITHUB_WORKSPACE/.github/scripts/smoke-test-summary.sh"
+        run: |
+          status() {
+            case "$1" in
+              success)   echo "✅ \`ok\`" ;;
+              skipped)   echo "⏭️ \`not published\`" ;;
+              *)         echo "❌ \`$1\`" ;;
+            esac
+          }
+          {
+            echo "### Smoke Test Summary"
+            echo "| Variant | ESM + Function Call |"
+            echo "|---|---|"
+            echo "| \`@vonage/video-client-network-test\` → npmjs.com       | $(status "$VN") |"
+            echo "| \`@vonage/video-client-network-test\` → GitHub Packages | $(status "$VG") |"
+            echo "| \`opentok-network-test-js\` → npmjs.com                 | $(status "$ON") |"
+            echo "| \`@opentok/opentok-network-test-js\` → GitHub Packages  | $(status "$OG") |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          fails() { [ "$1" == "failure" ] || [ "$1" == "cancelled" ]; }
+          if fails "$VN" || fails "$VG" || fails "$ON" || fails "$OG"; then
+            echo "::error::One or more smoke tests failed — see summary above."
+            exit 1
+          fi

@@ -50,7 +50,21 @@ runs:
         NPM_TOKEN: ${{ inputs.npm_token }}
         GH_PACKAGES_TOKEN: ${{ inputs.github_packages_token }}
         REGISTRY: ${{ inputs.registry }}
-      run: bash "$GITHUB_WORKSPACE/.github/scripts/resolve-auth-token.sh"
+      run: |
+        # NODE_AUTH_TOKEN is read automatically by npm when publishing.
+        if [ "$REGISTRY" == "github.com" ]; then
+          if [ -z "$GH_PACKAGES_TOKEN" ]; then
+            echo "❌ Error: github_packages_token is required when publishing to github.com"
+            exit 1
+          fi
+          echo "NODE_AUTH_TOKEN=$GH_PACKAGES_TOKEN" >> "$GITHUB_ENV"
+        else
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "❌ Error: npm_token is required when publishing to npmjs.com"
+            exit 1
+          fi
+          echo "NODE_AUTH_TOKEN=$NPM_TOKEN" >> "$GITHUB_ENV"
+        fi
 
     # Configures .npmrc with the registry URL and NODE_AUTH_TOKEN placeholder.
     # The scope parameter is needed for GitHub Packages: setup-node writes
@@ -84,7 +98,6 @@ runs:
         path: lib/js
 
     - name: Extract Tarball
-      working-directory: lib/js
       shell: bash
       run: bash "$GITHUB_WORKSPACE/.github/scripts/extract-tarball.sh"
 
@@ -102,7 +115,19 @@ runs:
       shell: bash
       env:
         ORGANIZATION: ${{ inputs.organization }}
-      run: bash "$GITHUB_WORKSPACE/.github/scripts/apply-organization-scope.sh"
+      run: |
+        CURRENT_NAME=$(node -p "require('./package.json').name")
+        # Strip scope prefix only if one is present, to avoid mangling unscoped names.
+        if [[ "$CURRENT_NAME" == @*/* ]]; then
+          BASE_NAME="${CURRENT_NAME#@*/}"
+        else
+          BASE_NAME="$CURRENT_NAME"
+        fi
+        if [ "$ORGANIZATION" == "unscoped" ]; then
+          npm pkg set name="$BASE_NAME"
+        else
+          npm pkg set name="@${ORGANIZATION}/${BASE_NAME}"
+        fi
 
     - name: Apply Pre-release Tag to Version
       if: inputs.tag != ''
