@@ -1,0 +1,24 @@
+.github/workflows/publish-package.yml
+  s_4e210b06534398::t_0b7ad3bdd997a1 181,216-223
+.github/actions/publish-package/action.yml
+  s_4e210b06534398::t_04624efb5a404f 178-179
+samples/js/src/index.ts
+  s_4e210b06534398::t_29b7e78cee8ae5 1
+  s_4e210b06534398::t_417531e943fe3b 98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "7422563ac9f3b3f0bfc90b9253fb123f24315adb",
+  "prompts": {},
+  "sessions": {
+    "s_4e210b06534398": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "e21afc18-ac4f-4120-983e-8b659e00cbda",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
