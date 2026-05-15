@@ -1,0 +1,37 @@
+samples/js/package.json
+  s_4e210b06534398::t_f255eb5c8db46e 6-7,26
+.github/workflows/post-merge-validation.yml
+  s_4e210b06534398::t_fdf3643f947808 63-85,87-91
+  s_4e210b06534398::t_5a65bc97b08493 86
+lib/js/webpack.config.js
+  s_4e210b06534398::t_f255eb5c8db46e 19-21
+  s_4e210b06534398::t_3f8f9ac16dfbe4 31
+lib/js/opentok.patch
+  s_4e210b06534398::t_d14775698dd916 485-486
+  s_4e210b06534398::t_fdb9de1332e01c 995
+lib/js/package.json
+  s_4e210b06534398::t_b14afc48d26f56 5-6
+samples/js/src/index.ts
+  s_4e210b06534398::t_f255eb5c8db46e 1,98
+.gitignore
+  s_4e210b06534398::t_f255eb5c8db46e 71
+lib/js/tsconfig.json
+  s_4e210b06534398::t_35e67e78df2c21 17
+  s_4e210b06534398::t_f255eb5c8db46e 10,16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "014fa399103221a6f65b30b62c8cce262ff84a32",
+  "prompts": {},
+  "sessions": {
+    "s_4e210b06534398": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "e21afc18-ac4f-4120-983e-8b659e00cbda",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": null
+    }
+  }
+}
