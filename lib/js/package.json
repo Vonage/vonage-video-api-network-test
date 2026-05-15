@@ -1,6 +1,6 @@
 {
   "name": "@vonage/video-client-network-test",
-  "version": "5.1.1",
+  "version": "5.1.2",
   "description": "Precall network test for applications using the Vonage Video API platform.",
   "main": "dist/vonage/index.js",
   "types": "dist/vonage/index.d.ts",
@@ -11,7 +11,9 @@
     "test-setup": "node test/setup/setup.js",
     "test-teardown": "rm test/credentials.json",
     "karma": "karma start",
+    "karma:dist": "karma start karma.conf.dist.mjs",
     "test": "npm run test-setup && npm run karma && npm run test-teardown",
+    "test:dist": "npm run build && npm run karma:dist",
     "example": "npm run build && cd ../../samples/js && npm run build && python -m SimpleHTTPServer",
     "lint": "npm run tslint",
     "lint-fix": "npm run tslint-fix",

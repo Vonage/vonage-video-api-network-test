@@ -35,6 +35,15 @@ inputs:
     description: 'CI workflow run ID to download the artifact from. Leave empty to use the latest successful run on the current branch.'
     required: false
     default: ''
+  skip_if_published:
+    description: 'When "true", skip silently if the version is already published instead of failing. Intended for the "all" target where a partial previous run may have already published some variants.'
+    required: false
+    default: 'false'
+
+outputs:
+  already_published:
+    description: 'Set to "true" if the version was already published and the publish step was skipped'
+    value: ${{ steps.version-check.outputs.already_published }}
 
 runs:
   using: "composite"
@@ -156,10 +165,13 @@ runs:
         npm pkg set version="${CURRENT_VERSION}-${TAG}.${PRERELEASE_NUM}"
 
     - name: Check if version already published
+      id: version-check
+      if: ${{ !fromJSON(inputs.dry_run) }}
       working-directory: lib/js
       shell: bash
       env:
         REGISTRY: ${{ inputs.registry }}
+        SKIP_IF_PUBLISHED: ${{ inputs.skip_if_published }}
       run: |
         PACKAGE_NAME=$(node -p "require('./package.json').name")
         PACKAGE_VERSION=$(node -p "require('./package.json').version")
@@ -168,11 +180,19 @@ runs:
         PUBLISHED_VERSION=$(npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" version 2>/dev/null || echo "")
 
         if [ "$PUBLISHED_VERSION" == "$PACKAGE_VERSION" ]; then
-          echo "❌ Error: Version $PACKAGE_VERSION is already published on $REGISTRY!"
-          exit 1
+          if [ "$SKIP_IF_PUBLISHED" == "true" ]; then
+            echo "ℹ️ Version $PACKAGE_VERSION is already published on $REGISTRY — skipping."
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "❌ Error: Version $PACKAGE_VERSION is already published on $REGISTRY!"
+            exit 1
+          fi
+        else
+          echo "already_published=false" >> "$GITHUB_OUTPUT"
         fi
 
     - name: Publish
+      if: steps.version-check.outputs.already_published != 'true'
       working-directory: lib/js
       shell: bash
       env:
@@ -180,13 +200,17 @@ runs:
         TAG: ${{ inputs.tag }}
         REGISTRY: ${{ inputs.registry }}
       run: |
-        PUBLISH_ARGS=(publish --access public)
         if [ "$DRY_RUN" == "true" ]; then
-          PUBLISH_ARGS+=(--dry-run)
+          # npm publish --dry-run contacts the registry and rejects duplicate versions,
+          # making it unusable for testing against already-published artifacts.
+          # npm pack --dry-run is fully local and shows the same tarball summary.
+          echo "Dry run: showing package contents (no registry contact)"
+          npm pack --dry-run
+        else
+          PUBLISH_ARGS=(publish --access public)
+          if [ -n "$TAG" ]; then
+            PUBLISH_ARGS+=(--tag "$TAG")
+          fi
+          echo "Publishing to $REGISTRY: npm ${PUBLISH_ARGS[*]}"
+          npm "${PUBLISH_ARGS[@]}"
         fi
-        if [ -n "$TAG" ]; then
-          PUBLISH_ARGS+=(--tag "$TAG")
-        fi
-
-        echo "Publishing to $REGISTRY: npm ${PUBLISH_ARGS[*]}"
-        npm "${PUBLISH_ARGS[@]}"

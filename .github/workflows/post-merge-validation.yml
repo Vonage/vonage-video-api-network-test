@@ -60,3 +60,252 @@ jobs:
         with:
           target: ${{ matrix.target }}
           node_version: ${{ vars.NODE_VERSION }}
+
+  verify:
+    needs: package
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [vonage, opentok]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Download tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.target }}-package-tarball
+          path: lib/js
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION }}
+
+      - name: publint
+        shell: bash
+        run: |
+          TARBALL=$(find lib/js -maxdepth 1 -name '*.tgz' | head -1)
+          echo "Running publint on: $TARBALL"
+          npx --yes publint "$TARBALL"
+
+      - name: Tarball size check
+        shell: bash
+        run: |
+          TARBALL=$(find lib/js -maxdepth 1 -name '*.tgz' | head -1)
+          SIZE_KB=$(du -k "$TARBALL" | cut -f1)
+          FILE_COUNT=$(tar tzf "$TARBALL" | wc -l)
+          echo "Tarball size: ${SIZE_KB}KB, files: $FILE_COUNT"
+          if [ "$SIZE_KB" -gt 2000 ]; then
+            echo "::error::Tarball is ${SIZE_KB}KB — suspiciously large, possible node_modules inclusion"
+            exit 1
+          fi
+          if [ "$SIZE_KB" -lt 5 ]; then
+            echo "::error::Tarball is ${SIZE_KB}KB — suspiciously small, dist may be missing"
+            exit 1
+          fi
+          echo "✅ Size OK (${SIZE_KB}KB, $FILE_COUNT files)"
+
+      - name: Local install from tarball
+        shell: bash
+        run: |
+          TARBALL=$(find lib/js -maxdepth 1 -name '*.tgz' | head -1)
+          TARBALL_ABS=$(realpath "$TARBALL")
+          DIR=$(mktemp -d)
+          cd "$DIR"
+          npm init -y
+          npm install "$TARBALL_ABS"
+          echo "✅ Local install from tarball succeeded"
+
+  sample-build:
+    name: Sample App Build (vonage)
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
+        with:
+          target: vonage
+          node_version: ${{ vars.NODE_VERSION }}
+
+      - name: Download vonage tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: vonage-package-tarball
+          path: lib/js
+
+      - name: Extract dist from tarball
+        shell: bash
+        run: |
+          TARBALL=$(find lib/js -maxdepth 1 -name '*.tgz' | head -1)
+          mkdir -p lib/js/dist
+          tar xzf "$TARBALL" --wildcards --strip-components=2 -C lib/js/dist 'package/dist/*'
+          echo "Extracted:"
+          find lib/js/dist -type f | sort
+
+      - name: Install sample dependencies
+        shell: bash
+        working-directory: samples/js
+        run: npm install
+
+      - name: Type check sample
+        shell: bash
+        working-directory: samples/js
+        run: npm run typecheck
+
+      - name: Build sample (webpack)
+        shell: bash
+        working-directory: samples/js
+        run: npm run build
+
+      - name: Verify bundle was produced
+        shell: bash
+        run: |
+          SIZE=$(du -k samples/js/bundle.js | cut -f1)
+          echo "bundle.js: ${SIZE}KB"
+          if [ "$SIZE" -lt 10 ]; then
+            echo "::error::bundle.js is ${SIZE}KB — suspiciously small"
+            exit 1
+          fi
+          echo "✅ Sample built successfully (${SIZE}KB)"
+
+  test-dist:
+    needs: package
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [vonage, opentok]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
+        with:
+          target: ${{ matrix.target }}
+          node_version: ${{ vars.NODE_VERSION }}
+
+      - name: Download tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.target }}-package-tarball
+          path: lib/js
+
+      - name: Extract dist from tarball
+        shell: bash
+        run: |
+          TARBALL=$(find lib/js -maxdepth 1 -name '*.tgz' | head -1)
+          mkdir -p lib/js/dist
+          tar xzf "$TARBALL" --wildcards --strip-components=2 -C lib/js/dist 'package/dist/*'
+          echo "Extracted dist:"
+          find lib/js/dist -type f | sort
+
+      - name: Run dist tests
+        shell: bash
+        working-directory: lib/js
+        run: npm run karma:dist
+
+  browser-test:
+    needs: package
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [vonage, opentok]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Download tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.target }}-package-tarball
+          path: lib/js
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION }}
+
+      - name: Extract dist from tarball
+        id: extract
+        shell: bash
+        run: |
+          TARBALL=$(find lib/js -maxdepth 1 -name '*.tgz' | head -1)
+          mkdir -p /tmp/pw-test
+          tar xzf "$TARBALL" -C /tmp/pw-test --strip-components=1
+          BUNDLE=$(find /tmp/pw-test/dist -name 'index.js' ! -name '*.map' | head -1)
+          echo "bundle=$BUNDLE" >> "$GITHUB_OUTPUT"
+          echo "Bundle: $BUNDLE"
+
+      - name: Install Playwright
+        shell: bash
+        run: |
+          cd /tmp/pw-test
+          npm init -y
+          npm install playwright
+          npx playwright install chromium --with-deps
+
+      - name: Browser test (Gap 4 — UMD bundle in real browser)
+        shell: bash
+        env:
+          BUNDLE: ${{ steps.extract.outputs.bundle }}
+        run: |
+          cd /tmp/pw-test
+          cat > browser-test.mjs << 'SCRIPT'
+          import { chromium } from 'playwright';
+
+          const bundle = process.env.BUNDLE;
+          const browser = await chromium.launch();
+          const page = await browser.newPage();
+
+          page.on('pageerror', err => { console.error('Page error:', err.message); });
+
+          await page.addScriptTag({ path: bundle });
+
+          const result = await page.evaluate(() => {
+            const bundle = window.OpenTokNetworkConnectivity;
+            const NT = bundle?.default ?? bundle;
+            if (typeof NT !== 'function') return 'not-a-constructor:' + typeof NT;
+
+            // Test 1: null OT instance → MissingOpenTokInstanceError
+            try {
+              new NT(null, { applicationId: 'a', sessionId: 'b', token: 'c' });
+              return 'test1:should-have-thrown';
+            } catch (e) {
+              if (e.name !== 'MissingOpenTokInstanceError') return 'test1:wrong-error:' + e.name;
+            }
+
+            // Test 2: null credentials → MissingSessionCredentialsError
+            const fakeOT = { initSession: () => {} };
+            try {
+              new NT(fakeOT, null);
+              return 'test2:should-have-thrown';
+            } catch (e) {
+              if (e.name !== 'MissingSessionCredentialsError') return 'test2:wrong-error:' + e.name;
+            }
+
+            return 'pass';
+          });
+
+          await browser.close();
+
+          if (result !== 'pass') {
+            console.error('❌ Browser test failed:', result);
+            process.exit(1);
+          }
+          console.log('✅ Browser test passed — NetworkTest constructor validation works in real Chromium');
+          SCRIPT
+
+          node browser-test.mjs
