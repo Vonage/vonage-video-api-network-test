@@ -1,0 +1,41 @@
+.gitignore
+  s_0655e299eddfbc::t_0e26d628052356 62
+.github/workflows/ci-pull-request.yml
+  s_0655e299eddfbc::t_37672f0ecadd83 140-149
+.github/scripts/check-size.sh
+  s_0655e299eddfbc::t_0f437436f4be06 2-4,7-9,11-17,19-20,23-27
+.github/workflows/post-merge-validation.yml
+  s_0655e299eddfbc::t_ecde2005ad51e7 298-300,304
+  s_0655e299eddfbc::t_dfca9b03138bf0 74-75,80-99
+  s_0655e299eddfbc::t_96227627bca2cb 201,220
+  s_0655e299eddfbc::t_67b5fb2326567e 254
+  s_0655e299eddfbc::t_bdb5b869e645a0 158
+.github/workflows/pr-label-check.yml
+  s_0655e299eddfbc::t_f19ff43a2bd184 31-47
+.github/actions/publish-package/action.yml
+  s_0655e299eddfbc::t_ae2cf801837d7b 118-130
+  s_0655e299eddfbc::t_ca84c3eee3b472 53-67
+.github/actions/run-test/action.yml
+  s_0655e299eddfbc::t_9f47ccf09e09fe 29-41
+.github/scripts/extract-tarball.sh
+  s_0655e299eddfbc::t_4099c5e40241ae 2-12,15-25,28-58
+.github/workflows/publish-package.yml
+  s_0655e299eddfbc::t_29176c9726fb8d 277-298
+  s_0655e299eddfbc::t_fa377c3f067f28 180-187
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "f05e1753c107df74915ea88538a7187a140ee8b2",
+  "prompts": {},
+  "sessions": {
+    "s_0655e299eddfbc": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "4f382a8f-c98b-47ae-8cb1-c3188633972a",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
