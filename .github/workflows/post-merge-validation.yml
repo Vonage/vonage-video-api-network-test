@@ -118,6 +118,64 @@ jobs:
           npm install "$TARBALL_ABS"
           echo "✅ Local install from tarball succeeded"
 
+  sample-build:
+    name: Sample App Build (vonage)
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
+        with:
+          target: vonage
+          node_version: ${{ vars.NODE_VERSION }}
+
+      - name: Download vonage tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: vonage-package-tarball
+          path: lib/js
+
+      - name: Extract dist from tarball
+        shell: bash
+        run: |
+          TARBALL=$(find lib/js -maxdepth 1 -name '*.tgz' | head -1)
+          mkdir -p lib/js/dist
+          tar xzf "$TARBALL" --wildcards --strip-components=2 -C lib/js/dist 'package/dist/*'
+          echo "Extracted:"
+          find lib/js/dist -type f | sort
+
+      - name: Install sample dependencies
+        shell: bash
+        working-directory: samples/js
+        run: npm install
+
+      - name: Type check sample
+        shell: bash
+        working-directory: samples/js
+        run: npm run typecheck
+
+      - name: Build sample (webpack)
+        shell: bash
+        working-directory: samples/js
+        run: npm run build
+
+      - name: Verify bundle was produced
+        shell: bash
+        run: |
+          SIZE=$(du -k samples/js/bundle.js | cut -f1)
+          echo "bundle.js: ${SIZE}KB"
+          if [ "$SIZE" -lt 10 ]; then
+            echo "::error::bundle.js is ${SIZE}KB — suspiciously small"
+            exit 1
+          fi
+          echo "✅ Sample built successfully (${SIZE}KB)"
+
   test-dist:
     needs: package
     strategy:
