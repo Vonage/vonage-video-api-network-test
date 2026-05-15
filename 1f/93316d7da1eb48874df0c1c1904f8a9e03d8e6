@@ -1,0 +1,21 @@
+lib/js/webpack.config.js
+  s_4e210b06534398::t_339fb980a04f6a 18-21
+lib/js/package-lock.json
+  ai_agent 2,8,45,48,9651-9653
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "1f93316d7da1eb48874df0c1c1904f8a9e03d8e6",
+  "prompts": {},
+  "sessions": {
+    "s_4e210b06534398": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "e21afc18-ac4f-4120-983e-8b659e00cbda",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
