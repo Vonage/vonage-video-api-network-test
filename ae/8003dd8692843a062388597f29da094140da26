@@ -1,0 +1,26 @@
+lib/js/src/testQuality/index.ts
+  s_8ec2e0629a8e86::t_bea1b62a00cb3d 256-259
+lib/js/test/getUpdateCallbackStats.spec.ts
+  s_8ec2e0629a8e86::t_0628e34d1b7b91 128-148
+  s_8ec2e0629a8e86::t_4a5001200b540d 33,36
+lib/js/src/testQuality/helpers/config.ts
+  s_8ec2e0629a8e86::t_4daab165b99786 83
+lib/js/src/testQuality/helpers/getUpdateCallbackStats.ts
+  s_8ec2e0629a8e86::t_475eee830a4515 12-15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.9",
+  "base_commit_sha": "ae8003dd8692843a062388597f29da094140da26",
+  "prompts": {},
+  "sessions": {
+    "s_8ec2e0629a8e86": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "0d7a3d6f-6233-42ec-86d6-f547bb1eb64e",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
