@@ -1,0 +1,16 @@
+lib/js/src/testQuality/helpers/config.ts
+  s_8ec2e0629a8e86::t_4daab165b99786 83
+lib/js/src/testQuality/helpers/getUpdateCallbackStats.ts
+  s_8ec2e0629a8e86::t_475eee830a4515 12-15
+lib/js/src/testQuality/index.ts
+  s_8ec2e0629a8e86::t_bea1b62a00cb3d 253-256
+lib/js/test/getUpdateCallbackStats.spec.ts
+  s_8ec2e0629a8e86::t_0628e34d1b7b91 128-148
+  s_8ec2e0629a8e86::t_4a5001200b540d 33,36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.9",
+  "base_commit_sha": "893e73c4e9fb82854fc6ad8e0d5c3bf19a1034fc",
+  "prompts": {}
+}
