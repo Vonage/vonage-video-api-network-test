@@ -15,11 +15,65 @@ fi
 
 npm install "${PACKAGE_NAME}@${VERSION}" --quiet
 
+# --- CJS smoke test ---
+# The UMD bundle handles require() via its CommonJS shim. No "type":"module" in the
+# package means Node.js loads dist/index.js as CJS and the UMD shim fires correctly.
+node -e "
+  const mod = require(process.env.PACKAGE_NAME);
+  const NT = mod.default ?? mod;
+  if (typeof NT !== 'function') {
+    console.error('❌ CJS: NetworkTest not exported, got:', typeof NT);
+    process.exit(1);
+  }
+  try {
+    new NT(null, { applicationId: 'a', sessionId: 'b', token: 'c' });
+    console.error('❌ CJS: Expected MissingOpenTokInstanceError, nothing thrown');
+    process.exit(1);
+  } catch (e) {
+    if (e.name !== 'MissingOpenTokInstanceError') {
+      console.error('❌ CJS: Wrong error:', e.name, '-', e.message);
+      process.exit(1);
+    }
+  }
+  console.log('✅ CJS require() succeeded — NetworkTest exported and validation correct');
+"
+
 # --- ESM smoke test ---
-# Loads the UMD bundle in a Node.js VM context (simulating the browser UMD global),
-# then validates that NetworkTest is exported as a callable constructor and that its
-# input validation throws MissingOpenTokInstanceError for invalid arguments.
-# globalThis.self is shimmed so the UMD IIFE's `self === globalThis` check passes in Node.
+# Uses dynamic import() so Node.js resolves via the package's exports.import condition,
+# which routes to dist/index.mjs (the native ES module bundle).
+node --input-type=module << 'SMOKE'
+const pkgName = process.env.PACKAGE_NAME;
+const mod = await import(pkgName);
+const NT = mod.default;
+
+if (typeof NT !== 'function') {
+  console.error('❌ ESM: NetworkTest not exported as default, got:', typeof NT);
+  process.exit(1);
+}
+
+// Verify constructor input validation — no browser APIs involved at this point
+try {
+  new NT(null, { applicationId: 'a', sessionId: 'b', token: 'c' });
+  console.error('❌ ESM: Expected MissingOpenTokInstanceError, nothing thrown');
+  process.exit(1);
+} catch (e) {
+  if (e.name !== 'MissingOpenTokInstanceError') {
+    console.error('❌ ESM: Wrong error:', e.name, '-', e.message);
+    process.exit(1);
+  }
+}
+
+// Verify named export
+if (!mod.ErrorNames || typeof mod.ErrorNames !== 'object') {
+  console.error('❌ ESM: ErrorNames not exported');
+  process.exit(1);
+}
+console.log('✅ ESM import() succeeded — NetworkTest and ErrorNames exported correctly');
+SMOKE
+
+# --- UMD browser simulation ---
+# Loads the UMD bundle in a Node.js VM context, simulating a browser <script> tag.
+# Validates the UMD global (globalThis.OpenTokNetworkConnectivity) is set correctly.
 node --input-type=module << 'SMOKE'
 import { readFileSync } from 'node:fs';
 import { runInThisContext } from 'node:vm';
@@ -35,33 +89,9 @@ runInThisContext(code);
 const bundle = globalThis.OpenTokNetworkConnectivity;
 const NT = bundle?.default ?? bundle;
 if (typeof NT !== 'function') {
-  console.error('❌ NetworkTest not exported, got:', typeof NT);
+  console.error('❌ UMD: NetworkTest not set as global, got:', typeof NT);
   process.exit(1);
 }
-
-// Verify constructor input validation — no browser APIs involved here
-try {
-  new NT(null, { applicationId: 'a', sessionId: 'b', token: 'c' });
-  console.error('❌ Expected MissingOpenTokInstanceError, nothing was thrown');
-  process.exit(1);
-} catch (e) {
-  if (e.name !== 'MissingOpenTokInstanceError') {
-    console.error('❌ Wrong error thrown:', e.name, '-', e.message);
-    process.exit(1);
-  }
-}
-console.log('✅ NetworkTest exported and constructor validation correct');
+console.log('✅ UMD browser simulation — OpenTokNetworkConnectivity global set correctly');
 SMOKE
 
-# --- CJS compatibility check ---
-# The package ships as type:module + UMD. require() may fail with ERR_REQUIRE_ESM on
-# some Node.js versions; this is a known limitation. A soft failure here emits a
-# workflow notice rather than failing the smoke test.
-CJS_OUT=$(node -e "require(process.env.PACKAGE_NAME)" 2>&1 || true)
-if echo "$CJS_OUT" | grep -qE 'ERR_REQUIRE_ESM|ERR_REQUIRE_MODULE'; then
-  echo "::notice::CJS require() not supported for ${PACKAGE_NAME} — known issue (type:module + UMD mismatch, tracked for future fix)"
-elif [ -z "$CJS_OUT" ]; then
-  echo "✅ CJS require() succeeded"
-else
-  echo "⚠️ CJS require() result: $CJS_OUT"
-fi

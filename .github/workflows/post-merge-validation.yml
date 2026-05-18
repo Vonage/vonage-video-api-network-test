@@ -253,10 +253,15 @@ jobs:
         shell: bash
         run: bash "$GITHUB_WORKSPACE/.github/scripts/extract-tarball.sh" --mode=dist
 
-      - name: Run Karma tests against dist bundle
+      - name: Run Karma tests against UMD dist bundle
         shell: bash
         working-directory: lib/js
         run: npm run karma:dist
+
+      - name: Run Karma tests against ESM dist bundle
+        shell: bash
+        working-directory: lib/js
+        run: npm run karma:dist:esm
 
   # Tests the UMD bundle (dist/index.js) in a real Chromium browser via Playwright.
   # This validates behaviour that Node.js-based tests cannot cover: DOM APIs, UMD globals,

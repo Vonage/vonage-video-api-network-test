@@ -1,21 +1,14 @@
 /**
- * Integration tests for the built dist bundle — public API only.
+ * Integration tests for the built ESM dist bundle — public API only.
  *
- * 'network-test-dist' is a webpack alias (defined in karma.conf.dist.mjs) that
- * points to the local dist bundle. karma-webpack bundles it via the CJS branch of
- * the UMD wrapper, so module.exports = { default: NetworkTest, ErrorNames, ... }.
- * Webpack's CJS→ESM interop makes that whole object the default import.
+ * 'network-test-dist' is a webpack alias (defined in karma.conf.dist.esm.mjs) that
+ * points to the ESM bundle (dist/index.mjs). webpack-karma processes the .mjs file
+ * as an ES module and preserves named exports, so standard import syntax works here.
  */
-import distExports from 'network-test-dist';
-
-// karma-webpack CJS interop: default import = module.exports = { default: NetworkTest, ErrorNames, ... }
-const exports = distExports as any;
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const NetworkTest = exports.default ?? exports;
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const ErrorNames = exports.ErrorNames;
+import NetworkTest, { ErrorNames } from 'network-test-dist';
 
-describe('dist bundle public API', () => {
+describe('ESM dist bundle public API', () => {
   const validCredentials = { applicationId: 'a', sessionId: 'b', token: 'c' };
   const fakeOT = { initSession: () => {} };
 
@@ -33,7 +26,7 @@ describe('dist bundle public API', () => {
   it('throws MissingOpenTokInstanceError when OT instance is missing', () => {
     let error: any = null;
     try {
-      new NetworkTest(null, validCredentials);
+      new (NetworkTest as any)(null, validCredentials);
     } catch (e) {
       error = e;
     }
@@ -44,7 +37,7 @@ describe('dist bundle public API', () => {
   it('throws MissingSessionCredentialsError when credentials are missing', () => {
     let error: any = null;
     try {
-      new NetworkTest(fakeOT, null);
+      new (NetworkTest as any)(fakeOT, null);
     } catch (e) {
       error = e;
     }
@@ -55,7 +48,7 @@ describe('dist bundle public API', () => {
   it('throws IncompleteSessionCredentialsError when credentials are incomplete', () => {
     let error: any = null;
     try {
-      new NetworkTest(fakeOT, { applicationId: 'a' });
+      new (NetworkTest as any)(fakeOT, { applicationId: 'a' });
     } catch (e) {
       error = e;
     }
