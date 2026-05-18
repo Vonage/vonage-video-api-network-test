@@ -1,0 +1,46 @@
+lib/js/karma.conf.mjs
+  s_0655e299eddfbc::t_09755f4c05430e 2,7-8,37,88
+lib/js/test/dist-tests/dist.spec.ts
+  s_0655e299eddfbc::t_fcafd13c1eccf1 13,15
+lib/js/webpack.config.mjs
+  s_0655e299eddfbc::t_8bee5c69ace8a8 8,29-38,50-63,66-67
+lib/js/package-lock.json
+  ai_agent 880-882,886,2029-2031,2033-2035,2394-2396,2401,2444-2446,2895-2897,3932-3934,3998-4000,5496-5498,5501,5505,6890-6892,7200-7202,7801-7824,7865-7867,8482-8484,9165-9167,9187-9189,9193-9207,9211-9219,9754-9756
+lib/js/karma.conf.dist.esm.mjs
+  s_0655e299eddfbc::t_b6061731834a9e 1-119
+lib/js/test/dist-tests/dist-esm.spec.ts
+  s_0655e299eddfbc::t_50f46465f07bc7 8
+  s_0655e299eddfbc::t_a670ff7c9c5967 1-7,9-58
+lib/js/karma.conf.dist.mjs
+  s_0655e299eddfbc::t_a2bf3d695f235f 11-12
+  s_0655e299eddfbc::t_ec42e99c630158 5
+  s_0655e299eddfbc::t_29e213a8633304 92
+.github/workflows/post-merge-validation.yml
+  s_0655e299eddfbc::t_23119bbab92304 256,261-264
+lib/js/.eslintignore
+  s_0655e299eddfbc::t_d97cb2d23531ca 1-5
+lib/js/tsconfig.eslint.json
+  s_0655e299eddfbc::t_c47c8c3d0d06c2 11
+lib/js/package.json
+  s_0655e299eddfbc::t_85eb1847598225 6,8-15
+  s_0655e299eddfbc::t_ac1c233fe019cd 33-34
+  s_0655e299eddfbc::t_69e4285650530b 20,25,27,29
+.github/scripts/smoke-test-api.sh
+  s_0655e299eddfbc::t_69a56f50a7116a 18-40,42-76,92,95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "316650ae0b8afcac73ba6dba28768dadcd6f53b1",
+  "prompts": {},
+  "sessions": {
+    "s_0655e299eddfbc": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "4f382a8f-c98b-47ae-8cb1-c3188633972a",
+        "model": "claude-sonnet-4.6"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
