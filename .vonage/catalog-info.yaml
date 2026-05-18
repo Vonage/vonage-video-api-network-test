@@ -1,9 +1,22 @@
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: video-network-test
+  title: Video Network Test
+  description: Library to check network connectivity to resources and services required to use Vonage Video API
+  annotations:
+    vonage.com/jira-id: VPF
+spec:
+  type: library
+  owner: group:orgdata/vdt
+  domain: video-api
+
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: video-network-test-js
-  description: Library to check network connectivity to resources and services required to use Vonage Video API JS
+  name: video-network-test
+  description: Library to check network connectivity to resources and services required to use Vonage Video API
   annotations:
     github.com/project-slug: vonage/vonage-video-api-network-test
 spec:
@@ -11,3 +24,4 @@ spec:
   owner: group:orgdata/vdt
   system: video-network-test
   lifecycle: production
+  
