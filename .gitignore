@@ -68,6 +68,7 @@ private.key
 
 # sample
 sample/bundle.js
+samples/js/bundle.js
 sample/src/js/config.js
 sample/node_modules
 
@@ -75,6 +76,7 @@ samples/js/node_modules
 
 # test credentials
 /test/credentials.json
+lib/js/test/credentials.json
 
 # We're using npm (at least for now)
 yarn.lock
