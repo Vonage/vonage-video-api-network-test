@@ -28,8 +28,13 @@ function createPublisherStats(overrides: Partial<PublisherStats> = {}): Publishe
   };
 }
 
+type Overrides = {
+  audio?: OT.IncomingTrackStats;
+  mediaLink?: OT.SubscriberMediaLink;
+};
+
 function createSubscriberStats(
-  mediaLink?: OT.SubscriberMediaLink,
+  overrides?: Overrides
 ): OT.SubscriberStats {
   const stats: any = {
     audio: {
@@ -51,8 +56,14 @@ function createSubscriberStats(
     },
     timestamp: 5000,
   };
-  if (mediaLink !== undefined) {
-    stats.mediaLink = mediaLink;
+  if (overrides?.audio) {
+    stats.audio = {
+      ...stats.audio,
+      ...overrides.audio,
+    };
+  }
+  if (overrides?.mediaLink) {
+    stats.mediaLink = overrides.mediaLink;
   }
   return stats as OT.SubscriberStats;
 }
@@ -88,6 +99,19 @@ describe('getUpdateCallbackStats', () => {
       expect(result.audio.bytesReceived).toBe(3000);
       expect(result.audio.packetsLost).toBe(2);
       expect(result.audio.packetsReceived).toBe(98);
+    });
+
+    it('maps subscriber audio stats correctly when audio stats are not available', () => {
+      const subscriberStats = createSubscriberStats();
+      subscriberStats.audio = undefined;
+      const result = getUpdateCallbackStats(
+        subscriberStats,
+        createPublisherStats(),
+        'audio-video'
+      );
+      expect(result.audio.bytesReceived).toBe(0);
+      expect(result.audio.packetsLost).toBe(0);
+      expect(result.audio.packetsReceived).toBe(0);
     });
 
     it('maps publisher audio bytesSent into audio callback stats', () => {
@@ -131,7 +155,7 @@ describe('getUpdateCallbackStats', () => {
     });
 
     it('is set to the value from mediaLink.transport.networkCondition', () => {
-      const stats = createSubscriberStats(makeMediaLink('good'));
+      const stats = createSubscriberStats({ mediaLink: makeMediaLink('good') });
       const result = getUpdateCallbackStats(stats, createPublisherStats(), 'audio-video');
       expect(result.networkCondition).toBe('good');
     });
@@ -139,14 +163,14 @@ describe('getUpdateCallbackStats', () => {
     it('reflects each possible NetworkCondition value', () => {
       const conditions: OT.NetworkCondition[] = ['excellent', 'good', 'fair', 'warning', 'critical', 'unknown'];
       for (const condition of conditions) {
-        const stats = createSubscriberStats(makeMediaLink(condition));
+        const stats = createSubscriberStats({ mediaLink: makeMediaLink(condition) });
         const result = getUpdateCallbackStats(stats, createPublisherStats(), 'audio-video');
         expect(result.networkCondition).toBe(condition);
       }
     });
 
     it('is available in audio-only phase as well', () => {
-      const stats = createSubscriberStats(makeMediaLink('fair'));
+      const stats = createSubscriberStats({ mediaLink: makeMediaLink('fair') });
       const result = getUpdateCallbackStats(stats, createPublisherStats(), 'audio-only');
       expect(result.networkCondition).toBe('fair');
     });
@@ -159,7 +183,7 @@ describe('getUpdateCallbackStats', () => {
     });
 
     it('is set to the value from mediaLink.networkDegradationSource', () => {
-      const stats = createSubscriberStats(makeMediaLink('warning', 'local'));
+      const stats = createSubscriberStats({ mediaLink: makeMediaLink('warning', 'local') });
       const result = getUpdateCallbackStats(stats, createPublisherStats(), 'audio-video');
       expect(result.networkDegradationSource).toBe('local');
     });
@@ -167,7 +191,7 @@ describe('getUpdateCallbackStats', () => {
     it('reflects each possible NetworkDegradationSource value', () => {
       const sources: OT.NetworkDegradationSource[] = ['none', 'local', 'remote', 'bothOrUnclear'];
       for (const source of sources) {
-        const stats = createSubscriberStats(makeMediaLink('warning', source));
+        const stats = createSubscriberStats({ mediaLink: makeMediaLink('warning', source) });
         const result = getUpdateCallbackStats(stats, createPublisherStats(), 'audio-video');
         expect(result.networkDegradationSource).toBe(source);
       }
@@ -176,7 +200,7 @@ describe('getUpdateCallbackStats', () => {
 
   describe('when both networkCondition and networkDegradationSource are present', () => {
     it('includes both fields in the result', () => {
-      const stats = createSubscriberStats(makeMediaLink('critical', 'remote'));
+      const stats = createSubscriberStats({ mediaLink: makeMediaLink('critical', 'remote') });
       const result = getUpdateCallbackStats(stats, createPublisherStats(), 'audio-video');
       expect(result.networkCondition).toBe('critical');
       expect(result.networkDegradationSource).toBe('remote');
