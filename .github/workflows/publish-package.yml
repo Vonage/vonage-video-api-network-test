@@ -25,15 +25,10 @@ on:
         type: boolean
         default: true
       tag:
-        description: 'NPM distribution tag (e.g., alpha, beta, rc — leave empty to publish as latest)'
+        description: 'Pre-release tag appended to the version and used as the dist-tag (e.g., alpha → 1.2.3-alpha). Leave empty to publish the version as-is with the "latest" dist-tag.'
         required: false
         type: string
         default: ''
-      allow_replace:
-        description: 'Skip the already-published version check. Note: npmjs.com permanently rejects republishing the same version after 72 hours regardless of this setting — only meaningful for GitHub Packages.'
-        required: false
-        type: boolean
-        default: false
       run_id:
         description: 'Numeric CI run ID to publish from (find it in the Actions tab URL). Leave empty to use the latest successful run on the current branch.'
         required: false
@@ -52,16 +47,17 @@ jobs:
     timeout-minutes: 15
     name: Publish ${{ inputs.target }} to ${{ inputs.registry }}
     permissions:
-      contents: read
+      contents: write  # Required to create tags and GitHub Releases.
       packages: write
       actions: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # dry_run, tag, allow_replace, run_id, and github_token are shared across all three steps;
+      # dry_run, tag, run_id, and github_token are shared across all three steps;
       # update all three if publish-package gains new shared inputs.
       - name: Publish Vonage Package
+        id: publish-vonage
         if: inputs.target == 'vonage'
         uses: ./.github/actions/publish-package
         with:
@@ -69,7 +65,6 @@ jobs:
           registry: ${{ inputs.registry }}
           dry_run: ${{ inputs.dry_run }}
           tag: ${{ inputs.tag }}
-          allow_replace: ${{ inputs.allow_replace }}
           run_id: ${{ inputs.run_id }}
           organization: vonage
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -79,6 +74,7 @@ jobs:
           github_packages_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish OpenTok Package to GitHub
+        id: publish-opentok-github
         if: inputs.target == 'opentok' && inputs.registry == 'github.com'
         uses: ./.github/actions/publish-package
         with:
@@ -86,7 +82,6 @@ jobs:
           registry: github.com
           dry_run: ${{ inputs.dry_run }}
           tag: ${{ inputs.tag }}
-          allow_replace: ${{ inputs.allow_replace }}
           run_id: ${{ inputs.run_id }}
           organization: opentok
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -96,6 +91,7 @@ jobs:
           node_version: ${{ vars.NODE_VERSION }}
 
       - name: Publish OpenTok Package to NPM
+        id: publish-opentok-npm
         if: inputs.target == 'opentok' && inputs.registry == 'npmjs.com'
         uses: ./.github/actions/publish-package
         with:
@@ -103,9 +99,52 @@ jobs:
           registry: npmjs.com
           dry_run: ${{ inputs.dry_run }}
           tag: ${{ inputs.tag }}
-          allow_replace: ${{ inputs.allow_replace }}
           run_id: ${{ inputs.run_id }}
           organization: unscoped
           github_token: ${{ secrets.GITHUB_TOKEN }}
           npm_token: ${{ secrets.NPM_TOKEN_OPENTOK }}
           node_version: ${{ vars.NODE_VERSION }}
+
+      # Reads the final version and name written to lib/js/package.json by the publish action.
+      # Skipped entirely on dry runs — no tag or release is created.
+      - name: Resolve published version
+        if: ${{ !fromJSON(inputs.dry_run) }}
+        id: release-meta
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./lib/js/package.json').version")
+          NAME=$(node -p "require('./lib/js/package.json').name")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "package_name=$NAME" >> "$GITHUB_OUTPUT"
+          # All targets (vonage, opentok) share the same version tag so that publishing
+          # vonage and opentok variants of the same version produces a single GitHub Release.
+          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+
+      # Promotes the Release Drafter draft if one exists (accumulated changelog from all
+      # PR merges since the last release). Falls back to a fresh release with auto-generated
+      # notes if no draft is found (e.g., first release or draft was manually deleted).
+      # Idempotent: if the release already exists (a sibling target published first),
+      # this step is a no-op — all four publish targets share the same version tag.
+      - name: Publish GitHub Release
+        if: ${{ !fromJSON(inputs.dry_run) }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.release-meta.outputs.tag }}
+          VERSION: ${{ steps.release-meta.outputs.version }}
+        shell: bash
+        run: |
+          if gh release view "$TAG" &>/dev/null; then
+            echo "Release $TAG already exists — skipping."
+            exit 0
+          fi
+
+          DRAFT_TAG=$(gh release list --json tagName,isDraft \
+            --jq '[.[] | select(.isDraft==true)] | first | .tagName // empty')
+
+          if [ -n "$DRAFT_TAG" ]; then
+            echo "Promoting draft '$DRAFT_TAG' → '$TAG'"
+            gh release edit "$DRAFT_TAG" --tag "$TAG" --title "v${VERSION}" --draft=false
+          else
+            echo "No draft found — creating release '$TAG'"
+            gh release create "$TAG" --title "v${VERSION}" --generate-notes
+          fi

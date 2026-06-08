@@ -1,20 +1,20 @@
 {
   "compilerOptions": {
     /* Basic Options */
-    "baseUrl": ".",
     "target": "ES6",                                            /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', or 'ESNEXT'. */
     "module": "commonjs",                                       /* Specify module code generation: 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */
     "lib": ["es2018", "es2017.object", "dom", "dom.iterable"],  /* Specify library files to be included in the compilation:  */
     "allowJs": false,                                           /* Allow javascript files to be compiled. */
     "declaration": true,                                        /* Generates corresponding '.d.ts' file. */
     "declarationMap": true,
+    "emitDeclarationOnly": true,
     "sourceMap": true,                        /* Generates corresponding '.map' file. */
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "rootDir": "./",
-    "outDir": "../../dist"
+    "rootDir": "./src",
+    "outDir": "./dist"
   },
   "files": [
     "src/index.ts",

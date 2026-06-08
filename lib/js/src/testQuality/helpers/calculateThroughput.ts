@@ -20,7 +20,7 @@ function getAverageBitrateAndPlr(type: AV,
     if (type === 'video') {
       sumBps += stat.videoKbsSent * 1000;
     } else {
-      sumBps += stat.audioStats[0].kbs * 1000;
+      sumBps += (stat.audioStats[0]?.kbs ?? 0) * 1000;
     }
   });
 
@@ -38,8 +38,8 @@ function getAverageBitrateAndPlr(type: AV,
   const lastPublisherStats = publisherStatsList[publisherStatsList.length - 1];
 
   const qualityLimitationReason = lastPublisherStats.videoStats.find(
-    videoStats => videoStats.qualityLimitationReason !== null
-    && videoStats.qualityLimitationReason !== 'none')?.qualityLimitationReason || null;
+    videoStats => videoStats.qualityLimitationReason != null
+    && videoStats.qualityLimitationReason !== 'none')?.qualityLimitationReason ?? undefined;
 
   const averageStats: AverageStatsBase = {
     availableOutgoingBitrate: publisherStatsList[publisherStatsList.length - 1].availableOutgoingBitrate,
