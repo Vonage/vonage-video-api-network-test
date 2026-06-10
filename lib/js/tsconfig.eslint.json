@@ -8,6 +8,6 @@
      "test/**/*.ts",
      "test/**/*.js",
      ".eslintrc.cjs",
-     "webpack.config.js"
+     "webpack.config.mjs"
    ]
 }

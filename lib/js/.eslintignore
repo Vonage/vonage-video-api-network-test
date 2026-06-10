@@ -1,2 +1,2 @@
 karma.conf.js
-webpack.config.js
+webpack.config.mjs
