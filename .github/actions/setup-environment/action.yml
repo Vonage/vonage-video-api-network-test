@@ -18,8 +18,7 @@ runs:
       with:
         node-version: ${{ inputs.node_version }}
 
-    - name: Configure npmrc for OpenTok registry
-      if: inputs.target == 'opentok'
+    - name: Configure npmrc for OpenTok and Vonage registry
       shell: bash
       run: |
         npm config set @opentok:registry=https://npm.pkg.github.com/
@@ -40,3 +39,4 @@ runs:
       uses: ./.github/actions/restore-node-modules
       with:
         target: ${{ inputs.target }}
+        opentok_npm_token: ${{ inputs.opentok_npm_token }}
