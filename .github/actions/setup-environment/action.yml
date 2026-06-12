@@ -7,6 +7,9 @@ inputs:
   node_version:
     description: 'Node.js version to use (e.g. 24.x)'
     required: true
+  opentok_npm_token:
+    description: 'GitHub NPM token for @opentok scoped packages'
+    required: false
 runs:
   using: "composite"
   steps:
@@ -14,6 +17,13 @@ runs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node_version }}
+
+    - name: Configure npmrc for OpenTok registry
+      if: inputs.target == 'opentok'
+      shell: bash
+      run: |
+        npm config set @opentok:registry=https://npm.pkg.github.com/
+        npm config set //npm.pkg.github.com/:_authToken=${{ inputs.opentok_npm_token }}
 
     # Regenerate the lockfile after patching so the cache key reflects the post-patch
     # devDependencies — aligning it with the key the build job computes from the artifact.
