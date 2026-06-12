@@ -1,0 +1,25 @@
+.github/actions/setup-environment/action.yml
+  s_2a0d39dbb3de2e::t_87b68f6a439788 42
+  h_b567d4eca02257 21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "d1f9637009f56ba4f9fd655104cf78de3bcbc156",
+  "prompts": {},
+  "humans": {
+    "h_b567d4eca02257": {
+      "author": "Marina Serrano Montes <marina.serranomontes@vonage.com>"
+    }
+  },
+  "sessions": {
+    "s_2a0d39dbb3de2e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "79578feb-3784-4838-a267-ca5bd7b4306e",
+        "model": "unknown"
+      },
+      "human_author": "Marina Serrano Montes <marina.serranomontes@vonage.com>"
+    }
+  }
+}
