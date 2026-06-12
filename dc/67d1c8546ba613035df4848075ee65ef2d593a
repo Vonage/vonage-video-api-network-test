@@ -1,0 +1,44 @@
+lib/js/src/testQuality/index.ts
+  s_62a439752f1b11::t_320d228fbfe856 13,450
+lib/js/src/testConnectivity/index.ts
+  s_8ee2fd0df4294f::t_bedea48024600a 12,306
+lib/js/src/index.ts
+  s_5fdd6607cd9029::t_481e34b8c667d6 27,46,92-93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "dc67d1c8546ba613035df4848075ee65ef2d593a",
+  "prompts": {},
+  "humans": {
+    "h_b567d4eca02257": {
+      "author": "Marina Serrano Montes <marina.serranomontes@vonage.com>"
+    }
+  },
+  "sessions": {
+    "s_5fdd6607cd9029": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "43f5a27e-d0aa-48ad-97dc-b762aa129792",
+        "model": "unknown"
+      },
+      "human_author": "Marina Serrano Montes <marina.serranomontes@vonage.com>"
+    },
+    "s_62a439752f1b11": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "da588cb6-dd4c-436a-83b4-3d5c6b7e2a61",
+        "model": "unknown"
+      },
+      "human_author": "Marina Serrano Montes <marina.serranomontes@vonage.com>"
+    },
+    "s_8ee2fd0df4294f": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "e7c6597e-6a9a-4447-9266-895335095864",
+        "model": "unknown"
+      },
+      "human_author": "Marina Serrano Montes <marina.serranomontes@vonage.com>"
+    }
+  }
+}
