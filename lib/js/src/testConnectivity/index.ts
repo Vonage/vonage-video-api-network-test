@@ -9,7 +9,7 @@
  * Connectivity Test Flow
  */
 import axios from 'axios';
-import OTKAnalytics from 'opentok-solutions-logging';
+import OTKLogger from '@opentok/opentok-solutions-logging';
 import {
   NetworkTestOptions,
 } from '../index';
@@ -303,7 +303,7 @@ Promise<SubscribeToSessionResults | void> {
 export function testConnectivity(
   OTInstance: typeof OT,
   credentials: SessionCredentials,
-  otLogging: OTKAnalytics,
+  otLogging: OTKLogger,
   options?: NetworkTestOptions,
 ): Promise<ConnectivityTestResults> {
   return new Promise((resolve, reject) => {

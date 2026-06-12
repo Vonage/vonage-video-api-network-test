@@ -24,7 +24,7 @@ import {
   MissingOpenTokInstanceError,
   MissingSessionCredentialsError,
 } from './errors';
-import OTKAnalytics = require('opentok-solutions-logging');
+import OTKLogger from '@opentok/opentok-solutions-logging';
 
 export interface NetworkTestOptions {
   audioOnly?: boolean;
@@ -43,7 +43,7 @@ export { ConnectivityTestResults } from './testConnectivity';
 export default class NetworkTest {
   credentials: SessionCredentials;
   OTInstance: typeof OT;
-  otLogging: OTKAnalytics;
+  otLogging: OTKLogger;
   options?: NetworkTestOptions;
 
   /**
@@ -89,8 +89,8 @@ export default class NetworkTest {
     }
   }
 
-  private startLoggingEngine(applicationId: string, sessionId: string, proxyUrl: string): OTKAnalytics {
-    return new OTKAnalytics({
+  private startLoggingEngine(applicationId: string, sessionId: string, proxyUrl: string): OTKLogger {
+    return new OTKLogger({
       sessionId,
       partnerId: applicationId,
       source: window.location.href,
