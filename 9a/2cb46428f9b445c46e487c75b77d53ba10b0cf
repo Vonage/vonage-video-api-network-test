@@ -1,0 +1,28 @@
+lib/js/package.json
+  h_b567d4eca02257 50
+.github/actions/setup-environment/action.yml
+  s_85020774d52df7::t_9b8f896658c651 10-12,21-26
+.github/workflows/ci-pull-request.yml
+  h_b567d4eca02257 31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "9a2cb46428f9b445c46e487c75b77d53ba10b0cf",
+  "prompts": {},
+  "humans": {
+    "h_b567d4eca02257": {
+      "author": "Marina Serrano Montes <marina.serranomontes@vonage.com>"
+    }
+  },
+  "sessions": {
+    "s_85020774d52df7": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "cd81eac8-a57d-490f-b759-8aa4bc17b5fb",
+        "model": "unknown"
+      },
+      "human_author": "Marina Serrano Montes <marina.serranomontes@vonage.com>"
+    }
+  }
+}
