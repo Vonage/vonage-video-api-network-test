@@ -3,5 +3,5 @@ declare module 'logging' {
     track(): void;
   }
 
-  export = Analytics;
+  export = OTKAnalytics;
 }
