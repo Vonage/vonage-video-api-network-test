@@ -625,9 +625,10 @@ index ab42d70..28ff6b7 100644
      }
    }
  
--  private startLoggingEngine(applicationId: string, sessionId: string, proxyUrl: string): OTKAnalytics {
-+  private startLoggingEngine(apiKey: string, sessionId: string, proxyUrl: string): OTKAnalytics {
-     return new OTKAnalytics({
+-  private startLoggingEngine(applicationId: string, sessionId: string, proxyUrl: string): OTKLogger {
+-    return new OTKLogger({
++  private startLoggingEngine(apiKey: string, sessionId: string, proxyUrl: string): OTKLogger {
++    return new OTKLogger({
        sessionId,
 -      partnerId: applicationId,
 +      partnerId: apiKey,
