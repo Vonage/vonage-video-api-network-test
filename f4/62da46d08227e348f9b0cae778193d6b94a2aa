@@ -1,0 +1,14 @@
+lib/js/opentok.patch
+  h_b567d4eca02257 528
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "f462da46d08227e348f9b0cae778193d6b94a2aa",
+  "prompts": {},
+  "humans": {
+    "h_b567d4eca02257": {
+      "author": "Marina Serrano Montes <marina.serranomontes@vonage.com>"
+    }
+  }
+}
