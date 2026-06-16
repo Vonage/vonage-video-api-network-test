@@ -1,0 +1,14 @@
+lib/js/src/types/logging.ts
+  h_b567d4eca02257 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "f5a2e28922d6f6d093bf7a22c30448acfc50d8f6",
+  "prompts": {},
+  "humans": {
+    "h_b567d4eca02257": {
+      "author": "Marina Serrano Montes <marina.serranomontes@vonage.com>"
+    }
+  }
+}
