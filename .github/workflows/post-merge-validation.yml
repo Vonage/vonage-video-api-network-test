@@ -61,6 +61,7 @@ jobs:
         with:
           target: ${{ matrix.target }}
           node_version: ${{ vars.NODE_VERSION }}
+          opentok_npm_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
 
   verify-artifacts:
     name: Verify ${{ matrix.target }} tarball
