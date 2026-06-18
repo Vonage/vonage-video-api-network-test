@@ -10,7 +10,7 @@
  */
 
 /* tslint:disable */
-import OTKAnalytics from 'opentok-solutions-logging';
+import OTKLogger from '@opentok/opentok-solutions-logging';
 import {
   NetworkTestOptions,
 } from '../index';
@@ -447,7 +447,7 @@ function validateBrowser(): Promise<void> {
 export function testQuality(
   OTInstance: typeof OT,
   credentials: SessionCredentials,
-  otLogging: OTKAnalytics,
+  otLogging: OTKLogger,
   options?: NetworkTestOptions,
   onUpdate?: UpdateCallback,
 ): Promise<QualityTestResults> {

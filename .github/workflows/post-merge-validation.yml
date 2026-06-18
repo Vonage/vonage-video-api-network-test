@@ -31,6 +31,7 @@ jobs:
         with:
           target: ${{ matrix.target }}
           node_version: ${{ vars.NODE_VERSION }}
+          opentok_npm_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
 
       - name: Test
         uses: ./.github/actions/run-test
@@ -60,6 +61,7 @@ jobs:
         with:
           target: ${{ matrix.target }}
           node_version: ${{ vars.NODE_VERSION }}
+          opentok_npm_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
 
   verify-artifacts:
     name: Verify ${{ matrix.target }} tarball
