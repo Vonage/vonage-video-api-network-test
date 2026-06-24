@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "name": "vonage-video-api-network-test-root",
+  "workspaces": [
+    "lib/js"
+  ],
+  "devDependencies": {
+    "@changesets/changelog-github": "^0.5.1",
+    "@changesets/cli": "^2.27.12"
+  }
+}

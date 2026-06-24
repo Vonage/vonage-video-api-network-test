@@ -40,6 +40,7 @@ jobs:
         with:
           target: ${{ matrix.target }}
           node_version: ${{ vars.NODE_VERSION }}
+          opentok_npm_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
 
       - name: Linting
         working-directory: lib/js

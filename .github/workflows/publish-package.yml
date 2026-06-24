@@ -208,9 +208,9 @@ jobs:
           # variants of the same version produces a single GitHub Release.
           echo "tag=v${VERSION}"    >> "$GITHUB_OUTPUT"
 
-      # Promotes the Release Drafter draft if one exists (accumulated changelog from all
-      # PR merges since the last release). Falls back to a fresh release with auto-generated
-      # notes if no draft is found (e.g., first release or draft was manually deleted).
+      # Creates a GitHub Release using the CHANGELOG.md entry for this version.
+      # The CHANGELOG is maintained by changesets — edited in the "Version Packages" PR
+      # before merge, so the notes are human-reviewed and ready to publish.
       # Idempotent: if the release already exists (a sibling target published first),
       # this step is a no-op — all four publish targets share the same version tag.
       - name: Publish GitHub Release
@@ -225,14 +225,14 @@ jobs:
             echo "Release $TAG already exists — skipping."
             exit 0
           fi
-          DRAFT_TAG=$(gh release list --json tagName,isDraft \
-            --jq '[.[] | select(.isDraft==true)] | first | .tagName // empty')
-          if [ -n "$DRAFT_TAG" ]; then
-            echo "Promoting draft '$DRAFT_TAG' → '$TAG'"
-            gh release edit "$DRAFT_TAG" --tag "$TAG" --title "v${VERSION}" --draft=false
-          else
-            echo "No draft found — creating release '$TAG'"
+          # Extract the release notes for this version from CHANGELOG.md.
+          # Format: ## X.Y.Z\n\n<content>\n\n## <previous version>
+          NOTES=$(sed -n "/^## ${VERSION}/,/^## /{ /^## ${VERSION}/d; /^## /d; p; }" lib/js/CHANGELOG.md)
+          if [ -z "$NOTES" ]; then
+            echo "No CHANGELOG entry found for ${VERSION} — using auto-generated notes."
             gh release create "$TAG" --title "v${VERSION}" --generate-notes
+          else
+            echo "$NOTES" | gh release create "$TAG" --title "v${VERSION}" --notes-file -
           fi
 
   # Runs after a real publish (skipped entirely on dry runs). Installs each variant that was

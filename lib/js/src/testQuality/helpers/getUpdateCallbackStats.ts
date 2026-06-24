@@ -10,9 +10,9 @@ const getUpdateCallbackStats = (
 
   const audioCallbackStats: CallbackTrackStats = {
     bytesSent: publisherStats.audioStats[0].byteSent,
-    bytesReceived: audioTrackStats.bytesReceived,
-    packetsLost: audioTrackStats.packetsLost,
-    packetsReceived: audioTrackStats.packetsReceived,
+    bytesReceived: audioTrackStats?.bytesReceived || 0,
+    packetsLost: audioTrackStats?.packetsLost || 0,
+    packetsReceived: audioTrackStats?.packetsReceived || 0,
   };
 
   let videoCallbackStats: CallbackTrackStats & { frameRate: number; mediaRouting?: string } | null = null;

@@ -480,7 +480,7 @@ index bbcb01a..eec63b8 100644
  {
 -  "name": "@vonage/video-client-network-test",
 +  "name": "@opentok/opentok-network-test-js",
-   "version": "5.1.2",
+   "version": "5.1.3",
 -  "description": "Precall network test for applications using the Vonage Video API platform.",
 -  "main": "dist/index.js",
 -  "types": "dist/index.d.ts",
@@ -491,13 +491,12 @@ index bbcb01a..eec63b8 100644
      "dist/"
    ],
    "scripts": {
-     "build:js": "rm -rf dist && webpack --config webpack.config.js  --stats-error-details",
+     "build:js": "rm -rf dist && webpack --config webpack.config.mjs  --stats-error-details",
      "build:types": "tsc --project ./tsconfig.json",
-@@ -21,18 +21,17 @@
+@@ -21,17 +21,17 @@
      "tslint": "eslint . --ext .js,.ts",
      "tslint-fix": "eslint . --ext .js,.ts --fix"
    },
--  "type": "module",
    "repository": {
      "type": "git",
 -    "url": "git+https://github.com/Vonage/vonage-video-js-api-network-test.git"
@@ -526,15 +525,16 @@ index bbcb01a..eec63b8 100644
 +  "homepage": "https://github.com/opentok/network-connectivity-js#readme",
    "dependencies": {
      "axios": "^1.8.3",
-     "opentok-solutions-logging": "^1.1.1"
-@@ -61,6 +60,7 @@
-     "@vonage/client-sdk-video": "2.34.0",
+     "@opentok/opentok-solutions-logging": "^1.1.5"
+@@ -60,7 +60,7 @@
+     "@typescript-eslint/eslint-plugin": "^7.6.0",
+     "@typescript-eslint/eslint-plugin-tslint": "^7.0.2",
+     "@typescript-eslint/parser": "^7.6.0",
+-    "@vonage/client-sdk-video": "^2.34.2",
++    "@opentok/client": "^2.34.2",
      "@vonage/server-sdk": "^3.20.0",
-+    "@opentok/client": "^2.31.1",
      "dotenv": "^17.0.0",
      "eslint": "^8.44.0",
-     "jasmine": "^6.0.0",
-     "jasmine-core": "^6.0.0",
 @@ -75,12 +75,12 @@
      "karma-sauce-launcher": "^4.3.6",
      "karma-sourcemap-loader": "^0.4.0",
@@ -625,9 +625,10 @@ index ab42d70..28ff6b7 100644
      }
    }
  
--  private startLoggingEngine(applicationId: string, sessionId: string, proxyUrl: string): OTKAnalytics {
-+  private startLoggingEngine(apiKey: string, sessionId: string, proxyUrl: string): OTKAnalytics {
-     return new OTKAnalytics({
+-  private startLoggingEngine(applicationId: string, sessionId: string, proxyUrl: string): OTKLogger {
+-    return new OTKLogger({
++  private startLoggingEngine(apiKey: string, sessionId: string, proxyUrl: string): OTKLogger {
++    return new OTKLogger({
        sessionId,
 -      partnerId: applicationId,
 +      partnerId: apiKey,

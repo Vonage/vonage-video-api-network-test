@@ -7,6 +7,9 @@ inputs:
   node_version:
     description: 'Node.js version to use (e.g. 24.x)'
     required: true
+  opentok_npm_token:
+    description: 'GitHub NPM token for @opentok scoped packages'
+    required: false
 runs:
   using: "composite"
   steps:
@@ -15,11 +18,15 @@ runs:
       with:
         node-version: ${{ inputs.node_version }}
 
-    # The opentok.patch swaps the vonage SDK dependency for the legacy OpenTok SDK in
-    # lib/js/package.json. The lockfile must be regenerated after patching so the cache key
-    # (which hashes the lockfile) matches the key the downstream build job will compute
-    # from the uploaded source artifact — without this, the build job gets a cache miss.
-    - name: Apply OpenTok source patch and regenerate lockfile
+    - name: Configure npmrc for OpenTok and Vonage registry
+      shell: bash
+      run: |
+        npm config set @opentok:registry=https://npm.pkg.github.com/
+        npm config set //npm.pkg.github.com/:_authToken=${{ inputs.opentok_npm_token }}
+
+    # Regenerate the lockfile after patching so the cache key reflects the post-patch
+    # devDependencies — aligning it with the key the build job computes from the artifact.
+    - name: Apply OpenTok patch and regenerate lockfile
       if: inputs.target == 'opentok'
       shell: bash
       run: |
@@ -32,3 +39,4 @@ runs:
       uses: ./.github/actions/restore-node-modules
       with:
         target: ${{ inputs.target }}
+        opentok_npm_token: ${{ inputs.opentok_npm_token }}
