@@ -11,11 +11,23 @@ import {
   InvalidOnUpdateCallback,
 } from '../src/errors';
 import { OTErrorType } from '../src/errors/types';
-import NetworkTest, { ErrorNames } from '../src';
+import NetworkTest, { ErrorNames, QualityTestResults } from '../src';
 import { ConnectivityTestResults } from '../src/testConnectivity/index';
 import { QualityTestError } from '../src/testQuality/errors/index';
+import { UpdateCallbackStats } from '../src/types/callbacks';
 
 type CustomMatcher = jasmine.CustomMatcher;
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace jasmine {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    interface Matchers<T> {
+      toBeABoolean(): boolean;
+      toBeInstanceOf(expected: any): boolean;
+    }
+  }
+}
 
 const malformedCredentials = { applicationId: '1234', invalidProp: '1234', token: '1234' };
 const badCredentials = { applicationId: '1234', sessionId: '1234', token: '1234' };
@@ -25,7 +37,7 @@ const networkTestWithOptions = new NetworkTest(OTClient, sessionCredentials, {
   timeout: 5000,
 });
 const badCredentialsNetworkTest = new NetworkTest(OTClient, badCredentials);
-const validOnUpdateCallback = (stats: OT.SubscriberStats) => stats;
+const validOnUpdateCallback = (stats: UpdateCallbackStats) => stats;
 
 const customMatchers: jasmine.CustomMatcherFactories = {
   toBeInstanceOf: (): CustomMatcher => {
@@ -63,10 +75,13 @@ describe('NetworkTest', () => {
   });
 
   it('its constructor requires OT and valid session credentials', () => {
-    expect(() => new NetworkTest(sessionCredentials)).toThrow(new MissingOpenTokInstanceError());
-    expect(() => new NetworkTest({}, sessionCredentials)).toThrow(new MissingOpenTokInstanceError());
-    expect(() => new NetworkTest(OTClient)).toThrow(new MissingSessionCredentialsError());
-    expect(() => new NetworkTest(OTClient, malformedCredentials)).toThrow(new IncompleteSessionCredentialsError());
+    // @ts-expect-error testing runtime validation with wrong number of args
+    expect(() => new NetworkTest(sessionCredentials as any)).toThrow(new MissingOpenTokInstanceError());
+    expect(() => new NetworkTest({} as any, sessionCredentials)).toThrow(new MissingOpenTokInstanceError());
+    // @ts-expect-error testing runtime validation with wrong number of args
+    expect(() => new NetworkTest(OTClient as any)).toThrow(new MissingSessionCredentialsError());
+    expect(() => new NetworkTest(OTClient, malformedCredentials as any))
+      .toThrow(new IncompleteSessionCredentialsError());
     expect(new NetworkTest(OTClient, sessionCredentials)).toBeInstanceOf(NetworkTest);
   });
 
@@ -75,7 +90,7 @@ describe('NetworkTest', () => {
   });
 
   describe('Connectivity Test', () => {
-    const testConnectFailure = (errorName: OTErrorType, expectedType): Promise<void> => {
+    const testConnectFailure = (errorName: OTErrorType, expectedType: string): Promise<void> => {
       return new Promise((resolve, reject) => {
         const realInitSession = OT.initSession;
         spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
@@ -102,7 +117,7 @@ describe('NetworkTest', () => {
       it('should contain success and failedTests properties', (done) => {
         networkTest.testConnectivity()
           .then((results: ConnectivityTestResults) => {
-            expect(results.success).toBeABoolean;
+            expect(results.success).toBeABoolean();
             expect(results.failedTests).toBeInstanceOf(Array);
             done();
           });
@@ -128,8 +143,8 @@ describe('NetworkTest', () => {
           ...OTClient,
           ...{
             properties: {
-              ...OTClient.properties,
-              loggingURL: OTClient.properties.loggingURL.replace('tokbox', 'bad-tokbox'),
+              ...(OTClient as any).properties,
+              loggingURL: (OTClient as any).properties.loggingURL.replace('tokbox', 'bad-tokbox'),
             },
           },
         };
@@ -170,7 +185,7 @@ describe('NetworkTest', () => {
       }, 15000);
       it('results in a failed test if there are no cameras or mics', (done) => {
         spyOn(OT, 'getDevices').and.callFake((callback) => {
-          callback(null, []);
+          callback(undefined, []);
         });
         networkTest.testConnectivity()
           .catch((results: ConnectivityTestResults) => {
@@ -185,9 +200,9 @@ describe('NetworkTest', () => {
         testConnectFailure(OTErrorType.OT_AUTHENTICATION_ERROR, 'messaging').catch(done);
       }, 1000);
       it('results in a failed test if OT.initPublisher() returns an error', (done) => {
-        spyOn(OT, 'initPublisher').and.callFake((target, options, callback) => {
+        spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
           callback(new Error());
-        });
+        }) as any);
         networkTest.testConnectivity()
           .catch((results: ConnectivityTestResults) => {
             expect(results.success).toBe(false);
@@ -201,10 +216,10 @@ describe('NetworkTest', () => {
         const realInitSession = OT.initSession;
         spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
           const session = realInitSession(applicationId, sessionId);
-          spyOn(session, 'subscribe').and.callFake((stream, target, config, callback) => {
+          spyOn(session, 'subscribe').and.callFake(((stream: any, target: any, config: any, callback: any) => {
             const error = new Error();
             callback(error);
-          });
+          }) as any);
           return session;
         });
         networkTest.testConnectivity()
@@ -220,14 +235,14 @@ describe('NetworkTest', () => {
 
     describe('Quality Test', () => {
       const validateResultsUndefined = (results: QualityTestResults) => {
-        expect(results).toBe(undefined);
+        expect(results).toBe(undefined as any);
       };
 
       const validateUnsupportedBrowserError = (error?: QualityTestError) => {
-        expect(error.name).toBe(ErrorNames.UNSUPPORTED_BROWSER);
+        expect(error!.name).toBe(ErrorNames.UNSUPPORTED_BROWSER);
       };
 
-      const testConnectFailure = (otErrorName: OTErrorType, netTestErrorName) => {
+      const testConnectFailure = (otErrorName: OTErrorType, netTestErrorName: string) => {
         const realInitSession = OT.initSession;
         spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
           const session = realInitSession(applicationId, sessionId);
@@ -240,10 +255,10 @@ describe('NetworkTest', () => {
         });
 
         const validateError = (error?: QualityTestError) => {
-          expect(error.name).toBe(netTestErrorName);
+          expect(error!.name).toBe(netTestErrorName);
         };
 
-        networkTest.testQuality(null)
+        networkTest.testQuality(undefined)
           .catch(validateError);
       };
 
@@ -270,17 +285,17 @@ describe('NetworkTest', () => {
       };
 
       it('validates its onUpdate callback', () => {
-        expect(() => networkTest.testQuality('bad-callback').toThrow(new InvalidOnUpdateCallback()));
-        expect(() => networkTest.testConnectivity(validOnUpdateCallback)
-          .not.toThrowError(NetworkTestError));
+        expect(() => networkTest.testQuality('bad-callback' as any)).toThrow(new InvalidOnUpdateCallback());
+        expect(() => networkTest.testConnectivity())
+          .not.toThrowError(NetworkTestError);
       });
 
       it('should return an error if invalid session credentials are used', (done) => {
         const validateError = (error?: QualityTestError) => {
-          expect(error.name).toBe(ErrorNames.CONNECT_TO_SESSION_TOKEN_ERROR);
+          expect(error!.name).toBe(ErrorNames.CONNECT_TO_SESSION_TOKEN_ERROR);
         };
 
-        badCredentialsNetworkTest.testQuality(null)
+        badCredentialsNetworkTest.testQuality(undefined)
           .catch(validateError)
           .finally(done);
       });
@@ -324,7 +339,7 @@ describe('NetworkTest', () => {
       }, 15000);
 
       it('should return valid test results or an error', (done) => {
-        const onUpdate = (stats: Stats) => validOnUpdateCallback(stats);
+        const onUpdate = (stats: UpdateCallbackStats) => validOnUpdateCallback(stats);
 
         networkTest.testQuality(onUpdate)
           .catch(validateStandardResults)
@@ -348,7 +363,7 @@ describe('NetworkTest', () => {
           expect(error?.name).toBe(ErrorNames.QUALITY_TEST_ERROR);
         };
 
-        const onUpdate = (stats: Stats) => validOnUpdateCallback(stats);
+        const onUpdate = (stats: UpdateCallbackStats) => validOnUpdateCallback(stats);
 
         networkTestWithOptions.testQuality(onUpdate)
           .then(validateResults)
@@ -361,7 +376,7 @@ describe('NetworkTest', () => {
           expect(error?.name).toBe(ErrorNames.QUALITY_TEST_ERROR);
         };
 
-        const onUpdate = (stats: Stats) => {
+        const onUpdate = (stats: UpdateCallbackStats) => {
           validOnUpdateCallback(stats);
           networkTest.stop(); // The test will wait for adequate stats before stopping
         };
@@ -393,10 +408,10 @@ describe('NetworkTest', () => {
         };
 
         const validateError = (error?: QualityTestError) => {
-          expect(error).toBe(QualityTestError);
+          expect(error).toBeInstanceOf(QualityTestError);
         };
 
-        const onUpdate = (stats: Stats) => validOnUpdateCallback(stats);
+        const onUpdate = (stats: UpdateCallbackStats) => validOnUpdateCallback(stats);
 
         networkTest.testQuality(onUpdate)
           .then(validateResults)
@@ -405,8 +420,8 @@ describe('NetworkTest', () => {
       }, 15000);
 
       it('should return an error if the window.navigator is undefined', () => {
-        spyOnProperty(window, 'navigator', 'get').and.returnValue(undefined);
-        networkTest.testQuality(null)
+        spyOnProperty(window, 'navigator', 'get').and.returnValue(undefined as any);
+        networkTest.testQuality(undefined)
           .then(validateResultsUndefined)
           .catch(validateUnsupportedBrowserError);
       });
@@ -417,32 +432,66 @@ describe('NetworkTest', () => {
           webkitGetUserMedia: null,
           mozGetUserMedia: null,
           userAgent: 'Edge/12.10240',
-        });
-        networkTest.testQuality(null)
+        } as any);
+        networkTest.testQuality(undefined)
           .then(validateResultsUndefined)
           .catch(validateUnsupportedBrowserError);
       }, 15000);
 
       it('should run the test if the browser is a Chromium-based version of Edge', (done) => {
-        const mozGetUserMedia = navigator.mozGetUserMedia;
-        const webkitGetUserMedia = navigator.webkitGetUserMedia;
-        navigator.mozGetUserMedia = null;
-        navigator.webkitGetUserMedia = {};
+        const nav = navigator as any;
+        const mozGetUserMedia = nav.mozGetUserMedia;
+        const webkitGetUserMedia = nav.webkitGetUserMedia;
+        nav.mozGetUserMedia = null;
+        nav.webkitGetUserMedia = {};
         spyOnProperty(window.navigator, 'userAgent', 'get').and.returnValue('Edg');
         networkTestWithOptions.testQuality()
           .then(() => {
-            navigator.mozGetUserMedia = mozGetUserMedia;
-            navigator.webkitGetUserMedia = webkitGetUserMedia;
+            nav.mozGetUserMedia = mozGetUserMedia;
+            nav.webkitGetUserMedia = webkitGetUserMedia;
             done();
           });
       }, 15000);
 
       it('results in a failed test if OT.initPublisher() returns an error', (done) => {
-        spyOn(OT, 'initPublisher').and.callFake((target, options, callback) => {
+        spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
           callback(new Error());
-        });
+        }) as any);
         networkTest.testQuality().catch((error?: QualityTestError) => {
           expect(error?.name).toBe(ErrorNames.TYPE_ERROR);
+          done();
+        });
+      }, 15000);
+
+      it('results in a PermissionDeniedError if OT.initPublisher() returns OT_USER_MEDIA_ACCESS_DENIED', (done) => {
+        spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
+          const error = new Error('Permission denied');
+          error.name = 'OT_USER_MEDIA_ACCESS_DENIED';
+          callback(error);
+          return { on: jasmine.createSpy('on') };
+        }) as any);
+        networkTest.testQuality().catch((error?: QualityTestError) => {
+          expect(error?.name).toBe(ErrorNames.PERMISSION_DENIED_ERROR);
+          done();
+        });
+      }, 15000);
+
+      it('results in a PermissionDeniedError if publisher fires accessDenied event', (done) => {
+        let accessDeniedHandler: Function;
+        spyOn(OT, 'initPublisher').and.callFake((() => {
+          const mockPublisher = {
+            on: jasmine.createSpy('on').and.callFake((event: string, handler: Function) => {
+              if (event === 'accessDenied') {
+                accessDeniedHandler = handler;
+              }
+            }),
+          };
+          // Do not call the callback — simulate SDK not invoking it on denial
+          setTimeout(() => accessDeniedHandler(), 0);
+          return mockPublisher;
+        }) as any);
+        networkTest.testQuality().catch((error?: QualityTestError) => {
+          expect(error?.name).toBe(ErrorNames.PERMISSION_DENIED_ERROR);
           done();
         });
       }, 15000);
@@ -451,10 +500,10 @@ describe('NetworkTest', () => {
         const realInitSession = OT.initSession;
         spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
           const session = realInitSession(applicationId, sessionId);
-          spyOn(session, 'subscribe').and.callFake((stream, target, config, callback) => {
+          spyOn(session, 'subscribe').and.callFake(((stream: any, target: any, config: any, callback: any) => {
             const error = new Error();
             callback(error);
-          });
+          }) as any);
           return session;
         });
         networkTest.testQuality().catch((error?: QualityTestError) => {
