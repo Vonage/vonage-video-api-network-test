@@ -6,6 +6,7 @@ metadata:
   description: Library to check network connectivity to resources and services required to use Vonage Video API
   annotations:
     vonage.com/jira-id: VPF
+    business-criticality: Tier-2
 spec:
   type: library
   owner: group:orgdata/vdt
