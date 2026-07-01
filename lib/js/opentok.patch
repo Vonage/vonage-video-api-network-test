@@ -5,7 +5,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
 -# Vonage Video API Network Test
  
 -[![license](https://img.shields.io/github/license/vonage/vonage-video-api-network-test.svg)](https://github.com/Vonage/vonage-video-api-network-test/blob/develop/CONTRIBUTING.md)
--[![npm](https://img.shields.io/npm/v/opentok-network-test-js.svg)](https://www.npmjs.com/package/@vonage/video-client-network-test)
+-[![npm](https://img.shields.io/npm/v/@vonage/video-client-network-test.svg)](https://www.npmjs.com/package/@vonage/video-client-network-test)
 +![logo](https://raw.githubusercontent.com/opentok/opentok-network-test-js/master/media/tokbox-logo.png)
  
 +# OpenTok Network Test

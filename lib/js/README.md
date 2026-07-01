@@ -1,7 +1,7 @@
 # Vonage Video API Network Test
 
 [![license](https://img.shields.io/github/license/vonage/vonage-video-api-network-test.svg)](https://github.com/Vonage/vonage-video-api-network-test/blob/develop/CONTRIBUTING.md)
-[![npm](https://img.shields.io/npm/v/vonage-video-api-network-test.svg)](https://www.npmjs.com/package/@vonage/video-client-network-test)
+[![npm](https://img.shields.io/npm/v/@vonage/video-client-network-test.svg)](https://www.npmjs.com/package/@vonage/video-client-network-test)
 
 This Node module lets you check network connectivity to resources and services required
 to use [Vonage Video API](https://www.vonage.com/communications-apis/video). Run this on a web client to get the following information:
