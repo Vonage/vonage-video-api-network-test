@@ -122,9 +122,12 @@ export class PublishToSessionPermissionOrTimeoutError extends PublishToSessionEr
 }
 
 export class MediaAccessRevokedError extends PublishToSessionError {
-  constructor() {
-    super('Media access was revoked during the quality test.',
+  device?: 'camera' | 'microphone' | 'camera and microphone';
+  constructor(device?: 'camera' | 'microphone' | 'camera and microphone') {
+    const deviceStr = device ? ` (${device})` : '';
+    super(`Media access was revoked during the quality test${deviceStr}.`,
       ErrorNames.MEDIA_ACCESS_REVOKED_ERROR);
+    this.device = device;
   }
 }
 

@@ -14,7 +14,7 @@ import {
   NetworkTestOptions,
 } from '../index';
 import * as e from './errors';
-import { OTErrorType, errorHasName } from '../errors/types';
+import { OTErrorType, ErrorNames, errorHasName } from '../errors/types';
 import { mapErrors, FailureCase } from './errors/mapping';
 import { getOr } from '../util';
 import { SessionCredentials, InitSessionOptions } from '../types/session';
@@ -191,7 +191,7 @@ function checkCreateLocalPublisher(
             // Clean up the DOM element
             publisherDiv.parentNode?.removeChild(publisherDiv);
 
-            if (error && (error.name === 'OT_USER_MEDIA_ACCESS_DENIED' ||
+            if (error && (errorHasName(error, OTErrorType.OT_USER_MEDIA_ACCESS_DENIED) ||
                 (error.message && (error.message.toLowerCase().includes('permission') ||
                 error.message.toLowerCase().includes('access denied') ||
                 error.message.toLowerCase().includes('not allowed'))))) {
@@ -201,6 +201,21 @@ function checkCreateLocalPublisher(
             }
           }
         });
+
+        publisher.on('accessDenied', () => {
+          reject(new PermissionDeniedError());
+        });
+
+        publisher.on('mediaStopped', () => {
+          reject(new e.MediaAccessRevokedError());
+        });
+
+        publisher.on('streamDestroyed', (event: OT.Event<'streamDestroyed', OT.Publisher>) => {
+          if ((event as any).reason === 'mediaStopped') {
+            reject(new e.MediaAccessRevokedError());
+          }
+        });
+
         publisher.on('streamCreated', () => {
           publisherDiv.style.visibility = 'hidden';
         });
@@ -354,7 +369,7 @@ export function testConnectivity(
        * If we encounter an error before testing the connection to the logging server, let's perform
        * that test as well before returning results.
        */
-      if (error.name === 'LoggingServerConnectionError') {
+      if (error.name === ErrorNames.LOGGING_SERVER_CONNECTION_ERROR) {
         handleResults(error);
       } else {
         checkLoggingServer(OTInstance, options)

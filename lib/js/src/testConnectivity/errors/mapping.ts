@@ -43,6 +43,8 @@ const mapErrorToCase = (error: ConnectivityError): FailureCase => {
     case ErrorNames.PUBLISH_TO_SESSION_NOT_CONNECTED:
     case ErrorNames.PUBLISH_TO_SESSION_PERMISSION_OR_TIMEOUT_ERROR:
     case ErrorNames.PUBLISH_TO_SESSION_NETWORK_ERROR:
+    case ErrorNames.PERMISSION_DENIED_ERROR:
+    case ErrorNames.MEDIA_ACCESS_REVOKED_ERROR:
       return FailureType.OpentokJs;
     case ErrorNames.PUBLISH_TO_SESSION_ERROR:
     case ErrorNames.SUBSCRIBE_TO_SESSION_ERROR:

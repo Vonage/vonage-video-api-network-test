@@ -193,7 +193,7 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
           }
           const publisher = OTInstance.initPublisher(containerDiv, publisherOptions, (error?: OT.OTError) => {
             if (error) {
-              if (error.name === 'OT_USER_MEDIA_ACCESS_DENIED') {
+              if (errorHasName(error, OTErrorType.OT_USER_MEDIA_ACCESS_DENIED)) {
                 disconnectAndReject(new PermissionDeniedError());
               } else {
                 disconnectAndReject(new e.InitPublisherError(error.message));
@@ -382,7 +382,30 @@ function checkSubscriberQuality(
             publisher.on('streamDestroyed', (event: OT.Event<'streamDestroyed', OT.Publisher>) => {
               if ((event as any).reason === 'mediaStopped') {
                 clearTimeout(mosEstimatorTimeoutId);
-                disconnectAndReject(new e.MediaAccessRevokedError());
+                builder.state.clearInterval();
+
+                // If we're running an audio-video test and have collected enough audio stats,
+                // fall back to partial results rather than failing the entire test.
+                if (!audioOnly && builder.state.subscriberStatsLog.length >= 2) {
+                  const partialResults: QualityTestResults = buildResults(builder);
+                  // Override video results to indicate device failure
+                  partialResults.video = {
+                    ...partialResults.video,
+                    supported: false,
+                    reason: 'Video device failed during the test.',
+                    recommendedFrameRate: undefined,
+                    recommendedResolution: undefined,
+                  };
+                  session.on('sessionDisconnected', () => {
+                    resolve(partialResults);
+                    session.off();
+                  });
+                  cleanSubscriber(session, subscriber)
+                    .then(() => cleanPublisher(session, publisher))
+                    .then(() => session.disconnect());
+                } else {
+                  disconnectAndReject(new e.MediaAccessRevokedError());
+                }
               }
             });
 

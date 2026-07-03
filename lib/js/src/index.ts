@@ -155,3 +155,4 @@ export default class NetworkTest {
 }
 
 export { ErrorNames } from './errors/types';
+export { FailedDevice } from './errors';

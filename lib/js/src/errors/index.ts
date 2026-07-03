@@ -43,10 +43,15 @@ export class InvalidOnUpdateCallback extends NetworkTestError {
       ErrorNames.INVALID_ON_UPDATE_CALLBACK);
   }
 }
+export type FailedDevice = 'camera' | 'microphone' | 'camera and microphone' | undefined;
+
 export class PermissionDeniedError extends NetworkTestError {
-  constructor() {
-    super('Precall failed to acquire camera due to a permissions error.',
+  device?: FailedDevice;
+  constructor(device?: FailedDevice) {
+    const deviceStr = device ? ` (${device})` : '';
+    super(`Precall failed to acquire media device${deviceStr} due to a permissions error.`,
       ErrorNames.PERMISSION_DENIED_ERROR);
+    this.device = device;
   }
 }
 

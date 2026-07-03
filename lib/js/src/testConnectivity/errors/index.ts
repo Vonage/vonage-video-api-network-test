@@ -133,6 +133,16 @@ export class PublishToSessionNetworkError extends PublishToSessionError {
   }
 }
 
+export class MediaAccessRevokedError extends PublishToSessionError {
+  device?: 'camera' | 'microphone' | 'camera and microphone';
+  constructor(device?: 'camera' | 'microphone' | 'camera and microphone') {
+    const deviceStr = device ? ` (${device})` : '';
+    super(`Media access was revoked during the connectivity test${deviceStr}.`,
+      ErrorNames.MEDIA_ACCESS_REVOKED_ERROR);
+    this.device = device;
+  }
+}
+
 /**
  * Subscribing Errors
  */

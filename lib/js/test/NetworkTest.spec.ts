@@ -512,6 +512,143 @@ describe('NetworkTest', () => {
           done();
         });
       }, 15000);
+
+      it('results in a MediaAccessRevokedError if publisher fires mediaStopped event', (done) => {
+        let mediaStoppedHandler: Function;
+        spyOn(OT, 'initPublisher').and.callFake((() => {
+          const mockPublisher = {
+            on: jasmine.createSpy('on').and.callFake((event: string, handler: Function) => {
+              if (event === 'mediaStopped') {
+                mediaStoppedHandler = handler;
+              }
+            }),
+          };
+          // Simulate media being stopped shortly after publisher init
+          setTimeout(() => mediaStoppedHandler(), 0);
+          return mockPublisher;
+        }) as any);
+        networkTest.testQuality().catch((error?: QualityTestError) => {
+          expect(error?.name).toBe(ErrorNames.MEDIA_ACCESS_REVOKED_ERROR);
+          done();
+        });
+      }, 15000);
+
+      it('results in a MediaAccessRevokedError if publisher stream is destroyed with mediaStopped reason', (done) => {
+        let streamDestroyedHandler: Function;
+        const realInitSession = OT.initSession;
+        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+          const session = realInitSession(applicationId, sessionId);
+          const realPublish = session.publish.bind(session);
+          spyOn(session, 'publish').and.callFake(((publisher: any, callback: any) => {
+            // Intercept the publisher to attach streamDestroyed handler capture
+            const originalOn = publisher.on.bind(publisher);
+            publisher.on = (event: string, handler: Function) => {
+              if (event === 'streamDestroyed') {
+                streamDestroyedHandler = handler;
+              }
+              return originalOn(event, handler);
+            };
+            return realPublish(publisher, (error?: any) => {
+              if (!error) {
+                // Fire streamDestroyed after a brief delay to simulate mid-test failure
+                setTimeout(() => {
+                  if (streamDestroyedHandler) {
+                    streamDestroyedHandler({ reason: 'mediaStopped' });
+                  }
+                }, 2000);
+              }
+              if (callback) callback(error);
+            });
+          }) as any);
+          return session;
+        });
+        networkTest.testQuality().catch((error?: QualityTestError) => {
+          expect(error?.name).toBe(ErrorNames.MEDIA_ACCESS_REVOKED_ERROR);
+          done();
+        });
+      }, 20000);
+    });
+
+    describe('Connectivity Test Device Scenarios', () => {
+      it('results in a PermissionDeniedError if publisher fires accessDenied during connectivity test', (done) => {
+        let accessDeniedHandler: Function;
+        spyOn(OT, 'initPublisher').and.callFake((() => {
+          const mockPublisher = {
+            on: jasmine.createSpy('on').and.callFake((event: string, handler: Function) => {
+              if (event === 'accessDenied') {
+                accessDeniedHandler = handler;
+              }
+            }),
+          };
+          // Simulate permission revocation after initial success
+          setTimeout(() => {
+            if (accessDeniedHandler) accessDeniedHandler();
+          }, 0);
+          return mockPublisher;
+        }) as any);
+        networkTest.testConnectivity()
+          .catch((results: ConnectivityTestResults) => {
+            expect(results.success).toBe(false);
+            expect(results.failedTests).toBeInstanceOf(Array);
+            const permissionFailure = results.failedTests.find(
+              f => f.error.name === ErrorNames.PERMISSION_DENIED_ERROR
+            );
+            expect(permissionFailure).toBeDefined();
+            done();
+          });
+      }, 15000);
+
+      it('results in a MediaAccessRevokedError if publisher fires mediaStopped during connectivity test', (done) => {
+        let mediaStoppedHandler: Function;
+        spyOn(OT, 'initPublisher').and.callFake((() => {
+          const mockPublisher = {
+            on: jasmine.createSpy('on').and.callFake((event: string, handler: Function) => {
+              if (event === 'mediaStopped') {
+                mediaStoppedHandler = handler;
+              }
+            }),
+          };
+          // Do not call callback (simulates it hanging before resolve)
+          setTimeout(() => {
+            if (mediaStoppedHandler) mediaStoppedHandler();
+          }, 0);
+          return mockPublisher;
+        }) as any);
+        networkTest.testConnectivity()
+          .catch((results: ConnectivityTestResults) => {
+            expect(results.success).toBe(false);
+            expect(results.failedTests).toBeInstanceOf(Array);
+            const revokedFailure = results.failedTests.find(
+              f => f.error.name === ErrorNames.MEDIA_ACCESS_REVOKED_ERROR
+            );
+            expect(revokedFailure).toBeDefined();
+            done();
+          });
+      }, 15000);
+
+      it('proceeds with video-only when no audio capture devices are available', (done) => {
+        const realOTGetDevices = OT.getDevices;
+        spyOn(OT, 'getDevices').and.callFake((callbackFn) => {
+          realOTGetDevices((error, devices) => {
+            const onlyVideoDevices = devices?.filter(device => device.kind !== 'audioInput');
+            callbackFn(error, onlyVideoDevices);
+          });
+        });
+        networkTest.testConnectivity()
+          .then((results: ConnectivityTestResults) => {
+            expect(results.success).toBe(true);
+            done();
+          })
+          .catch((results: ConnectivityTestResults) => {
+            // Even if the test fails for other reasons (e.g., network), it should NOT
+            // have failed due to NoAudioCaptureDevicesError since connectivity allows video-only.
+            const audioDeviceFailure = results.failedTests.find(
+              f => f.error.name === ErrorNames.NO_AUDIO_CAPTURE_DEVICES
+            );
+            expect(audioDeviceFailure).toBeUndefined();
+            done();
+          });
+      }, 15000);
     });
   });
 });
