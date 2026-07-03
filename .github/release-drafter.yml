@@ -1,0 +1,45 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+version-template: '$MAJOR.$MINOR.$PATCH'
+
+template: |
+  $CHANGES
+
+categories:
+  - title: '🚀 Features'
+    labels:
+      - 'enhancement'
+      - 'feature'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'bug'
+      - 'fix'
+  - title: '📚 Documentation'
+    labels:
+      - 'documentation'
+  - title: '🔧 Maintenance'
+    labels:
+      - 'chore'
+      - 'maintenance'
+      - 'dependencies'
+  - title: '🏗️ Other Changes'
+    labels:
+      - '*'
+
+# Automatically label PRs based on conventional commit prefixes in the PR title.
+autolabeler:
+  - label: 'feature'
+    title:
+      - '/^feat(\(.+\))?!?:/i'
+  - label: 'bug'
+    title:
+      - '/^fix(\(.+\))?!?:/i'
+  - label: 'documentation'
+    title:
+      - '/^docs(\(.+\))?!?:/i'
+  - label: 'chore'
+    title:
+      - '/^(chore|refactor|style|test|ci|build|perf)(\(.+\))?!?:/i'
+  - label: 'dependencies'
+    title:
+      - '/^(deps|dep|bump)/i'

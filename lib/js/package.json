@@ -30,8 +30,8 @@
     "example": "npm run build && cd ../../samples/js && npm run build && python -m SimpleHTTPServer",
     "lint": "npm run tslint",
     "lint-fix": "npm run tslint-fix",
-    "tslint": "eslint . --ext .js, .mjs, .ts",
-    "tslint-fix": "eslint . --ext .js, .mjs, .ts --fix"
+    "tslint": "eslint . --ext .js,.mjs,.ts",
+    "tslint-fix": "eslint . --ext .js,.mjs,.ts --fix"
   },
   "repository": {
     "type": "git",
