@@ -35,7 +35,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Vonage/vonage-video-js-api-network-test.git"
+    "url": "git+https://github.com/Vonage/vonage-video-api-network-test.git"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/",
@@ -54,9 +54,9 @@
   },
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/Vonage/vonage-video-js-api-network-test/issues"
+    "url": "https://github.com/Vonage/vonage-video-api-network-test/issues"
   },
-  "homepage": "https://github.com/Vonage/vonage-video-js-api-network-test#readme",
+  "homepage": "https://github.com/Vonage/vonage-video-api-network-test#readme",
   "dependencies": {
     "axios": "^1.18.0",
     "@opentok/opentok-solutions-logging": "^1.1.5"
