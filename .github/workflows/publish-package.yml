@@ -103,6 +103,63 @@ jobs:
           fi
           echo "✅ Verified: run ${RUN_ID} is a successful Post Merge Validation run"
 
+      # Guard: Prevents accidental "latest" publishes from non-release contexts and
+      # blocks publishing from direct pushes to main/develop (only merged PRs should trigger
+      # the Post Merge Validation artifacts that this workflow consumes).
+      - name: Release safety checks
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          TAG: ${{ inputs.tag }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          BRANCH: ${{ github.ref_name }}
+          RUN_ID: ${{ inputs.run_id }}
+        run: |
+          # 1. Block publishing with the "latest" dist-tag unless this is a deliberate release.
+          #    Publishing without a pre-release tag from a non-release branch is almost always
+          #    accidental. Require an explicit tag (e.g., alpha, beta, rc) unless the branch
+          #    matches a release pattern or dry-run is enabled.
+          if [ "$DRY_RUN" != "true" ] && [ -z "$TAG" ]; then
+            if [[ "$BRANCH" != "main" && ! "$BRANCH" =~ ^release- ]]; then
+              echo "::error::Refusing to publish with the 'latest' dist-tag from branch '$BRANCH'."
+              echo "::error::Only 'main' and 'release-*' branches may publish without a pre-release tag."
+              echo "::error::Add a pre-release tag (e.g., alpha, beta, rc) or switch to main/release-*."
+              exit 1
+            fi
+          fi
+
+          # 2. Verify the source artifact was produced by a merged PR, not a direct push.
+          #    This ensures main/develop branch protection is respected end-to-end:
+          #    even if someone bypasses branch protection and pushes directly, the resulting
+          #    artifacts won't be publishable.
+          RESOLVE_RUN_ID="$RUN_ID"
+          if [ -z "$RESOLVE_RUN_ID" ]; then
+            # Find the latest successful Post Merge Validation run on this branch.
+            RESOLVE_RUN_ID=$(gh api "repos/${REPOSITORY}/actions/workflows/post-merge-validation.yml/runs?branch=${BRANCH}&status=success&per_page=1" \
+              --jq '.workflow_runs[0].id // empty' 2>/dev/null || echo "")
+          fi
+          if [ -n "$RESOLVE_RUN_ID" ]; then
+            EVENT=$(gh api "repos/${REPOSITORY}/actions/runs/${RESOLVE_RUN_ID}" --jq '.event' 2>/dev/null || echo "unknown")
+            HEAD_BRANCH=$(gh api "repos/${REPOSITORY}/actions/runs/${RESOLVE_RUN_ID}" --jq '.head_branch' 2>/dev/null || echo "unknown")
+            if [ "$EVENT" != "push" ]; then
+              echo "ℹ️ Source run ${RESOLVE_RUN_ID} triggered by '${EVENT}' on '${HEAD_BRANCH}'"
+            fi
+            # Check if the triggering commit was associated with a PR merge.
+            # A direct push to a protected branch produces a run with no associated PRs.
+            HEAD_SHA=$(gh api "repos/${REPOSITORY}/actions/runs/${RESOLVE_RUN_ID}" --jq '.head_sha' 2>/dev/null || echo "")
+            if [ -n "$HEAD_SHA" ]; then
+              PR_COUNT=$(gh api "repos/${REPOSITORY}/commits/${HEAD_SHA}/pulls" --jq 'length' 2>/dev/null || echo "0")
+              if [ "$PR_COUNT" -eq 0 ] && [ "$DRY_RUN" != "true" ]; then
+                echo "::warning::The source commit (${HEAD_SHA:0:7}) has no associated pull request."
+                echo "::warning::This may indicate a direct push to '${HEAD_BRANCH}', which violates branch protection policy."
+                echo "::error::Refusing to publish artifacts from a direct push. Merge via PR instead."
+                exit 1
+              fi
+            fi
+          fi
+          echo "✅ Release safety checks passed"
+
       # The four steps below cover every combination of package name × registry.
       # Each step is guarded by an `if:` condition derived from the `target` input so that
       # only the selected variant(s) run. `continue-on-error: true` allows a failure in one

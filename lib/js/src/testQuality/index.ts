@@ -193,7 +193,11 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
           }
           const publisher = OTInstance.initPublisher(containerDiv, publisherOptions, (error?: OT.OTError) => {
             if (error) {
-              disconnectAndReject(new e.InitPublisherError(error.message));
+              if (error.name === 'OT_USER_MEDIA_ACCESS_DENIED') {
+                disconnectAndReject(new PermissionDeniedError());
+              } else {
+                disconnectAndReject(new e.InitPublisherError(error.message));
+              }
             } else {
               session.publish(publisher, (publishError?: OT.OTError) => {
                 if (publishError) {
@@ -208,6 +212,10 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
                 }
               });
             }
+          });
+
+          publisher.on('accessDenied', () => {
+            disconnectAndReject(new PermissionDeniedError());
           });
 
           publisher.on('mediaStopped', () => {
