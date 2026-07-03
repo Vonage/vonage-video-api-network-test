@@ -1,5 +1,5 @@
 name: 'Setup Environment'
-description: 'Sets up Node, caches, patches, and installs dependencies'
+description: 'Sets up Node.js, applies the OpenTok source patch (opentok target only), regenerates the lockfile so the cache key is consistent, and restores node_modules from cache'
 inputs:
   target:
     description: 'Target package (vonage or opentok)'
@@ -31,8 +31,8 @@ runs:
       shell: bash
       run: |
         git apply ./lib/js/opentok.patch
-        # --prefix runs npm from the repo root without changing working-directory,
-        # which composite action steps do not support per-step.
+        # --prefix runs npm from the repo root; composite action steps cannot set
+        # working-directory per step, so --prefix is the workaround here.
         npm --prefix lib/js install --package-lock-only
 
     - name: Restore Node Modules

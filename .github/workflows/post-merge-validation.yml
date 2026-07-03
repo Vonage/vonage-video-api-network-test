@@ -1,5 +1,17 @@
 name: Post Merge Validation
 
+# Runs on every merge to main or a release branch.
+#
+# Pipeline:
+#   test         → integration tests against live Vonage/OpenTok infrastructure (vonage + opentok, parallel)
+#   package      → builds the library and packs it into a .tgz tarball artifact (vonage + opentok, parallel)
+#   verify       → validates the tarball: publint conformance, size guard, and local install (parallel per target)
+#   sample-build → type-checks and webpack-builds the samples/js app against the vonage tarball
+#   test-dist    → runs Karma tests against the dist bundle extracted from the tarball (parallel per target)
+#   browser-test → loads the UMD bundle in a real Chromium instance via Playwright (parallel per target)
+#
+# All post-package jobs run in parallel and are independent of each other.
+
 on:
   push:
     branches:
@@ -14,6 +26,207 @@ permissions: read-all
 
 jobs:
   test:
+    name: Integration Tests (${{ matrix.target }})
+    strategy:
+      # Run both targets concurrently; a failure in one should not block the other.
+      fail-fast: false
+      matrix:
+        target: [vonage, opentok]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
+        with:
+          target: ${{ matrix.target }}
+          node_version: ${{ vars.NODE_VERSION }}
+          opentok_npm_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
+
+      - name: Test
+        uses: ./.github/actions/run-test
+        with:
+          target: ${{ matrix.target }}
+          vonage_private_key: ${{ secrets.VONAGE_PRIVATE_KEY }}
+          test_application_id: ${{ secrets.TEST_APPLICATION_ID }}
+          test_api_key: ${{ secrets.TEST_API_KEY }}
+          test_api_secret: ${{ secrets.TEST_API_SECRET }}
+
+  package:
+    name: Build & Package (${{ matrix.target }})
+    needs: test
+    strategy:
+      # Both targets produce independent artifacts; continue building even if one fails.
+      fail-fast: false
+      matrix:
+        target: [vonage, opentok]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
+        with:
+          target: ${{ matrix.target }}
+          node_version: ${{ vars.NODE_VERSION }}
+          opentok_npm_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
+
+      - name: Build
+        shell: bash
+        working-directory: lib/js
+        run: npm run build
+
+      - name: Pack
+        shell: bash
+        working-directory: lib/js
+        run: |
+          npm pack
+          count=$(find . -maxdepth 1 -name '*.tgz' | wc -l)
+          [ "$count" -eq 1 ] || { echo "❌ Expected 1 tarball, found $count"; exit 1; }
+
+      - name: Upload Tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}-package-tarball
+          path: lib/js/*.tgz
+          # 30 days: long enough to cover the gap between CI and a manual release dispatch.
+          retention-days: 30
+
+  verify:
+    name: Tarball Verification (${{ matrix.target }})
+    needs: package
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [vonage, opentok]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      # Only .github/scripts/ is needed — no source files are required for tarball verification.
+      - name: Checkout scripts
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+
+      - name: Download tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.target }}-package-tarball
+          path: lib/js
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION }}
+
+      - name: Locate tarball
+        id: tarball
+        shell: bash
+        run: |
+          TARBALL=$(find lib/js -maxdepth 1 -name '*.tgz' | head -1)
+          if [ -z "$TARBALL" ]; then
+            echo "::error::No tarball found in lib/js/ — the package job may have failed"
+            exit 1
+          fi
+          echo "path=$TARBALL" >> "$GITHUB_OUTPUT"
+          echo "Found: $TARBALL"
+
+      # Checks that package.json exports, main, module, and types fields are correctly
+      # specified and that every referenced file exists within the tarball.
+      - name: Validate package exports (publint)
+        shell: bash
+        env:
+          TARBALL: ${{ steps.tarball.outputs.path }}
+        run: |
+          echo "Running publint on: $TARBALL"
+          npx --yes publint "$TARBALL"
+
+      # Guards against accidentally shipping node_modules or producing an empty dist.
+      - name: Check tarball size
+        shell: bash
+        env:
+          TARBALL: ${{ steps.tarball.outputs.path }}
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/check-size.sh" "$TARBALL" 5 2000
+
+      # Verifies the tarball can be installed as a dependency — catches malformed tarballs
+      # that pass publint but fail during npm install (e.g., broken symlinks or missing files).
+      - name: Install tarball into a clean project
+        shell: bash
+        env:
+          TARBALL: ${{ steps.tarball.outputs.path }}
+        run: |
+          TARBALL_ABS=$(realpath "$TARBALL")
+          DIR=$(mktemp -d)
+          cd "$DIR"
+          npm init -y
+          npm install "$TARBALL_ABS"
+          echo "✅ Local install from tarball succeeded"
+
+  sample-build:
+    name: Sample App Build (vonage)
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
+        with:
+          target: vonage
+          node_version: ${{ vars.NODE_VERSION }}
+
+      - name: Download vonage tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: vonage-package-tarball
+          path: lib/js
+
+      # Tests the sample app against the packaged artifact rather than the checked-out source,
+      # ensuring the dist bundle inside the tarball satisfies the sample's type and webpack requirements.
+      - name: Extract dist from tarball
+        shell: bash
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/extract-tarball.sh" --mode=dist
+
+      - name: Install sample dependencies
+        shell: bash
+        working-directory: samples/js
+        run: npm install
+
+      - name: Type-check samples/js
+        shell: bash
+        working-directory: samples/js
+        run: npm run typecheck
+
+      - name: Build sample app with webpack
+        shell: bash
+        working-directory: samples/js
+        run: npm run build
+
+      - name: Verify bundle was produced
+        shell: bash
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/check-size.sh" samples/js/bundle.js 10 50000
+
+  # Replaces the checked-out lib/js/dist/ with the dist directory from the tarball artifact,
+  # then runs the same Karma suite that normally runs against the source build. This confirms
+  # the bundled output behaves identically to the pre-bundle source code.
+  test-dist:
+    name: Dist Bundle Tests (${{ matrix.target }})
+    needs: package
     strategy:
       fail-fast: false
       matrix:
@@ -32,62 +245,82 @@ jobs:
           target: ${{ matrix.target }}
           node_version: ${{ vars.NODE_VERSION }}
 
-      - name: Test
-        uses: ./.github/actions/run-test
+      - name: Download tarball
+        uses: actions/download-artifact@v4
         with:
-          target: ${{ matrix.target }}
-          vonage_private_key: ${{ secrets.VONAGE_PRIVATE_KEY }}
-          test_application_id: ${{ secrets.TEST_APPLICATION_ID }}
-          test_api_key: ${{ secrets.TEST_API_KEY }}
-          test_api_secret: ${{ secrets.TEST_API_SECRET }}
+          name: ${{ matrix.target }}-package-tarball
+          path: lib/js
 
-  package:
-    needs: test
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [vonage, opentok]
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Extract dist from tarball
+        shell: bash
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/extract-tarball.sh" --mode=dist
 
-      - name: Build and Package
-        uses: ./.github/actions/build-and-package-library
-        with:
-          target: ${{ matrix.target }}
-          node_version: ${{ vars.NODE_VERSION }}
+      - name: Run Karma tests against UMD dist bundle
+        shell: bash
+        working-directory: lib/js
+        run: npm run karma:dist
 
-  verify-artifacts:
-    name: Verify ${{ matrix.target }} tarball
+      - name: Run Karma tests against ESM dist bundle
+        shell: bash
+        working-directory: lib/js
+        run: npm run karma:dist:esm
+
+  # Tests the UMD bundle (dist/index.js) in a real Chromium browser via Playwright.
+  # This validates behaviour that Node.js-based tests cannot cover: DOM APIs, UMD globals,
+  # and browser-specific JavaScript engine differences.
+  browser-test:
+    name: Browser Test — Chromium (${{ matrix.target }})
     needs: package
     strategy:
       fail-fast: false
       matrix:
         target: [vonage, opentok]
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     permissions:
-      actions: read
+      contents: read
     steps:
+      # Only the Playwright test script is needed — no full source checkout required.
+      # Playwright is installed into .github/scripts/ so that ESM import resolution finds
+      # node_modules/ relative to browser-test.mjs (ESM resolves imports relative to the
+      # script's location on disk, not the process working directory).
+      - name: Checkout scripts
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+
       - name: Download tarball
         uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.target }}-package-tarball
-          path: tarball
+          path: lib/js
 
-      - name: Verify tarball contains dist/index.js
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION }}
+
+      # Extracts the entire package into /tmp/pw-test and locates the UMD bundle.
+      # Unlike --mode=dist (which writes into lib/js/dist/), umd mode extracts to a
+      # standalone directory so Playwright can serve the file to Chromium without
+      # interfering with the rest of the workspace.
+      - name: Extract UMD bundle from tarball
+        id: extract
+        shell: bash
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/extract-tarball.sh" --mode=umd
+
+      - name: Install Playwright and Chromium
+        working-directory: .github/scripts
         shell: bash
         run: |
-          TARBALL=$(find tarball -name '*.tgz' | head -1)
-          # Capture listing into a variable to avoid tar SIGPIPE under pipefail
-          CONTENTS=$(tar tzf "$TARBALL")
-          if ! echo "$CONTENTS" | grep -qE 'package/dist/index\.js$'; then
-            echo "❌ dist/index.js not found in tarball — build output path mismatch"
-            echo "$CONTENTS" | grep 'dist/' || echo "(no dist/ entries at all)"
-            exit 1
-          fi
-          echo "✅ dist/index.js present in $TARBALL"
+          npm init -y
+          npm install playwright
+          npx playwright install chromium --with-deps
+
+      - name: Test UMD bundle in real browser (Chromium)
+        working-directory: .github/scripts
+        shell: bash
+        env:
+          BUNDLE: ${{ steps.extract.outputs.bundle }}
+        run: node browser-test.mjs

@@ -1,24 +1,32 @@
 name: Publish Package
 
+# Manually triggered workflow for releasing packages to npm registries.
+#
+# Pipeline:
+#   publish    — downloads a pre-built CI tarball, mutates it (applies scope + version tag),
+#                then publishes up to four package/registry combinations in sequence.
+#                Each publish step uses continue-on-error so a failure in one variant does
+#                not prevent the others from running. A Summary step at the end evaluates
+#                all outcomes and fails the job if any selected variant errored or produced
+#                an unexpected duplicate-version publish.
+#   smoke-test — installs each newly published variant from its live registry and validates
+#                the exported API. Only runs for variants that were actually published in
+#                this run (not dry-run, and not silently skipped as already-published).
+
 on:
   workflow_dispatch:
     inputs:
       target:
-        description: 'Target package'
+        description: 'Package variant to publish'
         required: true
         type: choice
-        default: 'vonage'
+        default: 'all'
         options:
-          - 'vonage'
-          - 'opentok'
-      registry:
-        description: 'NPM registry to publish to'
-        required: true
-        type: choice
-        default: 'npmjs.com'
-        options:
-          - 'github.com'
-          - 'npmjs.com'
+          - 'all'
+          - '@vonage/video-client-network-test → npmjs.com'
+          - '@vonage/video-client-network-test → GitHub Packages'
+          - 'opentok-network-test-js → npmjs.com'
+          - '@opentok/opentok-network-test-js → GitHub Packages'
       dry_run:
         description: 'Dry run mode (test without publishing)'
         required: true
@@ -36,8 +44,12 @@ on:
         default: ''
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false  # Never cancel: a publish mid-flight could leave the registry in an inconsistent state.
+  # Publishing is a global registry operation, not branch-scoped. Removing the branch ref
+  # from the group key ensures two simultaneous dispatches — even from different branches —
+  # are always serialized. cancel-in-progress: false prevents a queued publish from being
+  # silently dropped while an earlier one is mid-flight.
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 permissions: read-all
 
@@ -45,24 +57,121 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    name: Publish ${{ inputs.target }} to ${{ inputs.registry }}
+    name: Publish v${{ inputs.tag || 'latest' }} (${{ inputs.target }})
     permissions:
       contents: write  # Required to create tags and GitHub Releases.
       packages: write
       actions: read
+    outputs:
+      version:                  ${{ steps.release-meta.outputs.version }}
+      vonage-npmjs-published:   ${{ steps.outcomes.outputs.vonage-npmjs }}
+      vonage-github-published:  ${{ steps.outcomes.outputs.vonage-github }}
+      opentok-npmjs-published:  ${{ steps.outcomes.outputs.opentok-npmjs }}
+      opentok-github-published: ${{ steps.outcomes.outputs.opentok-github }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # dry_run, tag, run_id, and github_token are shared across all three steps;
-      # update all three if publish-package gains new shared inputs.
-      - name: Publish Vonage Package
-        id: publish-vonage
-        if: inputs.target == 'vonage'
+      - name: Validate run_id source
+        if: inputs.run_id != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ inputs.run_id }}
+        run: |
+          if ! RUN_JSON=$(gh api "repos/${REPOSITORY}/actions/runs/${RUN_ID}" 2>&1); then
+            echo "::error::Could not fetch run ${RUN_ID}: $RUN_JSON"
+            exit 1
+          fi
+          WORKFLOW=$(echo "$RUN_JSON" | jq -r '.name')
+          CONCLUSION=$(echo "$RUN_JSON" | jq -r '.conclusion')
+          STATUS=$(echo "$RUN_JSON"   | jq -r '.status')
+          echo "Run ID:     ${RUN_ID}"
+          echo "Workflow:   $WORKFLOW"
+          echo "Status:     $STATUS"
+          echo "Conclusion: $CONCLUSION"
+          if [ "$WORKFLOW" != "Post Merge Validation" ]; then
+            echo "::error::run_id ${RUN_ID} belongs to '$WORKFLOW'."
+            echo "::error::Only artifacts from a successful 'Post Merge Validation' run may be published."
+            exit 1
+          fi
+          if [ "$CONCLUSION" != "success" ]; then
+            echo "::error::run_id ${RUN_ID} did not succeed (conclusion: $CONCLUSION)."
+            echo "::error::Cannot publish from a failed or incomplete run."
+            exit 1
+          fi
+          echo "✅ Verified: run ${RUN_ID} is a successful Post Merge Validation run"
+
+      # Guard: Prevents accidental "latest" publishes from non-release contexts and
+      # blocks publishing from direct pushes to main/develop (only merged PRs should trigger
+      # the Post Merge Validation artifacts that this workflow consumes).
+      - name: Release safety checks
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          TAG: ${{ inputs.tag }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          BRANCH: ${{ github.ref_name }}
+          RUN_ID: ${{ inputs.run_id }}
+        run: |
+          # 1. Block publishing with the "latest" dist-tag unless this is a deliberate release.
+          #    Publishing without a pre-release tag from a non-release branch is almost always
+          #    accidental. Require an explicit tag (e.g., alpha, beta, rc) unless the branch
+          #    matches a release pattern or dry-run is enabled.
+          if [ "$DRY_RUN" != "true" ] && [ -z "$TAG" ]; then
+            if [[ "$BRANCH" != "main" && ! "$BRANCH" =~ ^release- ]]; then
+              echo "::error::Refusing to publish with the 'latest' dist-tag from branch '$BRANCH'."
+              echo "::error::Only 'main' and 'release-*' branches may publish without a pre-release tag."
+              echo "::error::Add a pre-release tag (e.g., alpha, beta, rc) or switch to main/release-*."
+              exit 1
+            fi
+          fi
+
+          # 2. Verify the source artifact was produced by a merged PR, not a direct push.
+          #    This ensures main/develop branch protection is respected end-to-end:
+          #    even if someone bypasses branch protection and pushes directly, the resulting
+          #    artifacts won't be publishable.
+          RESOLVE_RUN_ID="$RUN_ID"
+          if [ -z "$RESOLVE_RUN_ID" ]; then
+            # Find the latest successful Post Merge Validation run on this branch.
+            RESOLVE_RUN_ID=$(gh api "repos/${REPOSITORY}/actions/workflows/post-merge-validation.yml/runs?branch=${BRANCH}&status=success&per_page=1" \
+              --jq '.workflow_runs[0].id // empty' 2>/dev/null || echo "")
+          fi
+          if [ -n "$RESOLVE_RUN_ID" ]; then
+            EVENT=$(gh api "repos/${REPOSITORY}/actions/runs/${RESOLVE_RUN_ID}" --jq '.event' 2>/dev/null || echo "unknown")
+            HEAD_BRANCH=$(gh api "repos/${REPOSITORY}/actions/runs/${RESOLVE_RUN_ID}" --jq '.head_branch' 2>/dev/null || echo "unknown")
+            if [ "$EVENT" != "push" ]; then
+              echo "ℹ️ Source run ${RESOLVE_RUN_ID} triggered by '${EVENT}' on '${HEAD_BRANCH}'"
+            fi
+            # Check if the triggering commit was associated with a PR merge.
+            # A direct push to a protected branch produces a run with no associated PRs.
+            HEAD_SHA=$(gh api "repos/${REPOSITORY}/actions/runs/${RESOLVE_RUN_ID}" --jq '.head_sha' 2>/dev/null || echo "")
+            if [ -n "$HEAD_SHA" ]; then
+              PR_COUNT=$(gh api "repos/${REPOSITORY}/commits/${HEAD_SHA}/pulls" --jq 'length' 2>/dev/null || echo "0")
+              if [ "$PR_COUNT" -eq 0 ] && [ "$DRY_RUN" != "true" ]; then
+                echo "::warning::The source commit (${HEAD_SHA:0:7}) has no associated pull request."
+                echo "::warning::This may indicate a direct push to '${HEAD_BRANCH}', which violates branch protection policy."
+                echo "::error::Refusing to publish artifacts from a direct push. Merge via PR instead."
+                exit 1
+              fi
+            fi
+          fi
+          echo "✅ Release safety checks passed"
+
+      # The four steps below cover every combination of package name × registry.
+      # Each step is guarded by an `if:` condition derived from the `target` input so that
+      # only the selected variant(s) run. `continue-on-error: true` allows a failure in one
+      # variant to be captured in the Summary rather than aborting the remaining variants.
+      - name: '@vonage/video-client-network-test → npmjs.com'
+        id: vonage-npmjs
+        if: inputs.target == 'all' || inputs.target == '@vonage/video-client-network-test → npmjs.com'
+        continue-on-error: true
         uses: ./.github/actions/publish-package
         with:
           target: vonage
-          registry: ${{ inputs.registry }}
+          registry: npmjs.com
           dry_run: ${{ inputs.dry_run }}
           tag: ${{ inputs.tag }}
           run_id: ${{ inputs.run_id }}
@@ -70,29 +179,29 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           npm_token: ${{ secrets.NPM_TOKEN_VONAGE }}
           node_version: ${{ vars.NODE_VERSION }}
-          # @vonage packages live in this repo's org, so the built-in GITHUB_TOKEN has write:packages.
           github_packages_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish OpenTok Package to GitHub
-        id: publish-opentok-github
-        if: inputs.target == 'opentok' && inputs.registry == 'github.com'
+      - name: '@vonage/video-client-network-test → GitHub Packages'
+        id: vonage-github
+        if: inputs.target == 'all' || inputs.target == '@vonage/video-client-network-test → GitHub Packages'
+        continue-on-error: true
         uses: ./.github/actions/publish-package
         with:
-          target: opentok
+          target: vonage
           registry: github.com
           dry_run: ${{ inputs.dry_run }}
           tag: ${{ inputs.tag }}
           run_id: ${{ inputs.run_id }}
-          organization: opentok
+          organization: vonage
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          # @opentok packages live in a different GitHub org; GITHUB_TOKEN cannot publish
-          # across org boundaries, so a PAT with write:packages on the opentok org is required.
-          github_packages_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
           node_version: ${{ vars.NODE_VERSION }}
+          # @vonage packages live in this repo's org, so the built-in GITHUB_TOKEN has write:packages.
+          github_packages_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish OpenTok Package to NPM
-        id: publish-opentok-npm
-        if: inputs.target == 'opentok' && inputs.registry == 'npmjs.com'
+      - name: 'opentok-network-test-js → npmjs.com'
+        id: opentok-npmjs
+        if: inputs.target == 'all' || inputs.target == 'opentok-network-test-js → npmjs.com'
+        continue-on-error: true
         uses: ./.github/actions/publish-package
         with:
           target: opentok
@@ -105,6 +214,42 @@ jobs:
           npm_token: ${{ secrets.NPM_TOKEN_OPENTOK }}
           node_version: ${{ vars.NODE_VERSION }}
 
+      - name: '@opentok/opentok-network-test-js → GitHub Packages'
+        id: opentok-github
+        if: inputs.target == 'all' || inputs.target == '@opentok/opentok-network-test-js → GitHub Packages'
+        continue-on-error: true
+        uses: ./.github/actions/publish-package
+        with:
+          target: opentok
+          registry: github.com
+          dry_run: ${{ inputs.dry_run }}
+          tag: ${{ inputs.tag }}
+          run_id: ${{ inputs.run_id }}
+          organization: opentok
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          node_version: ${{ vars.NODE_VERSION }}
+          # @opentok packages live in a different GitHub org; GITHUB_TOKEN cannot publish
+          # across org boundaries, so a PAT with write:packages on the opentok org is required.
+          github_packages_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
+
+      # Computes job-level boolean outputs (consumed by the smoke-test job), writes the
+      # publish summary table, and fails if any errors or unexpected duplicates occurred.
+      - name: Publish outcomes and summary
+        id: outcomes
+        if: always()
+        shell: bash
+        env:
+          TARGET:               ${{ inputs.target }}
+          VONAGE_NPMJS:         ${{ steps.vonage-npmjs.outcome }}
+          VONAGE_NPMJS_SKIP:    ${{ steps.vonage-npmjs.outputs.already_published }}
+          VONAGE_GITHUB:        ${{ steps.vonage-github.outcome }}
+          VONAGE_GITHUB_SKIP:   ${{ steps.vonage-github.outputs.already_published }}
+          OPENTOK_NPMJS:        ${{ steps.opentok-npmjs.outcome }}
+          OPENTOK_NPMJS_SKIP:   ${{ steps.opentok-npmjs.outputs.already_published }}
+          OPENTOK_GITHUB:       ${{ steps.opentok-github.outcome }}
+          OPENTOK_GITHUB_SKIP:  ${{ steps.opentok-github.outputs.already_published }}
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/publish-outcomes-summary.sh"
+
       # Reads the final version and name written to lib/js/package.json by the publish action.
       # Skipped entirely on dry runs — no tag or release is created.
       - name: Resolve published version
@@ -114,15 +259,15 @@ jobs:
         run: |
           VERSION=$(node -p "require('./lib/js/package.json').version")
           NAME=$(node -p "require('./lib/js/package.json').name")
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION"   >> "$GITHUB_OUTPUT"
           echo "package_name=$NAME" >> "$GITHUB_OUTPUT"
-          # All targets (vonage, opentok) share the same version tag so that publishing
-          # vonage and opentok variants of the same version produces a single GitHub Release.
-          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+          # All targets share the same version tag so that publishing vonage and opentok
+          # variants of the same version produces a single GitHub Release.
+          echo "tag=v${VERSION}"    >> "$GITHUB_OUTPUT"
 
-      # Promotes the Release Drafter draft if one exists (accumulated changelog from all
-      # PR merges since the last release). Falls back to a fresh release with auto-generated
-      # notes if no draft is found (e.g., first release or draft was manually deleted).
+      # Creates a GitHub Release using the CHANGELOG.md entry for this version.
+      # The CHANGELOG is maintained by changesets — edited in the "Version Packages" PR
+      # before merge, so the notes are human-reviewed and ready to publish.
       # Idempotent: if the release already exists (a sibling target published first),
       # this step is a no-op — all four publish targets share the same version tag.
       - name: Publish GitHub Release
@@ -137,14 +282,109 @@ jobs:
             echo "Release $TAG already exists — skipping."
             exit 0
           fi
-
-          DRAFT_TAG=$(gh release list --json tagName,isDraft \
-            --jq '[.[] | select(.isDraft==true)] | first | .tagName // empty')
-
-          if [ -n "$DRAFT_TAG" ]; then
-            echo "Promoting draft '$DRAFT_TAG' → '$TAG'"
-            gh release edit "$DRAFT_TAG" --tag "$TAG" --title "v${VERSION}" --draft=false
-          else
-            echo "No draft found — creating release '$TAG'"
+          # Extract the release notes for this version from CHANGELOG.md.
+          # Format: ## X.Y.Z\n\n<content>\n\n## <previous version>
+          NOTES=$(sed -n "/^## ${VERSION}/,/^## /{ /^## ${VERSION}/d; /^## /d; p; }" lib/js/CHANGELOG.md)
+          if [ -z "$NOTES" ]; then
+            echo "No CHANGELOG entry found for ${VERSION} — using auto-generated notes."
             gh release create "$TAG" --title "v${VERSION}" --generate-notes
+          else
+            echo "$NOTES" | gh release create "$TAG" --title "v${VERSION}" --notes-file -
+          fi
+
+  # Runs after a real publish (skipped entirely on dry runs). Installs each variant that was
+  # successfully published in this run from its live registry and validates the exported
+  # NetworkTest constructor to confirm the package is fully functional post-publish.
+  smoke-test:
+    name: Smoke Test v${{ needs.publish.outputs.version }} (${{ inputs.target }})
+    needs: publish
+    if: ${{ !fromJSON(inputs.dry_run) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read   # required by actions/checkout and composite action resolution
+      packages: read   # required to install from GitHub Packages registry
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION }}
+
+      # Each step only runs if the corresponding publish output indicates a real publish
+      # occurred in this run (not a dry run, not an already-published skip).
+      # continue-on-error allows the summary to capture all outcomes even if one install fails.
+      - name: '@vonage/video-client-network-test → npmjs.com'
+        id: smoke-vonage-npmjs
+        if: needs.publish.outputs.vonage-npmjs-published == 'true'
+        continue-on-error: true
+        uses: ./.github/actions/smoke-test-package
+        with:
+          package_name: '@vonage/video-client-network-test'
+          version: ${{ needs.publish.outputs.version }}
+
+      - name: '@vonage/video-client-network-test → GitHub Packages'
+        id: smoke-vonage-github
+        if: needs.publish.outputs.vonage-github-published == 'true'
+        continue-on-error: true
+        uses: ./.github/actions/smoke-test-package
+        with:
+          package_name: '@vonage/video-client-network-test'
+          version: ${{ needs.publish.outputs.version }}
+          registry: github
+          scope: '@vonage'
+          auth_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 'opentok-network-test-js → npmjs.com'
+        id: smoke-opentok-npmjs
+        if: needs.publish.outputs.opentok-npmjs-published == 'true'
+        continue-on-error: true
+        uses: ./.github/actions/smoke-test-package
+        with:
+          package_name: opentok-network-test-js
+          version: ${{ needs.publish.outputs.version }}
+
+      - name: '@opentok/opentok-network-test-js → GitHub Packages'
+        id: smoke-opentok-github
+        if: needs.publish.outputs.opentok-github-published == 'true'
+        continue-on-error: true
+        uses: ./.github/actions/smoke-test-package
+        with:
+          package_name: '@opentok/opentok-network-test-js'
+          version: ${{ needs.publish.outputs.version }}
+          registry: github
+          scope: '@opentok'
+          auth_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
+
+      - name: Smoke test summary
+        if: always()
+        env:
+          VN: ${{ steps.smoke-vonage-npmjs.outcome }}
+          VG: ${{ steps.smoke-vonage-github.outcome }}
+          ON: ${{ steps.smoke-opentok-npmjs.outcome }}
+          OG: ${{ steps.smoke-opentok-github.outcome }}
+        shell: bash
+        run: |
+          status() {
+            case "$1" in
+              success)   echo "✅ \`ok\`" ;;
+              skipped)   echo "⏭️ \`not published\`" ;;
+              *)         echo "❌ \`$1\`" ;;
+            esac
+          }
+          {
+            echo "### Smoke Test Summary"
+            echo "| Variant | ESM + Function Call |"
+            echo "|---|---|"
+            echo "| \`@vonage/video-client-network-test\` → npmjs.com       | $(status "$VN") |"
+            echo "| \`@vonage/video-client-network-test\` → GitHub Packages | $(status "$VG") |"
+            echo "| \`opentok-network-test-js\` → npmjs.com                 | $(status "$ON") |"
+            echo "| \`@opentok/opentok-network-test-js\` → GitHub Packages  | $(status "$OG") |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          fails() { [ "$1" == "failure" ] || [ "$1" == "cancelled" ]; }
+          if fails "$VN" || fails "$VG" || fails "$ON" || fails "$OG"; then
+            echo "::error::One or more smoke tests failed — see summary above."
+            exit 1
           fi

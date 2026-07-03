@@ -1,5 +1,5 @@
-name: 'Test'
-description: 'Validates credentials, writes private keys, and runs tests'
+name: 'Run Integration Tests'
+description: 'Validates test credentials, writes the Vonage private key to disk, runs the test suite against live infrastructure, and removes the key afterwards'
 inputs:
   target:
     description: 'Target package'
@@ -19,7 +19,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Validate Credentials
+    - name: Validate and write test credentials
       shell: bash
       env:
         TARGET: ${{ inputs.target }}
@@ -56,7 +56,9 @@ runs:
         fi
         npm run test
 
-    - name: Delete Private Key
+    # Runs even if the test step failed, ensuring the private key is never left on the
+    # runner disk regardless of the test outcome (post-step cleanup guarantee).
+    - name: Delete private key
       if: always() && inputs.target == 'vonage'
       shell: bash
       working-directory: lib/js

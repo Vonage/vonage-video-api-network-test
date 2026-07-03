@@ -1,4 +1,4 @@
-import NetworkTest, {ErrorNames} from '@vonage/video-client-network-test';
+import NetworkTest, { ErrorNames } from '@vonage/video-client-network-test';
 import createChart from './chart.js';
 import * as ConnectivityUI from './connectivity-ui.js';
 import config from './config.js';
@@ -25,7 +25,7 @@ function displayPermissionDeniedError() {
     const statusContainer = document.getElementById('connectivity_status_container');
     const statusEl = statusContainer?.querySelector('p') as HTMLElement;
     const statusIconEl = statusContainer?.querySelector('img') as HTMLImageElement;
-    
+
     if (statusEl && statusIconEl) {
         statusEl.innerHTML = `
             <strong class="permission-denied-error">Camera/Microphone Access Required</strong><br><br>
@@ -47,7 +47,7 @@ function startTest() {
     const audioOnly = (precallDiv.querySelector('#audioOnlyCheckbox') as HTMLInputElement).checked;
     const scalableVideo = (precallDiv.querySelector('#scalableCheckbox') as HTMLInputElement).checked;
     const fullHd = (precallDiv.querySelector('#fullHdCheckbox') as HTMLInputElement).checked;
-      
+
     const timeoutSelect = precallDiv.querySelector('select');
     const timeout = Number(timeoutSelect.options[timeoutSelect.selectedIndex].text) * 1000;
 
@@ -69,14 +69,14 @@ function startTest() {
         const hasPermissionError = error.failedTests?.some(
             (test: FailureCase) => test.error?.name === ErrorNames.PERMISSION_DENIED_ERROR
         );
-            
+
             if (hasPermissionError) {
                 displayPermissionDeniedError();
             } else {
                 ConnectivityUI.displayTestConnectivityResults(error);
                 ConnectivityUI.showRetryButton();
             }
-            
+
             console.error('Connectivity test failed:', error);
         });
 }
@@ -85,12 +85,12 @@ function testQuality() {
     createChart('audio');
     createChart('video');
     ConnectivityUI.init(audioOnly);
-    
+
     // Remove existing event listener if any and add new one
     const stopTestBtn = document.getElementById('stop_test') as HTMLButtonElement;
     const newStopTestBtn = stopTestBtn.cloneNode(true) as HTMLButtonElement;
     stopTestBtn.parentNode?.replaceChild(newStopTestBtn, stopTestBtn);
-    
+
     newStopTestBtn.addEventListener('click', function stopTestListener() {
         ConnectivityUI.hideStopButton();
         videoNetworkTest.stop();
@@ -106,11 +106,11 @@ function testQuality() {
 function retryTest() {
     // Reset UI state and clean up
     ConnectivityUI.resetUIForRetry();
-    
+
     // Clean up any existing OpenTok elements
     const otElements = document.querySelectorAll('[id^="OT_"], [class*="OT_"], [data-opentok-publisher]');
     otElements.forEach(element => element.parentNode?.removeChild(element));
-    
+
     // Reset status displays to "in progress" state
     const connectivityContainer = document.getElementById('connectivity_status_container') as HTMLElement;
     const connectivityStatusEl = connectivityContainer.querySelector('p') as HTMLElement;
@@ -118,7 +118,7 @@ function retryTest() {
     connectivityStatusEl.textContent = 'Test in progress.';
     connectivityIconEl.src = 'assets/spinner.gif';
     connectivityContainer.style.display = 'block';
-    
+
     const qualityContainer = document.getElementById('quality_status_container') as HTMLElement;
     const qualityStatusEl = qualityContainer.querySelector('p') as HTMLElement;
     const qualityIconEl = qualityContainer.querySelector('img') as HTMLImageElement;

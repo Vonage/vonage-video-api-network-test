@@ -1,0 +1,35 @@
+name: 'Smoke Test Package'
+description: 'Installs a published package variant from its registry and validates the exported API'
+
+inputs:
+  package_name:
+    description: 'Full npm package name to install and smoke test (e.g. @vonage/video-client-network-test)'
+    required: true
+  version:
+    description: 'Package version to install'
+    required: true
+  registry:
+    description: 'Registry to install from: "npmjs" (default) or "github"'
+    required: false
+    default: 'npmjs'
+  scope:
+    description: 'npm scope for GitHub Packages .npmrc entry (e.g. @vonage). Required when registry is github.'
+    required: false
+    default: ''
+  auth_token:
+    description: 'Authentication token for GitHub Packages. Required when registry is github.'
+    required: false
+    default: ''
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install package and verify exported API
+      shell: bash
+      env:
+        PACKAGE_NAME: ${{ inputs.package_name }}
+        VERSION: ${{ inputs.version }}
+        REGISTRY: ${{ inputs.registry }}
+        SCOPE: ${{ inputs.scope }}
+        TOKEN: ${{ inputs.auth_token }}
+      run: bash "$GITHUB_WORKSPACE/.github/scripts/smoke-test-api.sh"

@@ -456,9 +456,43 @@ describe('NetworkTest', () => {
       it('results in a failed test if OT.initPublisher() returns an error', (done) => {
         spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
           callback(new Error());
+          return { on: jasmine.createSpy('on') };
         }) as any);
         networkTest.testQuality().catch((error?: QualityTestError) => {
-          expect(error?.name).toBe(ErrorNames.TYPE_ERROR);
+          expect(error?.name).toBe(ErrorNames.INIT_PUBLISHER_ERROR);
+          done();
+        });
+      }, 15000);
+
+      it('results in a PermissionDeniedError if OT.initPublisher() returns OT_USER_MEDIA_ACCESS_DENIED', (done) => {
+        spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
+          const error = new Error('Permission denied');
+          error.name = 'OT_USER_MEDIA_ACCESS_DENIED';
+          callback(error);
+          return { on: jasmine.createSpy('on') };
+        }) as any);
+        networkTest.testQuality().catch((error?: QualityTestError) => {
+          expect(error?.name).toBe(ErrorNames.PERMISSION_DENIED_ERROR);
+          done();
+        });
+      }, 15000);
+
+      it('results in a PermissionDeniedError if publisher fires accessDenied event', (done) => {
+        let accessDeniedHandler: Function;
+        spyOn(OT, 'initPublisher').and.callFake((() => {
+          const mockPublisher = {
+            on: jasmine.createSpy('on').and.callFake((event: string, handler: Function) => {
+              if (event === 'accessDenied') {
+                accessDeniedHandler = handler;
+              }
+            }),
+          };
+          // Do not call the callback — simulate SDK not invoking it on denial
+          setTimeout(() => accessDeniedHandler(), 0);
+          return mockPublisher;
+        }) as any);
+        networkTest.testQuality().catch((error?: QualityTestError) => {
+          expect(error?.name).toBe(ErrorNames.PERMISSION_DENIED_ERROR);
           done();
         });
       }, 15000);

@@ -6,6 +6,12 @@ on:
 
 permissions: read-all
 
+concurrency:
+  # Scheduled runs capture a fresh daily snapshot; a newer run always supersedes an
+  # in-progress one. cancel-in-progress: true prevents stale runs from wasting runners.
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
 # Records repository metrics (stars, forks, issues, etc.) to Firebase via aggregit.
 jobs:
   record-metrics:

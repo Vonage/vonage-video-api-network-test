@@ -1,2 +1,5 @@
-karma.conf.js
+karma.conf.mjs
 webpack.config.mjs
+karma.conf.dist.mjs
+karma.conf.dist.esm.mjs
+dist/

@@ -466,37 +466,20 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  
  ## Building the module
 diff --git a/lib/js/package.json b/lib/js/package.json
-index bbcb01a..eec63b8 100644
+index 22ab4a2..2ccc35d 100644
 --- a/lib/js/package.json
 +++ b/lib/js/package.json
-@@ -1,12 +1,12 @@
+@@ -1,7 +1,7 @@
  {
 -  "name": "@vonage/video-client-network-test",
 +  "name": "@opentok/opentok-network-test-js",
    "version": "5.1.4",
 -  "description": "Precall network test for applications using the Vonage Video API platform.",
--  "main": "dist/index.js",
--  "types": "dist/index.d.ts",
 +  "description": "Precall network test for applications using the OpenTok platform.",
-+  "main": "dist/index.js",
-+  "types": "dist/index.d.ts",
-   "files": [
-     "dist/"
-   ],
-   "scripts": {
-     "build:js": "rm -rf dist && webpack --config webpack.config.mjs  --stats-error-details",
-     "build:types": "tsc --project ./tsconfig.json",
-@@ -21,17 +21,17 @@
-     "tslint": "eslint . --ext .js,.ts",
-     "tslint-fix": "eslint . --ext .js,.ts --fix"
-   },
-   "repository": {
-     "type": "git",
--    "url": "git+https://github.com/Vonage/vonage-video-api-network-test.git"
-+    "url": "git+https://github.com/Vonage/vonage-video-api-network-test.git"
-   },
-   "publishConfig": {
-     "registry": "https://npm.pkg.github.com/",
+   "main": "dist/index.js",
+   "module": "dist/index.mjs",
+   "types": "dist/index.d.ts",
+@@ -42,8 +42,8 @@
      "access": "public"
    },
    "keywords": [
@@ -507,23 +490,21 @@ index bbcb01a..eec63b8 100644
      "network test",
      "connectivity",
      "webrtc"
-@@ -60,7 +60,7 @@
+@@ -72,7 +72,7 @@
      "@typescript-eslint/eslint-plugin": "^7.6.0",
      "@typescript-eslint/eslint-plugin-tslint": "^7.0.2",
      "@typescript-eslint/parser": "^7.6.0",
--    "@vonage/client-sdk-video": "^2.34.0",
-+    "@opentok/client": "^2.34.1",
+-    "@vonage/client-sdk-video": "^2.34.2",
++    "@opentok/client": "^2.34.2",
      "@vonage/server-sdk": "^3.20.0",
      "dotenv": "^17.0.0",
      "eslint": "^8.44.0",
-@@ -75,12 +75,12 @@
-     "karma-sauce-launcher": "^4.3.6",
-     "karma-sourcemap-loader": "^0.4.0",
+@@ -91,10 +91,10 @@
      "karma-webpack": "^5.0.0",
-+    "opentok": "^2.16.0",
      "terser-webpack-plugin": "^5.3.9",
      "ts-loader": "^9.5.1",
 -    "typescript": "^6.0.3",
++    "opentok": "^2.16.0",
 +    "typescript": "^5.4.5",
      "webpack": "^5.88.1",
      "webpack-cli": "^6.0.0",
@@ -976,4 +957,3 @@ index 3cecd93..586674f 100644
 +}
 +
  generateCredentials();
-

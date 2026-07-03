@@ -59,6 +59,7 @@ typings/
 
 # build files
 dist
+lib/js/dist/
 
 # env
 .env
