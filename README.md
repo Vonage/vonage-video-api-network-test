@@ -4,6 +4,8 @@
 
 <h1 align="center">Vonage Client Network Test</h1>
 
+<img src="https://developer.nexmo.com/images/logos/vbc-logo.svg" height="48px" alt="Vonage" />
+
 <p align="center">
   Pre-call network diagnostics for the <a href="https://developer.vonage.com/en/video/overview">Vonage Video API</a> — test connectivity and predict call quality before a session starts.
 </p>

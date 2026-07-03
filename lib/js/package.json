@@ -1,6 +1,6 @@
 {
   "name": "@vonage/video-client-network-test",
-  "version": "5.1.3",
+  "version": "5.1.4",
   "description": "Precall network test for applications using the Vonage Video API platform.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Vonage/vonage-video-js-api-network-test.git"
+    "url": "git+https://github.com/Vonage/vonage-video-api-network-test.git"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/",
@@ -42,9 +42,9 @@
   },
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/Vonage/vonage-video-js-api-network-test/issues"
+    "url": "https://github.com/Vonage/vonage-video-api-network-test/issues"
   },
-  "homepage": "https://github.com/Vonage/vonage-video-js-api-network-test#readme",
+  "homepage": "https://github.com/Vonage/vonage-video-api-network-test#readme",
   "dependencies": {
     "axios": "^1.8.3",
     "@opentok/opentok-solutions-logging": "^1.1.5"
