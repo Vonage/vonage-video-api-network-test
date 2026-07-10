@@ -1,0 +1,14 @@
+.github/workflows/ai_label_scan.yml
+  h_03f40f2f0381a7 1-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "691cf7b6457eae3f0f3e744ac636c7901dbcc910",
+  "prompts": {},
+  "humans": {
+    "h_03f40f2f0381a7": {
+      "author": "apathak2vonage <ashish.pathak@vonage.com>"
+    }
+  }
+}
