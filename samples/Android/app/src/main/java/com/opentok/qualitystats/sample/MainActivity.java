@@ -113,6 +113,7 @@ public class MainActivity extends Activity implements
     public void onPermissionsGranted(int requestCode, List<String> perms) {
 
         Log.d(LOGTAG, "onPermissionsGranted:" + requestCode + ":" + perms.size());
+        Log.d(LOGTAG, "hello test");
     }
 
     @Override
