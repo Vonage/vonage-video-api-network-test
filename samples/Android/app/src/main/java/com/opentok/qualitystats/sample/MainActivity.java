@@ -113,6 +113,7 @@ public class MainActivity extends Activity implements
     public void onPermissionsGranted(int requestCode, List<String> perms) {
 
         Log.d(LOGTAG, "onPermissionsGranted:" + requestCode + ":" + perms.size());
+        Log.i(LOGTAG, "test new log test");
     }
 
     @Override
@@ -143,7 +144,6 @@ public class MainActivity extends Activity implements
     }
     public void sessionConnect() {
         Log.i(LOGTAG, "Connecting session");
-        Log.i(LOGTAG, "Connecting session again for test");
         if (mSession == null) {
             mSession = new Session.Builder(this, APPLICATION_ID, SESSION_ID).build();
             mSession.setSessionListener(this);
@@ -156,6 +156,7 @@ public class MainActivity extends Activity implements
     @Override
     public void onConnected(Session session) {
         Log.i(LOGTAG, "Session is connected");
+        Log.i(LOGTAG, "test new log test");
 
         mPublisher = new Publisher.Builder(this).build();
         mPublisher.setPublisherListener(this);
