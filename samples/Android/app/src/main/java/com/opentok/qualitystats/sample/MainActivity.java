@@ -118,6 +118,7 @@ public class MainActivity extends Activity implements
     @Override
     public void onPermissionsDenied(int requestCode, List<String> perms) {
 
+        Log.d(LOGTAG, "test ai adoption");
         Log.d(LOGTAG, "onPermissionsDenied:" + requestCode + ":" + perms.size());
 
         if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
