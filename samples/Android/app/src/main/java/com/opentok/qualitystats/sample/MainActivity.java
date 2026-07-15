@@ -114,6 +114,7 @@ public class MainActivity extends Activity implements
 
         Log.d(LOGTAG, "onPermissionsGranted:" + requestCode + ":" + perms.size());
         Log.d(LOGTAG, "hello test");
+        Log.d(LOGTAG, "hello test two");
     }
 
     @Override
