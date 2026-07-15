@@ -117,8 +117,6 @@ public class MainActivity extends Activity implements
 
     @Override
     public void onPermissionsDenied(int requestCode, List<String> perms) {
-
-        Log.d(LOGTAG, "test ai adoption");
         Log.d(LOGTAG, "onPermissionsDenied:" + requestCode + ":" + perms.size());
 
         if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
@@ -145,6 +143,7 @@ public class MainActivity extends Activity implements
     }
     public void sessionConnect() {
         Log.i(LOGTAG, "Connecting session");
+        Log.i(LOGTAG, "Connecting session again for test");
         if (mSession == null) {
             mSession = new Session.Builder(this, APPLICATION_ID, SESSION_ID).build();
             mSession.setSessionListener(this);
