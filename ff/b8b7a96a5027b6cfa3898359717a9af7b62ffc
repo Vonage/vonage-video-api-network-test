@@ -1,0 +1,25 @@
+samples/Android/app/src/main/java/com/opentok/qualitystats/sample/MainActivity.java
+  s_59bdf6c09bdde8::t_3a37cc0e0864f2 116
+  s_59bdf6c09bdde8::t_23bca77911bb8b 159
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "ffb8b7a96a5027b6cfa3898359717a9af7b62ffc",
+  "prompts": {},
+  "humans": {
+    "h_03f40f2f0381a7": {
+      "author": "apathak2vonage <ashish.pathak@vonage.com>"
+    }
+  },
+  "sessions": {
+    "s_59bdf6c09bdde8": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "cd2b1e87-2f3e-4691-a369-b27fcdbb89bc",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": "apathak2vonage <ashish.pathak@vonage.com>"
+    }
+  }
+}
