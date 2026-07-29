@@ -1,0 +1,48 @@
+lib/js/test/getPublisherRtcStatsReport.spec.ts
+  s_ae95c468f6512a::t_4932067c552f5a 1-442
+lib/js/src/testQuality/helpers/calculateThroughput.ts
+  s_0772f3c424cfc9::t_2fa4d3b0257f2f 68-69
+lib/js/test/calculateThroughput.spec.ts
+  s_a02eb6105f784c::t_3405941ddd1848 125-159,162-170,172,174-175,177-197,200,202-205,207-304
+  s_38b8c1f8cb777f::t_a2fc35738e78f0 198-199,201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "90a90de3a13413e1b08987bec91d7ae501e044cf",
+  "prompts": {},
+  "sessions": {
+    "s_0772f3c424cfc9": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785333163429907000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_38b8c1f8cb777f": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785333988392396000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_a02eb6105f784c": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785333123445136000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_ae95c468f6512a": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785333320173352000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
