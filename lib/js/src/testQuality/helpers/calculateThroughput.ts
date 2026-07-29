@@ -35,11 +35,39 @@ function getAverageBitrateAndPlr(type: AV,
     publisherStats => publisherStats.simulcastEnabled,
   );
 
-  const lastPublisherStats = publisherStatsList[publisherStatsList.length - 1];
-
-  const qualityLimitationReason = lastPublisherStats.videoStats.find(
-    videoStats => videoStats.qualityLimitationReason != null
-    && videoStats.qualityLimitationReason !== 'none')?.qualityLimitationReason ?? undefined;
+  /**
+   * Determines the sustained `qualityLimitationReason` across all samples in the
+   * current measurement window.
+   *
+   * @remarks
+   * The WebRTC encoder can transiently report `"bandwidth"` during ramp-up or
+   * brief bitrate estimate fluctuations — even when no real constraint exists.
+   * Snapshotting only the last sample (previous behaviour) made the result
+   * susceptible to these spikes.
+   *
+   * By requiring the reason to appear in **more than half** of the samples we
+   * ensure only a sustained, genuine limitation is surfaced. A transient spike
+   * in 1 of 10 samples is suppressed; a real constraint present in 6 of 10 is
+   * reported correctly.
+   *
+   * @returns The most frequently occurring non-trivial reason if it exceeds the
+   * majority threshold, otherwise `undefined`.
+   */
+  const qualityLimitationCounts: Record<string, number> = {};
+  for (const publisherStats of publisherStatsList) {
+    const reason = publisherStats.videoStats.find(
+      videoStats => videoStats.qualityLimitationReason != null
+        && videoStats.qualityLimitationReason !== 'none'
+    )?.qualityLimitationReason;
+    if (reason) {
+      if (!qualityLimitationCounts[reason]) qualityLimitationCounts[reason] = 0
+      qualityLimitationCounts[reason] += 1
+    }
+  }
+  const majorityThreshold = publisherStatsList.length / 2;
+  const qualityLimitationReason = Object.entries(qualityLimitationCounts.entries).find((key, value) => {
+    value > majorityThreshold;
+  })?.[0] ?? undefined;
 
   const averageStats: AverageStatsBase = {
     availableOutgoingBitrate: publisherStatsList[publisherStatsList.length - 1].availableOutgoingBitrate,

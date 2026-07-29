@@ -390,11 +390,34 @@ function checkSubscriberQuality(
               const audioVideoResults: QualityTestResults = buildResults(builder);
               if (!audioOnly && !isAudioQualityAcceptable(audioVideoResults) && !stopTestCalled) {
                 audioOnly = true;
-                // We don't want to lose the videoResults.
+                /**
+                 * Preserve results from the initial audio-video run before restarting
+                 * in audio-only mode.
+                 *
+                 * @remarks
+                 * The audio-only fallback re-publishes on the same session, which
+                 * triggers a fresh ICE negotiation. This new negotiation may resolve
+                 * to a different media path (e.g. relayed instead of routed) depending
+                 * on transient network conditions at restart time — causing the
+                 * `mediaRouting` value to be inconsistent between runs.
+                 *
+                 * `mediaRouting` is a property of the session topology, not of audio
+                 * quality, so it should be determined once during the initial run and
+                 * remain stable. We capture it here and restore it after the audio-only
+                 * run completes so the final result always reflects the routing of the
+                 * original session negotiation.
+                 */
                 const videoResults = audioVideoResults.video;
+                // Capture the mediaRouting from the first (audio-video) run before restarting
+                const firstRunMediaRouting = videoResults?.mediaRouting;
+
                 checkSubscriberQuality(OTInstance, session, credentials, options, onUpdate, true)
                   .then((results: QualityTestResults) => {
                     results.video = videoResults;
+                    // Restore mediaRouting from the first run if the second run lost it
+                    if (firstRunMediaRouting && results.audio) {
+                      (results.audio as any).mediaRouting = firstRunMediaRouting;
+                    }
                     resolve(results);
                   });
               } else {
