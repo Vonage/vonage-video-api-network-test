@@ -1,17 +1,48 @@
+lib/js/test/calculateThroughput.spec.ts
+  s_38b8c1f8cb777f::t_a2fc35738e78f0 198-199,201
+  s_a02eb6105f784c::t_3405941ddd1848 125-159,162-170,172,174-175,177-197,200,202-205,207-304
+lib/js/test/getPublisherRtcStatsReport.spec.ts
+  s_ae95c468f6512a::t_4932067c552f5a 1-442
+lib/js/src/testQuality/helpers/calculateThroughput.ts
+  s_0772f3c424cfc9::t_2fa4d3b0257f2f 68-69
+---
 {
   "schema_version": "authorship/3.0.0",
-  "prompts": {
-    "kiro-cli": {
-      "session_id": "9a507557-e53e-4fe2-a949-ca74ad6959af",
-      "workspace_folder": "/Users/lpilarski/Repositories/vonage-video-api-network-test",
-      "tool": "kiro-cli",
-      "commit": "9e586a879b99e538df1deea62ec19e2c6deb2467",
-      "timestamp": "2026-07-29T14:27:19Z",
-      "modified_files": [
-        "/Users/lpilarski/Repositories/vonage-video-api-network-test/lib/js/src/testQuality/helpers/calculateThroughput.ts",
-        "/Users/lpilarski/Repositories/vonage-video-api-network-test/lib/js/test/calculateThroughput.spec.ts",
-        "/Users/lpilarski/Repositories/vonage-video-api-network-test/lib/js/test/getPublisherRtcStatsReport.spec.ts"
-      ]
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "9e586a879b99e538df1deea62ec19e2c6deb2467",
+  "prompts": {},
+  "sessions": {
+    "s_0772f3c424cfc9": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785333163429907000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_38b8c1f8cb777f": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785333988392396000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_a02eb6105f784c": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785333123445136000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_ae95c468f6512a": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785333320173352000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
     }
   }
 }
