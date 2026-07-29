@@ -60,13 +60,13 @@ function getAverageBitrateAndPlr(type: AV,
         && videoStats.qualityLimitationReason !== 'none'
     )?.qualityLimitationReason;
     if (reason) {
-      if (!qualityLimitationCounts[reason]) qualityLimitationCounts[reason] = 0
-      qualityLimitationCounts[reason] += 1
+      if (!qualityLimitationCounts[reason]) qualityLimitationCounts[reason] = 0;
+      qualityLimitationCounts[reason] += 1;
     }
   }
   const majorityThreshold = publisherStatsList.length / 2;
-  const qualityLimitationReason = Object.entries(qualityLimitationCounts.entries).find((key, value) => {
-    value > majorityThreshold;
+  const qualityLimitationReason = Object.entries(qualityLimitationCounts).find(([, count]) => {
+    return count > majorityThreshold;
   })?.[0] ?? undefined;
 
   const averageStats: AverageStatsBase = {
