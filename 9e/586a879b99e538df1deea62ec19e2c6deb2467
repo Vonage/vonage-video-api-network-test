@@ -1,0 +1,17 @@
+{
+  "schema_version": "authorship/3.0.0",
+  "prompts": {
+    "kiro-cli": {
+      "session_id": "9a507557-e53e-4fe2-a949-ca74ad6959af",
+      "workspace_folder": "/Users/lpilarski/Repositories/vonage-video-api-network-test",
+      "tool": "kiro-cli",
+      "commit": "9e586a879b99e538df1deea62ec19e2c6deb2467",
+      "timestamp": "2026-07-29T14:27:19Z",
+      "modified_files": [
+        "/Users/lpilarski/Repositories/vonage-video-api-network-test/lib/js/src/testQuality/helpers/calculateThroughput.ts",
+        "/Users/lpilarski/Repositories/vonage-video-api-network-test/lib/js/test/calculateThroughput.spec.ts",
+        "/Users/lpilarski/Repositories/vonage-video-api-network-test/lib/js/test/getPublisherRtcStatsReport.spec.ts"
+      ]
+    }
+  }
+}
