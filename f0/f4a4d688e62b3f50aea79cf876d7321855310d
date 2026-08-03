@@ -1,0 +1,15 @@
+{
+  "schema_version": "authorship/3.0.0",
+  "prompts": {
+    "kiro-cli": {
+      "session_id": "7bf60ffa-e71d-4636-8c87-0c10b9ef886a",
+      "workspace_folder": "/Users/lpilarski/Repositories/vonage-video-api-network-test",
+      "tool": "kiro-cli",
+      "commit": "f0f4a4d688e62b3f50aea79cf876d7321855310d",
+      "timestamp": "2026-08-03T15:29:42Z",
+      "modified_files": [
+        "/Users/lpilarski/Repositories/vonage-video-api-network-test/lib/js/test/NetworkTest.spec.ts"
+      ]
+    }
+  }
+}
