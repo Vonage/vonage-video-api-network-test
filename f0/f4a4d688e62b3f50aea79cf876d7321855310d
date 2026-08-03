@@ -1,15 +1,95 @@
+lib/js/package.json
+  s_51bb5afc2d142a::t_6df1a40ebc8775 18,49,54,59,63,81
+  s_cf3a77229357f5::t_fc75d45ba09316 87-91
+lib/js/test/NetworkTest.spec.ts
+  s_ef10a057ec90f3::t_13c4662283a694 58-60,66-74,79-83,122-124,137-138,141,150,154,156,170,175-176,182-183,186-187,190-191,198,204-205,209,215,221-222,226,232,238-239,243,255,261-262,277,294-295,297-298,335,338,340-342,344-346,348-350,357,373,384,466,469-477,479,487-494,509-513,521-526,536-541,546,558-563,576-581
+  s_cdbbf4712c9d44::t_4c2b470bc90c9a 385-389
+  s_91f2c4e7c709d1::t_24b1fa2656116c 116-118
+  s_c54e391f0a6dea::t_da03a51adb4c0e 286-287,291-293,296
+lib/js/.eslintrc.cjs
+  s_7484c0f6f5cddd::t_fcb4fef8f03b3d 144-147
+lib/js/karma.conf.js
+  s_089b67252d83d3::t_a482069f404ece 105
+lib/js/.eslintignore
+  s_58e8218fd13488::t_f4ecb76a7c98be 3
+---
 {
   "schema_version": "authorship/3.0.0",
-  "prompts": {
-    "kiro-cli": {
-      "session_id": "7bf60ffa-e71d-4636-8c87-0c10b9ef886a",
-      "workspace_folder": "/Users/lpilarski/Repositories/vonage-video-api-network-test",
-      "tool": "kiro-cli",
-      "commit": "f0f4a4d688e62b3f50aea79cf876d7321855310d",
-      "timestamp": "2026-08-03T15:29:42Z",
-      "modified_files": [
-        "/Users/lpilarski/Repositories/vonage-video-api-network-test/lib/js/test/NetworkTest.spec.ts"
-      ]
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "f0f4a4d688e62b3f50aea79cf876d7321855310d",
+  "prompts": {},
+  "sessions": {
+    "s_089b67252d83d3": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785761250814569000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_51bb5afc2d142a": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785761185897218000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_58e8218fd13488": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785761488398809000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_7484c0f6f5cddd": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785761227685923000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_91f2c4e7c709d1": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785767027119499000",
+        "model": "unknown"
+      },
+      "human_author": null
+    },
+    "s_c54e391f0a6dea": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785768273058104000",
+        "model": "unknown"
+      },
+      "human_author": null
+    },
+    "s_cdbbf4712c9d44": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785770738679143000",
+        "model": "unknown"
+      },
+      "human_author": null
+    },
+    "s_cf3a77229357f5": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785761204314437000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_ef10a057ec90f3": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785766231860814000",
+        "model": "unknown"
+      },
+      "human_author": null
     }
   }
 }
