@@ -1,0 +1,18 @@
+{
+  "schema_version": "authorship/3.0.0",
+  "prompts": {
+    "kiro-cli": {
+      "session_id": "e26f3b85-acf2-4131-8306-abfa83405404",
+      "workspace_folder": "/Users/lpilarski/Repositories/vonage-video-api-network-test",
+      "tool": "kiro-cli",
+      "commit": "37bf43239ceb071d853f52b3a73a4cf02feb8fba",
+      "timestamp": "2026-08-03T13:40:25Z",
+      "modified_files": [
+        "/Users/lpilarski/Repositories/vonage-video-api-network-test/lib/js/.eslintignore",
+        "/Users/lpilarski/Repositories/vonage-video-api-network-test/lib/js/.eslintrc.cjs",
+        "/Users/lpilarski/Repositories/vonage-video-api-network-test/lib/js/karma.conf.js",
+        "/Users/lpilarski/Repositories/vonage-video-api-network-test/lib/js/package.json"
+      ]
+    }
+  }
+}
