@@ -121,7 +121,10 @@ describe('NetworkTest', () => {
             if (results.failedTests.find(f => f.type === expectedType)) {
               resolve();
             } else {
-              reject(new Error(`Expected failed test of type "${expectedType}" but got: ${results.failedTests.map(f => f.type).join(', ')}`));
+              const mappedResults = results.failedTests.map(f => f.type).join(', ');
+              reject(
+                new Error(`Expected failed test of type "${expectedType}" but got: ${mappedResults}`)
+              );
             }
           });
       });
@@ -543,7 +546,7 @@ describe('NetworkTest', () => {
 
       it('results in a PermissionDeniedError if publisher fires accessDenied event', (done) => {
         let accessDeniedHandler: Function;
-        spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
+        spyOn(OT, 'initPublisher').and.callFake((() => {
           const mockPublisher = {
             on: jasmine.createSpy('on').and.callFake((event: string, handler: Function) => {
               if (event === 'accessDenied') {
