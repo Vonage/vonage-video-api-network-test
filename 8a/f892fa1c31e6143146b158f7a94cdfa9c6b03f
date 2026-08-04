@@ -1,0 +1,46 @@
+lib/js/opentok.patch
+  s_2c54c4ac450818::t_34c1793caf9c2f 810-813,824-825,835,837,846
+  s_94b58e392edf98::t_985efe41622b90 472,479-480,482,493-494,500,503-504
+  s_52c9da74d88e6a::t_d8821a9de98385 892,918
+  s_ca7908d8d2b305::t_34a606a7b90c64 499,509,511
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "8af892fa1c31e6143146b158f7a94cdfa9c6b03f",
+  "prompts": {},
+  "sessions": {
+    "s_2c54c4ac450818": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785772205430495000",
+        "model": "unknown"
+      },
+      "human_author": null
+    },
+    "s_52c9da74d88e6a": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785772339326902000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_94b58e392edf98": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785772437410492000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_ca7908d8d2b305": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1785772308577632000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
