@@ -1,0 +1,203 @@
+lib/js/test/testEnv.ts
+  s_e1480ff88a095e::t_b2ec0d0b37db64 53,59
+  s_5058dea7edc4ad::t_351c409ccb94a2 4-6
+  s_5058dea7edc4ad::t_250de491b10407 1,3,7-51,57,126-160
+  s_eb8bdec8f3a9ef::t_9b8e7a6f26a490 54-56,58,60-65,67,70,73-74,77,81,83,85-86,90-91,93,99-101,103,106,111-120
+  s_6a0d5512e1fd2d::t_e3cb86de4585b5 52,66,68-69,71-72,75-76,78-80,82,84,87-89,92,94-98,102,104-105,107-110,121-125
+  s_5058dea7edc4ad::t_6e4538fdf039ad 161
+  s_5058dea7edc4ad::t_ea889cb5cd6d67 2
+lib/js/test/NetworkTest.spec.ts
+  s_35dc89c9a5cb57::t_6b984d30b5f0f0 747-752
+  s_bf63d24729f5cc::t_5a8a1cd2e53578 212,218,245,250,276-277
+  s_47f0a052616c22::t_69333d73baea32 153-160
+  s_015b187db792fe::t_6d7379379ec768 625-630,656-661,690-695
+  s_9de1a2fd01b10b::t_bd956c00e84c27 223,618-624,631-635,639-640,649-655,662-666,673-674,684-689,696-701,714-715,754
+  s_da21d2ebabb4b9::t_e29e60f2972a42 727-729,755-756
+  s_f74ef4d5f3261d::t_df742af0729d46 169-171,174-176
+  s_492418e11969d3::t_678dfd15f81350 347-348
+  s_7c4edee58485ea::t_61f9ef8702288a 512-514,525-527
+  s_b1d68fdb906656::t_b217d1d1c7a50b 140-146
+  s_2dad069311d499::t_b2863295462ac8 304,307-312,317-322,325-342,344-346
+  s_58a16ae50e1d9c::t_cc8738343e712b 414-418
+  s_b4b1347c715b80::t_11f7089e664072 205-210,219,224-225,239-244,251-252,256-257,271-275,282-284,288-289
+  s_d6cd4f99df29e8::t_cc19b70f0a92a6 730-742
+  s_4b77da737f0e04::t_f1b0294286520f 2,27-28,38-39,48-49,66-68,113,132-139,147-152,161-168,172-173,177-184,186-204,221-222,226-238,253-255,258-263,265,267-270,285-287,290-303,305-306,313-316,323-324,349-357,359-360,362-413,419,421-443,452-454,457-464,466,474-478,482-511,515-524,528-617,636-638,641-648,667-672,675-683,702-713,716-726,743-746,753,757-764
+  s_52a0c32e590b08::t_728c8f888f710e 444-451,455-456,465,467-473,480-481
+  s_7bc6b45f79b85a::t_44e445cec2024e 211,213-217,246-249,278-281
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "eaf27ec940c5b1c865aa75eacd1491765eeece98",
+  "prompts": {},
+  "sessions": {
+    "s_015b187db792fe": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786368493452876000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_2dad069311d499": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786368529685198000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_35dc89c9a5cb57": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786368511714418000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_47f0a052616c22": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786367038098862000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_492418e11969d3": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786366963724484000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_4b77da737f0e04": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786365192316551000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_5058dea7edc4ad": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786365011188094000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_52a0c32e590b08": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786366888642835000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_58a16ae50e1d9c": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786366979734334000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_6a0d5512e1fd2d": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786365905686954000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_7bc6b45f79b85a": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786368032438160000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_7c4edee58485ea": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786367010708499000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_9de1a2fd01b10b": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786366906756183000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_b1d68fdb906656": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786366996538388000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_b4b1347c715b80": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786366876003293000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_bf63d24729f5cc": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786367996195989000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_d6cd4f99df29e8": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786368551831474000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_da21d2ebabb4b9": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786366939121113000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_e1480ff88a095e": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786365778535823000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_eb8bdec8f3a9ef": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786365945198546000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_f74ef4d5f3261d": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1786366380469878000",
+        "model": "unknown"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
