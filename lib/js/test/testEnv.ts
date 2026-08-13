@@ -55,42 +55,42 @@ export const apiUrl: string | undefined = parsed.apiUrl;
  * non-configurable properties of the real module). Reads delegate to the
  * real module; writes/defineProperty go into local overrides.
  */
-const _otOverrides: Record<string | symbol, any> = Object.create(null);
+const otOverrides: Record<string | symbol, any> = Object.create(null);
 
 // Use a plain object as the proxy target so that invariant checks pass.
 // The real module is only used as a fallback for reads.
 export const OT: typeof OTClient = new Proxy({} as typeof OTClient, {
   get(_target, prop) {
-    if (prop in _otOverrides) {
-      return _otOverrides[prop];
+    if (prop in otOverrides) {
+      return otOverrides[prop];
     }
     return (OTClient as any)[prop];
   },
   set(_target, prop, value) {
-    _otOverrides[prop] = value;
+    otOverrides[prop] = value;
     return true;
   },
   has(_target, prop) {
-    return prop in _otOverrides || prop in OTClient;
+    return prop in otOverrides || prop in OTClient;
   },
   deleteProperty(_target, prop) {
-    delete _otOverrides[prop];
+    delete otOverrides[prop];
     return true;
   },
   defineProperty(_target, prop, descriptor) {
     // Jasmine's spyOn uses Object.defineProperty to install the spy
     if ('value' in descriptor) {
-      _otOverrides[prop] = descriptor.value;
+      otOverrides[prop] = descriptor.value;
     } else if ('get' in descriptor) {
       // Handle getter-based descriptors by creating a getter in overrides
-      Object.defineProperty(_otOverrides, prop as string, descriptor);
+      Object.defineProperty(otOverrides, prop as string, descriptor);
     }
     return true;
   },
   getOwnPropertyDescriptor(_target, prop) {
-    if (prop in _otOverrides) {
+    if (prop in otOverrides) {
       return {
-        value: _otOverrides[prop],
+        value: otOverrides[prop],
         writable: true,
         configurable: true,
         enumerable: true,
@@ -108,7 +108,7 @@ export const OT: typeof OTClient = new Proxy({} as typeof OTClient, {
     }
     return undefined;
   },
-  ownKeys(_target) {
+  ownKeys() {
     const keys = new Set<string | symbol>();
     // Get keys from the real module
     try {
@@ -117,7 +117,7 @@ export const OT: typeof OTClient = new Proxy({} as typeof OTClient, {
       }
     } catch { /* ignore */ }
     // Add override keys
-    for (const key of Object.keys(_otOverrides)) {
+    for (const key of Object.keys(otOverrides)) {
       keys.add(key);
     }
     return Array.from(keys);

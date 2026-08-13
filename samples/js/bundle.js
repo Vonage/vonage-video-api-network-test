@@ -771,22 +771,22 @@ function resetUIForRetry() {
   resultCount.video = 0;
   prevBitsReceived.audio = 0;
   prevBitsReceived.video = 0;
-  
+
   if (stopBtnTimeout) {
     clearTimeout(stopBtnTimeout);
     stopBtnTimeout = null;
   }
-  
+
   hideStopButton();
   hideRetryButton();
-  
+
   Object.keys(charts).forEach(mediaType => {
     if (charts[mediaType] && charts[mediaType].destroy) {
       charts[mediaType].destroy();
     }
   });
   charts = {};
-  
+
   const audioGraphEl = document.getElementById('audioGraph');
   const videoGraphEl = document.getElementById('videoGraph');
   if (audioGraphEl) audioGraphEl.innerHTML = '';
@@ -798,7 +798,7 @@ function displayTestConnectivityResults(results) {
   const statusMessageEl = statusContainer.querySelector('p');
   const statusIconEl = statusContainer.querySelector('img');
   statusMessageEl.style.display = 'block';
-  
+
   let statusText;
   if (results.success) {
     statusText = 'Passed';
@@ -888,7 +888,7 @@ function displayTestQualityResults(error, results) {
     results.video.recommendedResolution || '--';
   resultsEl.querySelector('#video-recommendedFrameRate').textContent =
     results.video.recommendedFrameRate ? results.video.recommendedFrameRate + ' fps' : '--';
-  
+
   const mediaRoutingEl = resultsEl.querySelector('#video-mediaRouting');
   if (mediaRoutingEl && results.video.mediaRouting) {
     mediaRoutingEl.textContent = results.video.mediaRouting;
@@ -896,7 +896,7 @@ function displayTestQualityResults(error, results) {
   } else if (mediaRoutingEl) {
     mediaRoutingEl.textContent = '--';
   }
-  
+
   if (results.audio.supported) {
     if (results.video.supported || audioOnlyTest) {
       statusIconEl.src = 'assets/icon_pass.svg';
@@ -927,19 +927,19 @@ function graphIntermediateStats(mediaType, stats) {
    'Bitrate over ' + resultCount[mediaType] + 'sec';
   charts[mediaType].setTitle(null, { text: chartTitle});
   prevBitsReceived[mediaType] = bitsSent;
-  
+
   if (mediaType === 'video' && stats?.video?.mediaRouting) {
     const mediaRoutingEl = document.querySelector('#video-mediaRouting');
     if (mediaRoutingEl) {
       mediaRoutingEl.textContent = stats.video.mediaRouting;
       mediaRoutingEl.className = getMediaRoutingClass(stats.video.mediaRouting);
-      
+
       const videoResultsEl = document.querySelector('#video .results');
       if (videoResultsEl && videoResultsEl.style.display !== 'block') {
         videoResultsEl.style.display = 'block';
       }
     }
-    
+
     const connectionInfoEl = document.getElementById('connection-info');
     const connectionTypeLiveEl = document.getElementById('connection-type-live');
     if (connectionInfoEl && connectionTypeLiveEl) {
@@ -974,13 +974,12 @@ module.exports = {
   token: 'eyJhbGciOiJSUzI1NiIsImprdSI6Imh0dHBzOi8vYW51YmlzLWNlcnRzLWMxLWV1dzEucHJvZC52MS52b25hZ2VuZXR3b3Jrcy5uZXQvandrcyIsImtpZCI6IkNOPVZvbmFnZSAxdmFwaWd3IEludGVybmFsIENBOjoxOTc0NTA5Mzc1MDQ3MjY1OTU1NjE1MjkxNjgxOTQ4ODQ5NTc0NjEiLCJ0eXAiOiJKV1QiLCJ4NXUiOiJodHRwczovL2FudWJpcy1jZXJ0cy1jMS1ldXcxLnByb2QudjEudm9uYWdlbmV0d29ya3MubmV0L3YxL2NlcnRzLzYyMGE4MGU2ZjVmMmUyM2E4YzlkNTY3ZjUxZWRjYjM5In0.eyJwcmluY2lwYWwiOnsiYWNsIjp7InBhdGhzIjp7Ii8qKiI6e319fSwidmlhbUlkIjp7ImVtYWlsIjoibHVrYXN6LnBpbGFyc2tpQHZvbmFnZS5jb20iLCJnaXZlbl9uYW1lIjoixYF1a2FzeiIsImZhbWlseV9uYW1lIjoiUGlsYXJza2kiLCJwaG9uZV9udW1iZXIiOiI0ODUwMTUxNTc1NSIsInBob25lX251bWJlcl9jb3VudHJ5IjoiUEwiLCJvcmdhbml6YXRpb25faWQiOiI5ODE0MTRhOS0yZmQ0LTRkMTgtYjM3Yi00OGUxZDljYTAwN2IiLCJhdXRoZW50aWNhdGlvbk1ldGhvZHMiOlt7ImNvbXBsZXRlZF9hdCI6IjIwMjYtMDgtMDNUMTM6MzI6MzkuODIyODgwOTQ1WiIsIm1ldGhvZCI6ImludGVybmFsIn1dLCJpcFJpc2siOnsicmlza19sZXZlbCI6MH0sInRva2VuVHlwZSI6InZpYW0iLCJhdWQiOiJwb3J0dW51cy5pZHAudm9uYWdlLmNvbSIsImV4cCI6MTc4NTc2NDUyMCwianRpIjoiNjk3NDFiNjUtMzc0Zi00Mzg1LTg0OTMtOGIwNDFhZDIwMzYzIiwiaWF0IjoxNzg1NzY0MjIwLCJpc3MiOiJWSUFNLUlBUCIsIm5iZiI6MTc4NTc2NDIwNSwic3ViIjoiMzk2MzVhOTktZGEzOC00ODVkLWI2NzgtZjdkODJkNGRhZWY3In19LCJmZWRlcmF0ZWRBc3NlcnRpb25zIjp7InZpZGVvLWFwaSI6W3siYXBpS2V5IjoiMmJjZmFiZDEiLCJhcHBsaWNhdGlvbklkIjoiZDgyYmU1YWEtYmJhMC00YzVhLWFlMWMtYTIxZjk0YzVhZmViIiwibWFzdGVyQWNjb3VudElkIjoiMmJjZmFiZDEiLCJleHRyYUNvbmZpZyI6eyJ2aWRlby1hcGkiOnsiaW5pdGlhbF9sYXlvdXRfY2xhc3NfbGlzdCI6IiIsInJvbGUiOiJtb2RlcmF0b3IiLCJzY29wZSI6InNlc3Npb24uY29ubmVjdCIsInNlc3Npb25faWQiOiIyX01YNWtPREppWlRWaFlTMWlZbUV3TFRSak5XRXRZV1V4WXkxaE1qRm1PVFJqTldGbVpXSi1makUzT0RVM05qUXlNakE0TXpGLVNHNUNiR3RWVUVaMVZ6QlhlaXMxTW05elNVbFNMMVpPZm41LSJ9fX1dfSwiYXVkIjoicG9ydHVudXMuaWRwLnZvbmFnZS5jb20iLCJleHAiOjE3ODU3Njc4NTAsImp0aSI6ImY0NmQ0ZjhkLTRjZTMtNGVlYi1hNzNiLTZhOThmZGNkZmM5MyIsImlhdCI6MTc4NTc2NDI1MCwiaXNzIjoiVklBTS1JQVAiLCJuYmYiOjE3ODU3NjQyMzUsInN1YiI6IjM5NjM1YTk5LWRhMzgtNDg1ZC1iNjc4LWY3ZDgyZDRkYWVmNyJ9.bwNjo_LtdSv5YRlE8DlaTfQAOWhnMIlVeOAbArfsDVf1fIY3ACKz5DIOGQzlRaOeRs_1F4vp19n53tK1TC7xldC7iVJ7JpSCSX4hTXoU48-88eSrrSUQrKYsiKh-fwciUnmGz79ekDh0DjMthp6ElraBbezaBdKFoYnG87NxE_G9VLfGT6U46wsmwq2yUbTfO5r54Eui9wfVfwqE_RactfowLgRtrnKpTSadn0xYIZ5ZXrARaNEDdBFkL5AKz23qSC546snUeYF-plVaG3oqRuLp_BAjQf_Ql6fJr_K_UZc28VX14mfl4m24-p7dOeqhuc-vm-uHyxiOuCEMMC9Jog', // Add your own token here
 }
 
-
 /***/ })
 /******/ 	]);
 /************************************************************************/
 /******/ 	// The module cache
 /******/ 	var __webpack_module_cache__ = {};
-/******/ 	
+/******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
 /******/ 		// Check if module is in cache
@@ -994,14 +993,14 @@ module.exports = {
 /******/ 			// no module.loaded needed
 /******/ 			exports: {}
 /******/ 		};
-/******/ 	
+/******/
 /******/ 		// Execute the module function
 /******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/ 	
+/******/
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-/******/ 	
+/******/
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat get default export */
 /******/ 	(() => {
@@ -1014,7 +1013,7 @@ module.exports = {
 /******/ 			return getter;
 /******/ 		};
 /******/ 	})();
-/******/ 	
+/******/
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
 /******/ 		// define getter functions for harmony exports
@@ -1026,12 +1025,12 @@ module.exports = {
 /******/ 			}
 /******/ 		};
 /******/ 	})();
-/******/ 	
+/******/
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
 /******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
 /******/ 	})();
-/******/ 	
+/******/
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
@@ -1042,7 +1041,7 @@ module.exports = {
 /******/ 			Object.defineProperty(exports, '__esModule', { value: true });
 /******/ 		};
 /******/ 	})();
-/******/ 	
+/******/
 /************************************************************************/
 var __webpack_exports__ = {};
 // This entry needs to be wrapped in an IIFE because it needs to be in strict mode.
