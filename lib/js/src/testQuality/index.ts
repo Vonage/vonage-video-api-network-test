@@ -77,6 +77,7 @@ function connectToSession(session: OT.Session, token: string): Promise<OT.Sessio
           } else {
             reject(new e.ConnectToSessionError());
           }
+          return;
         }
         resolve(session);
       });
@@ -234,7 +235,7 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
                 });
           });
         })
-        .catch(reject);
+        .catch((error: Error) => disconnectAndReject(error));
     });
 }
 /**
@@ -356,7 +357,7 @@ function checkSubscriberQuality(
     subscribeToTestStream(OTInstance, session, credentials, options)
       .then(({ publisher, subscriber }: PublisherSubscriber) => {
         if (!subscriber) {
-          reject(new e.MissingSubscriberError());
+          disconnectAndReject(new e.MissingSubscriberError());
         } else {
           try {
             const builder: QualityTestResultsBuilder = {

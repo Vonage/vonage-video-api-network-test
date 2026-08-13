@@ -446,6 +446,12 @@ describe('NetworkTest', () => {
           spyOn(session, 'connect').and.callFake((token, callback) => {
             callback(undefined);
           });
+          spyOn(session, 'disconnect').and.callFake(() => {
+            setTimeout(() => {
+              (session as any).dispatchEvent(
+                new (OT as any).SessionDisconnectEvent('sessionDisconnected', 'clientDisconnected'));
+            }, 0);
+          });
           return session;
         });
         spyOn(OT, 'getDevices').and.callFake((callback) => {
@@ -467,6 +473,12 @@ describe('NetworkTest', () => {
           const session = realInitSession(applicationId, sessionId);
           spyOn(session, 'connect').and.callFake((token, callback) => {
             callback(undefined);
+          });
+          spyOn(session, 'disconnect').and.callFake(() => {
+            setTimeout(() => {
+              (session as any).dispatchEvent(
+                new (OT as any).SessionDisconnectEvent('sessionDisconnected', 'clientDisconnected'));
+            }, 0);
           });
           return session;
         });
@@ -634,12 +646,13 @@ describe('NetworkTest', () => {
         });
         spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
           callback(new Error());
+          return { on: jasmine.createSpy('on') };
         }) as any);
         const freshNetworkTest = createNetworkTest(sessionCredentials);
         freshNetworkTest.testQuality()
           .then(() => done.fail('Expected testQuality to reject'))
           .catch((error?: QualityTestError) => {
-            expect(error?.name).toBe(ErrorNames.TYPE_ERROR);
+            expect(error?.name).toBe(ErrorNames.INIT_PUBLISHER_ERROR);
             done();
           });
       }, 15000);
@@ -682,12 +695,13 @@ describe('NetworkTest', () => {
         let accessDeniedHandler: Function;
         const realInitSession = OT.initSession;
         const realGetDevices = OT.getDevices;
+        let sessionDisconnectSpy: jasmine.Spy;
         spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
           const session = realInitSession(applicationId, sessionId);
           spyOn(session, 'connect').and.callFake((token, callback) => {
             callback(undefined);
           });
-          spyOn(session, 'disconnect').and.callFake(() => {
+          sessionDisconnectSpy = spyOn(session, 'disconnect').and.callFake(() => {
             setTimeout(() => {
               (session as any).dispatchEvent(
                 new (OT as any).SessionDisconnectEvent('sessionDisconnected', 'clientDisconnected'));
@@ -715,6 +729,7 @@ describe('NetworkTest', () => {
           .then(() => done.fail('Expected testQuality to reject'))
           .catch((error?: QualityTestError) => {
             expect(error?.name).toBe(ErrorNames.PERMISSION_DENIED_ERROR);
+            expect(sessionDisconnectSpy).toHaveBeenCalled();
             done();
           });
       }, 15000);
@@ -756,6 +771,334 @@ describe('NetworkTest', () => {
           .then(() => done.fail('Expected testQuality to reject'))
           .catch((error?: QualityTestError) => {
             expect(error?.name).toBe(ErrorNames.SUBSCRIBE_TO_SESSION_ERROR);
+            done();
+          });
+      }, 15000);
+    });
+
+    describe('Session cleanup on error paths', () => {
+      it('should disconnect the session when validateDevices fails with getDevices error', (done) => {
+        const realInitSession = OT.initSession;
+        let sessionDisconnectSpy: jasmine.Spy;
+        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+          const session = realInitSession(applicationId, sessionId);
+          spyOn(session, 'connect').and.callFake((token, callback) => {
+            callback(undefined);
+          });
+          sessionDisconnectSpy = spyOn(session, 'disconnect').and.callFake(() => {
+            setTimeout(() => {
+              (session as any).dispatchEvent(
+                new (OT as any).SessionDisconnectEvent('sessionDisconnected', 'clientDisconnected'));
+            }, 0);
+          });
+          return session;
+        });
+        spyOn(OT, 'getDevices').and.callFake((callback) => {
+          callback(new Error('Device enumeration failed'));
+        });
+        const freshNetworkTest = createNetworkTest(sessionCredentials);
+        freshNetworkTest.testQuality()
+          .then(() => done.fail('Expected testQuality to reject'))
+          .catch((error?: QualityTestError) => {
+            expect(error?.name).toBe(ErrorNames.FAILED_TO_OBTAIN_MEDIA_DEVICES);
+            expect(sessionDisconnectSpy).toHaveBeenCalled();
+            done();
+          });
+      }, 15000);
+
+      it('should disconnect the session when validateDevices finds no audio devices', (done) => {
+        const realInitSession = OT.initSession;
+        let sessionDisconnectSpy: jasmine.Spy;
+        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+          const session = realInitSession(applicationId, sessionId);
+          spyOn(session, 'connect').and.callFake((token, callback) => {
+            callback(undefined);
+          });
+          sessionDisconnectSpy = spyOn(session, 'disconnect').and.callFake(() => {
+            setTimeout(() => {
+              (session as any).dispatchEvent(
+                new (OT as any).SessionDisconnectEvent('sessionDisconnected', 'clientDisconnected'));
+            }, 0);
+          });
+          return session;
+        });
+        spyOn(OT, 'getDevices').and.callFake((callback) => {
+          // Return only video devices, no audio devices
+          callback(undefined, [
+            { kind: 'videoInput', deviceId: 'cam1', label: 'Camera' } as OT.Device,
+          ]);
+        });
+        const freshNetworkTest = createNetworkTest(sessionCredentials);
+        freshNetworkTest.testQuality()
+          .then(() => done.fail('Expected testQuality to reject'))
+          .catch((error?: QualityTestError) => {
+            expect(error?.name).toBe(ErrorNames.NO_AUDIO_CAPTURE_DEVICES);
+            expect(sessionDisconnectSpy).toHaveBeenCalled();
+            done();
+          });
+      }, 15000);
+
+      it('should disconnect the session on MissingSubscriberError', (done) => {
+        const realInitSession = OT.initSession;
+        const realGetDevices = OT.getDevices;
+        let sessionDisconnectSpy: jasmine.Spy;
+        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+          const session = realInitSession(applicationId, sessionId);
+          spyOn(session, 'connect').and.callFake((token, callback) => {
+            callback(undefined);
+          });
+          spyOn(session, 'publish').and.callFake((publisher: any, callback: any) => {
+            if (callback) callback(undefined);
+          });
+          // subscribe returns undefined subscriber and calls callback async
+          spyOn(session, 'subscribe').and.callFake(((stream: any, target: any, config: any, callback: any) => {
+            setTimeout(() => callback(undefined), 0); // no error, async callback
+            return undefined as any; // subscriber is falsy
+          }) as any);
+          sessionDisconnectSpy = spyOn(session, 'disconnect').and.callFake(() => {
+            setTimeout(() => {
+              (session as any).dispatchEvent(
+                new (OT as any).SessionDisconnectEvent('sessionDisconnected', 'clientDisconnected'));
+            }, 0);
+          });
+          return session;
+        });
+        spyOn(OT, 'getDevices').and.callFake((callbackFn) => {
+          realGetDevices(callbackFn);
+        });
+        // Mock initPublisher to emit streamCreated
+        spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
+          const eventHandlers: Record<string, Function[]> = {};
+          const mockPublisher = {
+            stream: { streamId: 'mock-stream' },
+            on: jasmine.createSpy('on').and.callFake((event: string, handler: Function) => {
+              if (!eventHandlers[event]) eventHandlers[event] = [];
+              eventHandlers[event].push(handler);
+            }),
+            off: jasmine.createSpy('off'),
+            destroy: jasmine.createSpy('destroy'),
+          };
+          if (callback) setTimeout(() => callback(undefined), 0);
+          // Emit streamCreated after a tick to trigger the subscribe path
+          setTimeout(() => {
+            (eventHandlers['streamCreated'] || []).forEach(h => h({ stream: { streamId: 'mock-stream' } }));
+          }, 10);
+          return mockPublisher;
+        }) as any);
+        const freshNetworkTest = createNetworkTest(sessionCredentials);
+        freshNetworkTest.testQuality()
+          .then(() => done.fail('Expected testQuality to reject'))
+          .catch((error?: QualityTestError) => {
+            expect(error?.name).toBe(ErrorNames.MISSING_SUBSCRIBER_ERROR);
+            expect(sessionDisconnectSpy).toHaveBeenCalled();
+            done();
+          });
+      }, 15000);
+
+      it('should disconnect the session on PublishToSessionError', (done) => {
+        const realInitSession = OT.initSession;
+        const realGetDevices = OT.getDevices;
+        let sessionDisconnectSpy: jasmine.Spy;
+        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+          const session = realInitSession(applicationId, sessionId);
+          spyOn(session, 'connect').and.callFake((token, callback) => {
+            callback(undefined);
+          });
+          spyOn(session, 'publish').and.callFake((publisher: any, callback: any) => {
+            if (callback) {
+              const error = new Error('Publish failed');
+              error.name = 'SOME_UNKNOWN_PUBLISH_ERROR';
+              callback(error);
+            }
+          });
+          sessionDisconnectSpy = spyOn(session, 'disconnect').and.callFake(() => {
+            setTimeout(() => {
+              (session as any).dispatchEvent(
+                new (OT as any).SessionDisconnectEvent('sessionDisconnected', 'clientDisconnected'));
+            }, 0);
+          });
+          return session;
+        });
+        spyOn(OT, 'getDevices').and.callFake((callbackFn) => {
+          realGetDevices(callbackFn);
+        });
+        spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
+          const mockPublisher = {
+            on: jasmine.createSpy('on'),
+            off: jasmine.createSpy('off'),
+          };
+          if (callback) setTimeout(() => callback(undefined), 0);
+          return mockPublisher;
+        }) as any);
+        const freshNetworkTest = createNetworkTest(sessionCredentials);
+        freshNetworkTest.testQuality()
+          .then(() => done.fail('Expected testQuality to reject'))
+          .catch((error?: QualityTestError) => {
+            expect(error?.name).toBe(ErrorNames.PUBLISH_TO_SESSION_ERROR);
+            expect(sessionDisconnectSpy).toHaveBeenCalled();
+            done();
+          });
+      }, 15000);
+
+      it('should disconnect the session on PublishToSessionNotConnectedError', (done) => {
+        const realInitSession = OT.initSession;
+        const realGetDevices = OT.getDevices;
+        let sessionDisconnectSpy: jasmine.Spy;
+        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+          const session = realInitSession(applicationId, sessionId);
+          spyOn(session, 'connect').and.callFake((token, callback) => {
+            callback(undefined);
+          });
+          spyOn(session, 'publish').and.callFake((publisher: any, callback: any) => {
+            if (callback) {
+              const error = new Error('Not connected');
+              error.name = 'NOT_CONNECTED';
+              callback(error);
+            }
+          });
+          sessionDisconnectSpy = spyOn(session, 'disconnect').and.callFake(() => {
+            setTimeout(() => {
+              (session as any).dispatchEvent(
+                new (OT as any).SessionDisconnectEvent('sessionDisconnected', 'clientDisconnected'));
+            }, 0);
+          });
+          return session;
+        });
+        spyOn(OT, 'getDevices').and.callFake((callbackFn) => {
+          realGetDevices(callbackFn);
+        });
+        spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
+          const mockPublisher = {
+            on: jasmine.createSpy('on'),
+            off: jasmine.createSpy('off'),
+          };
+          if (callback) setTimeout(() => callback(undefined), 0);
+          return mockPublisher;
+        }) as any);
+        const freshNetworkTest = createNetworkTest(sessionCredentials);
+        freshNetworkTest.testQuality()
+          .then(() => done.fail('Expected testQuality to reject'))
+          .catch((error?: QualityTestError) => {
+            expect(error?.name).toBe(ErrorNames.PUBLISH_TO_SESSION_NOT_CONNECTED);
+            expect(sessionDisconnectSpy).toHaveBeenCalled();
+            done();
+          });
+      }, 15000);
+
+      it('should disconnect the session on PublishToSessionPermissionOrTimeoutError', (done) => {
+        const realInitSession = OT.initSession;
+        const realGetDevices = OT.getDevices;
+        let sessionDisconnectSpy: jasmine.Spy;
+        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+          const session = realInitSession(applicationId, sessionId);
+          spyOn(session, 'connect').and.callFake((token, callback) => {
+            callback(undefined);
+          });
+          spyOn(session, 'publish').and.callFake((publisher: any, callback: any) => {
+            if (callback) {
+              const error = new Error('Unable to publish');
+              error.name = 'UNABLE_TO_PUBLISH';
+              callback(error);
+            }
+          });
+          sessionDisconnectSpy = spyOn(session, 'disconnect').and.callFake(() => {
+            setTimeout(() => {
+              (session as any).dispatchEvent(
+                new (OT as any).SessionDisconnectEvent('sessionDisconnected', 'clientDisconnected'));
+            }, 0);
+          });
+          return session;
+        });
+        spyOn(OT, 'getDevices').and.callFake((callbackFn) => {
+          realGetDevices(callbackFn);
+        });
+        spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
+          const mockPublisher = {
+            on: jasmine.createSpy('on'),
+            off: jasmine.createSpy('off'),
+          };
+          if (callback) setTimeout(() => callback(undefined), 0);
+          return mockPublisher;
+        }) as any);
+        const freshNetworkTest = createNetworkTest(sessionCredentials);
+        freshNetworkTest.testQuality()
+          .then(() => done.fail('Expected testQuality to reject'))
+          .catch((error?: QualityTestError) => {
+            expect(error?.name).toBe(ErrorNames.PUBLISH_TO_SESSION_PERMISSION_OR_TIMEOUT_ERROR);
+            expect(sessionDisconnectSpy).toHaveBeenCalled();
+            done();
+          });
+      }, 15000);
+
+      it('connectToSession should not trigger publishAndSubscribe after rejecting on error', (done) => {
+        const realInitSession = OT.initSession;
+        let publishSpy: jasmine.Spy;
+        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+          const session = realInitSession(applicationId, sessionId);
+          spyOn(session, 'connect').and.callFake((token, callback) => {
+            const error = new Error();
+            error.name = 'OT_AUTHENTICATION_ERROR';
+            callback(error);
+          });
+          publishSpy = spyOn(session, 'publish');
+          // Ensure the session has no prior connection
+          Object.defineProperty(session, 'connection', { value: undefined, writable: true, configurable: true });
+          return session;
+        });
+        const freshNetworkTest = createNetworkTest(sessionCredentials);
+        freshNetworkTest.testQuality(undefined)
+          .then(() => done.fail('Expected testQuality to reject'))
+          .catch((error?: QualityTestError) => {
+            expect(error!.name).toBe(ErrorNames.CONNECT_TO_SESSION_TOKEN_ERROR);
+            // The key assertion: publish should never be called because
+            // connectToSession must not resolve after rejecting
+            expect(publishSpy).not.toHaveBeenCalled();
+            done();
+          });
+      }, 15000);
+
+      it('should disconnect the session when publisher fires mediaStopped event', (done) => {
+        let mediaStoppedHandler: Function;
+        const realInitSession = OT.initSession;
+        const realGetDevices = OT.getDevices;
+        let sessionDisconnectSpy: jasmine.Spy;
+        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+          const session = realInitSession(applicationId, sessionId);
+          spyOn(session, 'connect').and.callFake((token, callback) => {
+            callback(undefined);
+          });
+          // Mock publish to never call its callback (simulates publish in progress)
+          spyOn(session, 'publish').and.callFake(() => {});
+          sessionDisconnectSpy = spyOn(session, 'disconnect').and.callFake(() => {
+            setTimeout(() => {
+              (session as any).dispatchEvent(
+                new (OT as any).SessionDisconnectEvent('sessionDisconnected', 'clientDisconnected'));
+            }, 0);
+          });
+          return session;
+        });
+        spyOn(OT, 'getDevices').and.callFake((callbackFn) => {
+          realGetDevices(callbackFn);
+        });
+        spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
+          const mockPublisher = {
+            on: jasmine.createSpy('on').and.callFake((event: string, handler: Function) => {
+              if (event === 'mediaStopped') {
+                mediaStoppedHandler = handler;
+              }
+            }),
+          };
+          if (callback) setTimeout(() => callback(undefined), 0);
+          // Fire mediaStopped after initPublisher succeeds (simulates user revoking permission)
+          setTimeout(() => mediaStoppedHandler(), 10);
+          return mockPublisher;
+        }) as any);
+        const freshNetworkTest = createNetworkTest(sessionCredentials);
+        freshNetworkTest.testQuality()
+          .then(() => done.fail('Expected testQuality to reject'))
+          .catch((error?: QualityTestError) => {
+            expect(error?.name).toBe(ErrorNames.MEDIA_ACCESS_REVOKED_ERROR);
+            expect(sessionDisconnectSpy).toHaveBeenCalled();
             done();
           });
       }, 15000);
