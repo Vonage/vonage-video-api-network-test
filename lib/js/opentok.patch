@@ -853,125 +853,125 @@ diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
              error.name = errorName;
 @@ -203,8 +205,8 @@
  
-   it('results in a failed test if OT.getDevices() returns an error', (done) => {
-     const realInitSession = OT.initSession;
--    spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--      const session = realInitSession(applicationId, sessionId);
-+    spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+      const session = realInitSession(apiKey, sessionId);
-       spyOn(session, 'connect').and.callFake((token, callback) => {
-         callback(undefined);
-       });
-@@ -237,8 +239,8 @@
+       it('results in a failed test if OT.getDevices() returns an error', (done) => {
+         const realInitSession = OT.initSession;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -236,8 +238,8 @@
  
-   it('results in a failed test if there are no cameras or mics', (done) => {
-     const realInitSession = OT.initSession;
--    spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--      const session = realInitSession(applicationId, sessionId);
-+    spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+      const session = realInitSession(apiKey, sessionId);
-       spyOn(session, 'connect').and.callFake((token, callback) => {
-         callback(undefined);
-       });
-@@ -269,8 +271,8 @@
+       it('results in a failed test if there are no cameras or mics', (done) => {
+         const realInitSession = OT.initSession;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -268,8 +270,8 @@
  
-   it('results in a failed test if OT.initPublisher() returns an error', (done) => {
-     const realInitSession = OT.initSession;
--    spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--      const session = realInitSession(applicationId, sessionId);
-+    spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+      const session = realInitSession(apiKey, sessionId);
-       spyOn(session, 'connect').and.callFake((token, callback) => {
-         callback(undefined);
-       });
-@@ -302,8 +304,8 @@
-   it('results in a failed test if Session.subscribe() returns an error', (done) => {
-     const realInitSession = OT.initSession;
-     const realGetDevices = OT.getDevices;
--    spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--      const session = realInitSession(applicationId, sessionId);
-+    spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+      const session = realInitSession(apiKey, sessionId);
-       spyOn(session, 'connect').and.callFake((token, callback) => {
-         callback(undefined);
-       });
-@@ -368,8 +370,8 @@
-   };
-   const testConnectFailure = (done: DoneFn, otErrorName: OTErrorType, netTestErrorName: string) => {
-     const realInitSession = OT.initSession;
--    spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--      const session = realInitSession(applicationId, sessionId);
-+    spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+      const session = realInitSession(apiKey, sessionId);
-       spyOn(session, 'connect').and.callFake((token, callback) => {
-         const error = new Error();
-         error.name = otErrorName;
-@@ -442,8 +444,8 @@
+       it('results in a failed test if OT.initPublisher() returns an error', (done) => {
+         const realInitSession = OT.initSession;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -301,8 +303,8 @@
+       it('results in a failed test if Session.subscribe() returns an error', (done) => {
+         const realInitSession = OT.initSession;
+         const realGetDevices = OT.getDevices;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -367,8 +369,8 @@
+       };
+       const testConnectFailure = (done: DoneFn, otErrorName: OTErrorType, netTestErrorName: string) => {
+         const realInitSession = OT.initSession;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             const error = new Error();
+             error.name = otErrorName;
+@@ -441,8 +443,8 @@
  
-   it('results in a failed test if OT.getDevices() returns an error', (done) => {
-     const realInitSession = OT.initSession;
--    spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--      const session = realInitSession(applicationId, sessionId);
-+    spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+      const session = realInitSession(apiKey, sessionId);
-       spyOn(session, 'connect').and.callFake((token, callback) => {
-         callback(undefined);
-       });
-@@ -464,8 +466,8 @@
-   it('results in a failed test if there are no mics', (done) => {
-     const realInitSession = OT.initSession;
-     const realOTGetDevices = OT.getDevices;
--    spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--      const session = realInitSession(applicationId, sessionId);
-+    spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+      const session = realInitSession(apiKey, sessionId);
-       spyOn(session, 'connect').and.callFake((token, callback) => {
-         callback(undefined);
-       });
-@@ -617,8 +619,8 @@
-   it('results in a failed test if OT.initPublisher() returns an error', (done) => {
-     const realInitSession = OT.initSession;
-     const realGetDevices = OT.getDevices;
--    spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--      const session = realInitSession(applicationId, sessionId);
-+    spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+      const session = realInitSession(apiKey, sessionId);
-       spyOn(session, 'connect').and.callFake((token, callback) => {
-         callback(undefined);
-       });
-@@ -648,8 +650,8 @@
-   it('results in a PermissionDeniedError if OT.initPublisher() returns OT_USER_MEDIA_ACCESS_DENIED', (done) => {
-     const realInitSession = OT.initSession;
-     const realGetDevices = OT.getDevices;
--    spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--      const session = realInitSession(applicationId, sessionId);
-+    spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+      const session = realInitSession(apiKey, sessionId);
-       spyOn(session, 'connect').and.callFake((token, callback) => {
-         callback(undefined);
-       });
-@@ -683,8 +685,8 @@
-     let accessDeniedHandler: Function;
-     const realInitSession = OT.initSession;
-     const realGetDevices = OT.getDevices;
--    spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--      const session = realInitSession(applicationId, sessionId);
-+    spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+      const session = realInitSession(apiKey, sessionId);
-       spyOn(session, 'connect').and.callFake((token, callback) => {
-         callback(undefined);
-       });
-@@ -722,8 +724,8 @@
+       it('results in a failed test if OT.getDevices() returns an error', (done) => {
+         const realInitSession = OT.initSession;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -463,8 +465,8 @@
+       it('results in a failed test if there are no mics', (done) => {
+         const realInitSession = OT.initSession;
+         const realOTGetDevices = OT.getDevices;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -616,8 +618,8 @@
+       it('results in a failed test if OT.initPublisher() returns an error', (done) => {
+         const realInitSession = OT.initSession;
+         const realGetDevices = OT.getDevices;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -647,8 +649,8 @@
+       it('results in a PermissionDeniedError if OT.initPublisher() returns OT_USER_MEDIA_ACCESS_DENIED', (done) => {
+         const realInitSession = OT.initSession;
+         const realGetDevices = OT.getDevices;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -682,8 +684,8 @@
+         let accessDeniedHandler: Function;
+         const realInitSession = OT.initSession;
+         const realGetDevices = OT.getDevices;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -721,8 +723,8 @@
  
-   it('results in a failed test if Session.subscribe() returns an error', (done) => {
-     const realInitSession = OT.initSession;
--    spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--      const session = realInitSession(applicationId, sessionId);
-+    spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+      const session = realInitSession(apiKey, sessionId);
-       spyOn(session, 'connect').and.callFake((token, callback) => {
-         callback(undefined);
-       });
+       it('results in a failed test if Session.subscribe() returns an error', (done) => {
+         const realInitSession = OT.initSession;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
 diff --git a/lib/js/test/setup/setup.js b/lib/js/test/setup/setup.js
 --- a/lib/js/test/setup/setup.js
 +++ b/lib/js/test/setup/setup.js
