@@ -1,0 +1,22 @@
+lib/js/opentok.patch
+  h_42c8d8f17b92d9 856-974
+lib/js/test/NetworkTest.spec.ts
+  h_42c8d8f17b92d9 132-160,162-358,360-363,365-405,407,409,411-461,463-761
+lib/js/test/setup/setup.js
+  h_42c8d8f17b92d9 72
+lib/js/test/testEnv.ts
+  h_42c8d8f17b92d9 58,64-65,70,74,77,83,86,91,93,111,120
+samples/js/bundle.js
+  h_42c8d8f17b92d9 774,779,782,789,801,891,899,930,936,942,982,996,999,1003,1016,1028,1033,1044,1161
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "140e2542b61273b8b93b36afbb423139170adcb9",
+  "prompts": {},
+  "humans": {
+    "h_42c8d8f17b92d9": {
+      "author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
