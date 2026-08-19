@@ -1,0 +1,26 @@
+AGENTS.md
+  h_42c8d8f17b92d9 1-177
+lib/js/.eslintrc.cjs
+  h_42c8d8f17b92d9 7
+lib/js/opentok.patch
+  h_42c8d8f17b92d9 819-972,1074
+lib/js/src/testQuality/helpers/calculateThroughput.ts
+  h_42c8d8f17b92d9 38-39
+lib/js/src/testQuality/helpers/getPublisherRtcStatsReport.ts
+  h_42c8d8f17b92d9 66,153-159,165
+lib/js/src/testQuality/index.ts
+  h_42c8d8f17b92d9 394-395
+lib/js/test/setup/setup.js
+  h_42c8d8f17b92d9 72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "d62ed530974509f89b1a27f88da0e4156693b934",
+  "prompts": {},
+  "humans": {
+    "h_42c8d8f17b92d9": {
+      "author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
