@@ -1,0 +1,14 @@
+lib/js/opentok.patch
+  h_42c8d8f17b92d9 785-814,827,829-831,842,844-846,857,859-861,872,874-876,887,889-891,902,904-906,917,919-921,932,934-936,947,949-951,962,964-966,977,979-981,992,997-1002,1010,1012-1014,1025,1116-1118,1209,1219-1229,1242,1274-1275
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "8492049d5ca5d47ef7ab8fad13f633bd4e8e8bf7",
+  "prompts": {},
+  "humans": {
+    "h_42c8d8f17b92d9": {
+      "author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
