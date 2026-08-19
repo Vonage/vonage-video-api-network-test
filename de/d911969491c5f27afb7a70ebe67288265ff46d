@@ -1,0 +1,26 @@
+lib/js/src/testQuality/index.ts
+  s_ae92d9f30a1fb6::t_3bc07a311cd6bb 394-395
+lib/js/src/testQuality/helpers/getPublisherRtcStatsReport.ts
+  s_ae92d9f30a1fb6::t_21afd64efc49b4 67
+  s_ae92d9f30a1fb6::t_8ba4f2649b073e 156-158
+AGENTS.md
+  s_ae92d9f30a1fb6::t_8131c03a8d6aeb 1-177
+lib/js/src/testQuality/helpers/calculateThroughput.ts
+  s_ae92d9f30a1fb6::t_a81601c21f8e3e 38-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "ded911969491c5f27afb7a70ebe67288265ff46d",
+  "prompts": {},
+  "sessions": {
+    "s_ae92d9f30a1fb6": {
+      "agent_id": {
+        "tool": "kiro",
+        "id": "sess_18442bbd-8a31-450e-8691-66a0db65db79",
+        "model": "auto"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
