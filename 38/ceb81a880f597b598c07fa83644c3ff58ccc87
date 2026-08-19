@@ -1,0 +1,24 @@
+lib/js/.eslintrc.cjs
+  s_05d86c0fd1b6fc::t_47c022a9972fbf 7
+lib/js/src/testQuality/index.ts
+  s_05d86c0fd1b6fc::t_650435c0ae17e3 393-394
+lib/js/src/testQuality/helpers/getPublisherRtcStatsReport.ts
+  s_05d86c0fd1b6fc::t_bfe8418cbb41d6 66
+  s_05d86c0fd1b6fc::t_2b5827c0411db2 153-159,165
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "38ceb81a880f597b598c07fa83644c3ff58ccc87",
+  "prompts": {},
+  "sessions": {
+    "s_05d86c0fd1b6fc": {
+      "agent_id": {
+        "tool": "kiro",
+        "id": "sess_addc7b06-5bd2-4f29-88d6-d39e8f4a9e0d",
+        "model": "auto"
+      },
+      "human_author": null
+    }
+  }
+}
