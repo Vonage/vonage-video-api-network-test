@@ -63,9 +63,7 @@ const calculateVideoBitrate = (
   return Math.round((byteSent * 8) / (1000 * timeDiff)); // Convert to kbit per second
 };
 
-/**
- * Classify the media routing path from the active ICE candidate pair
- */
+// Classify the media routing path from the active ICE candidate pair
 const determineMediaRouting = (
   localCandidate: RTCIceCandidateStats | null,
   remoteCandidate: RTCIceCandidateStats | null,
@@ -152,20 +150,19 @@ const extractPublisherStats = (
   const outboundRtpStats = rtcStatsArray.filter(
     stats => stats.type === 'outbound-rtp') as RTCOutboundRtpStreamStats[];
 
-  /**
-   * Select the active ICE candidate pair by highest availableOutgoingBitrate.
-   * More reliable than filtering by `nominated` in routed (SFU) sessions where
-   * the browser may not set the nominated flag on the active pair.
-   */
-  const iceCandidatePairStats = (rtcStatsArray
-    .filter((stats) => stats.type === 'candidate-pair') as RTCIceCandidatePairStats[])
-    .reduce<RTCIceCandidatePairStats | null>(
+  // Select the active ICE candidate pair by highest availableOutgoingBitrate.
+  // More reliable than filtering by `nominated` in routed (SFU) sessions where
+  // the browser may not set the nominated flag on the active pair.
+  const candidatePairs = rtcStatsArray
+    .filter((stats) => stats.type === 'candidate-pair') as RTCIceCandidatePairStats[];
+
+  const iceCandidatePairStats = candidatePairs.reduce<RTCIceCandidatePairStats | null>(
     (best, pair) =>
       (pair.availableOutgoingBitrate ?? 0) > (best?.availableOutgoingBitrate ?? 0)
         ? pair
         : best,
     null
-  );
+  ) ?? candidatePairs[0] ?? null;
 
 
   const findCandidateById = (type: string, id: string) => {

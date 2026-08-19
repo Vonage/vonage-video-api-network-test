@@ -390,21 +390,13 @@ function checkSubscriberQuality(
               const audioVideoResults: QualityTestResults = buildResults(builder);
               if (!audioOnly && !isAudioQualityAcceptable(audioVideoResults) && !stopTestCalled) {
                 audioOnly = true;
-                /**
-                 * Preserve video results from the initial audio-video run before
-                 * restarting in audio-only mode so that mediaRouting remains stable.
-                 */
+                // Preserve video results from the initial audio-video run before
+                // restarting in audio-only mode so that mediaRouting remains stable.
                 const videoResults = audioVideoResults.video;
-                // Capture the mediaRouting from the first (audio-video) run before restarting
-                const firstRunMediaRouting = videoResults?.mediaRouting;
 
                 checkSubscriberQuality(OTInstance, session, credentials, options, onUpdate, true)
                   .then((results: QualityTestResults) => {
                     results.video = videoResults;
-                    // Restore mediaRouting from the first run if the second run lost it
-                    if (firstRunMediaRouting && results.audio) {
-                      (results.audio as any).mediaRouting = firstRunMediaRouting;
-                    }
                     resolve(results);
                   });
               } else {
