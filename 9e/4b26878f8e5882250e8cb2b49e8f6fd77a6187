@@ -1,0 +1,25 @@
+lib/js/opentok.patch
+  s_1b8fa5c7876bb8::t_49d20436a40392 1172
+  s_1b8fa5c7876bb8::t_6b5bfded56d5d0 1162-1164
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "9e4b26878f8e5882250e8cb2b49e8f6fd77a6187",
+  "prompts": {},
+  "humans": {
+    "h_42c8d8f17b92d9": {
+      "author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  },
+  "sessions": {
+    "s_1b8fa5c7876bb8": {
+      "agent_id": {
+        "tool": "kiro",
+        "id": "sess_664271ac-6327-4b5f-a4c2-103c9426ab89",
+        "model": "auto"
+      },
+      "human_author": null
+    }
+  }
+}
