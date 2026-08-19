@@ -57,6 +57,7 @@ describe('NetworkTest', () => {
   let networkTest: NetworkTest;
   let badCredentialsNetworkTest: NetworkTest;
   let networkTestWithOptions: NetworkTest;
+  let usedRealSession = false;
 
   beforeAll(() => {
     jasmine.addMatchers(customMatchers);
@@ -78,8 +79,13 @@ describe('NetworkTest', () => {
     if (networkTestWithOptions) {
       networkTestWithOptions.stop();
     }
-    // Wait for sessions to fully disconnect before running next test
-    setTimeout(() => { done(); }, 3000);
+    // Only wait for session disconnect when a real session was used
+    if (usedRealSession) {
+      usedRealSession = false;
+      setTimeout(() => { done(); }, 3000);
+    } else {
+      done();
+    }
   });
 
   it('its constructor requires OT and valid session credentials', () => {
@@ -131,6 +137,7 @@ describe('NetworkTest', () => {
 
     describe('Test Results', () => {
       it('should contain success and failedTests properties', (done) => {
+        usedRealSession = true;
         networkTest.testConnectivity()
           .then((results: ConnectivityTestResults) => {
             expect(results.success).toBeABoolean();
@@ -147,6 +154,7 @@ describe('NetworkTest', () => {
       }, 15000);
 
       it('should return a failed test case if invalid session credentials are used', (done) => {
+        usedRealSession = true;
         const validateResults = (results: ConnectivityTestResults) => {
           expect(results.success).toBe(false);
           expect(results.failedTests).toBeInstanceOf(Array);
@@ -166,6 +174,7 @@ describe('NetworkTest', () => {
       }, 15000);
 
       it('should result in a failed test if the logging server cannot be reached', (done) => {
+        usedRealSession = true;
         // SDK properties uses non-enumerable getter-based descriptors, so we access
         // loggingURL directly rather than trying to spread the properties object.
         const realLoggingURL: string = (OT as any).properties.loggingURL;
@@ -409,6 +418,7 @@ describe('NetworkTest', () => {
       };
 
       it('validates its onUpdate callback', () => {
+        usedRealSession = true;
         expect(() => networkTest.testQuality('bad-callback' as any)).toThrow(new InvalidOnUpdateCallback());
         // Calling testConnectivity should not throw synchronously
         const promise = networkTest.testConnectivity();
@@ -418,6 +428,7 @@ describe('NetworkTest', () => {
       });
 
       it('should return an error if invalid session credentials are used', (done) => {
+        usedRealSession = true;
         const validateError = (error?: QualityTestError) => {
           expect(error!.name).toBe(ErrorNames.CONNECT_TO_SESSION_TOKEN_ERROR);
         };
@@ -498,6 +509,7 @@ describe('NetworkTest', () => {
       }, 15000);
 
       it('should return valid test results or an error', (done) => {
+        usedRealSession = true;
         const onUpdate = (stats: UpdateCallbackStats) => validOnUpdateCallback(stats);
         networkTest.testQuality(onUpdate)
           .then(validateStandardResults)
@@ -510,6 +522,7 @@ describe('NetworkTest', () => {
       }, 40000);
 
       it('should run a valid test or error when give audiOnly and timeout options', (done) => {
+        usedRealSession = true;
         const validateResults = (results: QualityTestResults) => {
           const { audio, video } = results;
           expect(audio.bitrate).toEqual(jasmine.any(Number));
@@ -532,6 +545,7 @@ describe('NetworkTest', () => {
       }, 15000);
 
       it('should stop the quality test when you call the stop() method', (done) => {
+        usedRealSession = true;
         const validateError = (error?: QualityTestError) => {
           // Accept QualityTestError or ConnectToSessionError (when session is exhausted)
           expect(error).toBeDefined();
@@ -548,6 +562,7 @@ describe('NetworkTest', () => {
       }, 15000);
 
       it('should return valid test results or an error when there is no camera', (done) => {
+        usedRealSession = true;
         const realOTGetDevices = OT.getDevices;
         spyOn(OT, 'getDevices').and.callFake((callbackFn) => {
           realOTGetDevices((error, devices) => {
@@ -606,6 +621,7 @@ describe('NetworkTest', () => {
       }, 15000);
 
       it('should run the test if the browser is a Chromium-based version of Edge', (done) => {
+        usedRealSession = true;
         const nav = navigator as any;
         const mozGetUserMedia = nav.mozGetUserMedia;
         const webkitGetUserMedia = nav.webkitGetUserMedia;

@@ -5,6 +5,18 @@ on:
     branches:
       - main
       - 'release-*'
+    paths:
+      - 'lib/js/src/**'
+      - 'lib/js/test/**'
+      - 'lib/js/package.json'
+      - 'lib/js/package-lock.json'
+      - 'lib/js/webpack.config.mjs'
+      - 'lib/js/karma.conf.js'
+      - 'lib/js/tsconfig*.json'
+      - 'lib/js/.eslintrc.cjs'
+      - 'lib/js/opentok.patch'
+      - '.github/workflows/**'
+      - '.github/actions/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

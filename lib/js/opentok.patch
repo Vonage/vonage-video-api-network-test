@@ -1,4 +1,5 @@
 diff --git a/lib/js/README.md b/lib/js/README.md
+index 8828d22..9c3c4dd 100644
 --- a/lib/js/README.md
 +++ b/lib/js/README.md
 @@ -1,19 +1,23 @@
@@ -6,13 +7,13 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  
 -[![license](https://img.shields.io/github/license/vonage/vonage-video-api-network-test.svg)](https://github.com/Vonage/vonage-video-api-network-test/blob/develop/CONTRIBUTING.md)
 -[![npm](https://img.shields.io/npm/v/@vonage/video-client-network-test.svg)](https://www.npmjs.com/package/@vonage/video-client-network-test)
- 
++
 +# OpenTok Network Test
 +
 +[![Build Status](https://goo.gl/17JDLY)](https://travis-ci.com/opentok/opentok-network-test-js)
 +[![license](https://img.shields.io/github/license/opentok/opentok-network-test-js.svg)](https://github.com/opentok/opentok-network-test-js/blob/master/CONTRIBUTING.md)
 +[![npm](https://img.shields.io/npm/v/opentok-network-test-js.svg)](https://www.npmjs.com/package/opentok-network-test-js)
-+
+ 
  This Node module lets you check network connectivity to resources and services required
 -to use [Vonage Video API](https://www.vonage.com/communications-apis/video). Run this on a web client to get the following information:
 +to use [OpenTok](https://tokbox.com). Run this on a web client to get the following information:
@@ -31,7 +32,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  
  ## Instalation
  
-@@ -22,14 +27,14 @@
+@@ -22,14 +26,14 @@ For a sample that uses this module, see the [Vonage Video API Pre-call Test tool
  You can install the package from npm registry using this command:
  
  ```
@@ -49,7 +50,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  
  **1. Create a GitHub Personal Access Token (PAT)**
  
-@@ -51,12 +56,12 @@
+@@ -51,12 +55,12 @@ Replace `YOUR_GITHUB_TOKEN` with your GitHub personal access token.
  Once configured, you can use standard `npm install` command to install the package.
  
  ```
@@ -64,7 +65,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  
  For more information about working with GitHub Packages' NPM registry, see the [GitHub Packages documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry).
  
-@@ -64,7 +69,7 @@
+@@ -64,7 +68,7 @@ For more information about working with GitHub Packages' NPM registry, see the [
  
  After successful instalation, you have to load the Vonage Video API Network Test in your project. The module exports two objects:
  
@@ -73,7 +74,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
    This is the default export.
  
  * ErrorNames -- An object enumerating error name values
-@@ -72,47 +77,47 @@
+@@ -72,47 +76,47 @@ After successful instalation, you have to load the Vonage Video API Network Test
  Using CommonJS:
  
  ```javascript
@@ -139,7 +140,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
      let publisherSettings = {};
      if (results.video.reason) {
        console.log('Video not supported:', results.video.reason);
-@@ -132,10 +137,10 @@
+@@ -132,10 +136,10 @@ videoNetworkTest.testConnectivity().then((results) => {
        // Publish to the "real" session, using the publisherSettings object.
      }
    }).catch((error) => {
@@ -152,7 +153,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  });
  ```
  
-@@ -144,20 +149,20 @@
+@@ -144,20 +148,20 @@ with `audioOnly` set to `true` into the constructor:
  
  ```javascript
  const sessionInfo = {
@@ -179,7 +180,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  });
  ```
  
-@@ -194,30 +199,33 @@
+@@ -194,30 +198,33 @@ The OTNetworkTest NPM module includes three public methods:
  
  The `OTNetworkTest()` constructor includes the following parameters:
  
@@ -223,7 +224,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  
    * `token` -- A token corresponding to the test session. The role of the token must be
      either `publisher` or `moderator`. The `sessionInfo` parameter is required.
-@@ -249,8 +257,8 @@
+@@ -249,8 +256,8 @@ The `OTNetworkTest()` constructor includes the following parameters:
      to be used by the test publisher. You can obtain a list of available devices,
      including audio input devices, by calling the `OT.getDevices()` method.
  
@@ -234,7 +235,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
      to grant permission to the correct device. Note that changing the audio device may not
      influence the quality test score.
  
-@@ -258,27 +266,29 @@
+@@ -258,27 +265,29 @@ The `OTNetworkTest()` constructor includes the following parameters:
      to be used by the test publisher. You can obtain a list of available devices,
      including audio input devices, by calling the `OT.getDevices()` method.
  
@@ -277,7 +278,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  
    * `fullHd` (Boolean) -- (Optional) Allows publishing with a resolution of 1920x1080 (1080p).
      If the camera does not support 1920x1080 resolution, the `OTNetworkTest.testConnectivity()` method
-@@ -291,7 +301,7 @@
+@@ -291,7 +300,7 @@ the `ErrorNames` object (see [ErrorNames](#errornames)). For example:
  
  ```javascript
  try {
@@ -286,7 +287,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  } catch (error) {
    switch (error.name) {
      case ErrorNames.MISSING_OPENTOK_INSTANCE:
-@@ -300,7 +310,7 @@
+@@ -300,7 +309,7 @@ try {
      case ErrorNames.INCOMPLETE_SESSON_CREDENTIALS:
      case ErrorNames.MISSING_SESSON_CREDENTIALS:
      case ErrorNames.INVALID_SESSON_CREDENTIALS:
@@ -295,7 +296,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
        break;
      default:
        console.error('Unknown error .');
-@@ -310,11 +320,11 @@
+@@ -310,11 +319,11 @@ try {
  
  ### OTNetworkTest.testConnectivity()
  
@@ -309,7 +310,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
    any connectivity test failed.
  
  * `failedTests` (Array) -- If connectivity failed, this array contains an object for each
-@@ -322,23 +332,24 @@
+@@ -322,23 +331,24 @@ with a `results` object that has the following two properties:
  
    * `type` -- A sting defining the failure type. It will be set to one of the following values:
  
@@ -346,7 +347,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  
    * `error` -- An object defining the reason for the type of failure. This object includes
    a `message` property and a `name` property. The message property describes the error.
-@@ -349,7 +360,7 @@
+@@ -349,7 +359,7 @@ with a `results` object that has the following two properties:
      For example:
  
      ```javascript
@@ -355,7 +356,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
        results.failedTests && results.failedTests.forEach(result) => {
          switch (failedTest.error.name) {
            case ErrorNames.FAILED_TO_OBTAIN_MEDIA_DEVICES:
-@@ -371,7 +382,8 @@
+@@ -371,7 +381,8 @@ with a `results` object that has the following two properties:
  
  ### OTNetworkTest.testQuality(updateCallback)
  
@@ -365,7 +366,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  
  * Whether audio and video are supported and a reason why they aren't supported (if they aren't).
  
-@@ -422,7 +434,7 @@
+@@ -422,7 +433,7 @@ audio-video test), the property is set to `'audio-only'`.
  
  Pass in a `null` value if you do not want to register an `updateCallback` function.
  
@@ -374,7 +375,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  
  #### Promise returned
  
-@@ -497,7 +509,7 @@
+@@ -497,7 +508,7 @@ will be set to one of the values defined as properties of the `ErrorNames` objec
  (see [Error.name values](#errorname-values)).
  
  ```javascript
@@ -383,7 +384,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
    // process intermediate results
  }).then((results) => {
    // Display UI based on results
-@@ -538,9 +550,9 @@
+@@ -538,9 +549,9 @@ an error object (against the values defined in `ErrorNames`) to determine the ty
  
  | Error.name property set to this property of ErrorNames | Description |
  | ------------------------------------------------------------------ | ----------- |
@@ -396,7 +397,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  
  #### testConnectivity() errors
  
-@@ -551,22 +563,22 @@
+@@ -551,22 +562,22 @@ the following:
  
  | Error.name property set to this property of ErrorNames | Description |
  | -------------------------------------------------------------- | ----------- |
@@ -431,7 +432,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  
  #### testQuality() errors
  
-@@ -576,14 +588,14 @@
+@@ -576,14 +587,14 @@ method has a `name` property set to one of the following:
  | Error.name property set to this property of ErrorNames | Description |
  | -------------------------------------------------------------- | ----------- |
  |   `INVALID_ON_UPDATE_CALLBACK` | The `updateCallback` parameter is invalid. It must be a function that accepts a single parameter. |
@@ -454,7 +455,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  |   `PUBLISH_TO_SESSION_ERROR` | The test encountered an unknown error while attempting to publish to a session. | 
  |   `INIT_PUBLISHER_ERROR` | The test failed to initialize a publisher. | 
  |   `PUBLISH_TO_SESSION_NOT_CONNECTED` | The test failed to publish to the test session because the client was not connected to the session. | 
-@@ -616,8 +628,8 @@
+@@ -616,8 +627,8 @@ limit the range of scores from 1.0 to 4.5.
  | 1.7 - 2.39 | Poor      |
  | 1.0 - 1.69 | Bad       |
  
@@ -466,7 +467,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  
  ## Building the module
 diff --git a/lib/js/package.json b/lib/js/package.json
-index bbcb01a..eec63b8 100644
+index 03c11dd..7a04496 100644
 --- a/lib/js/package.json
 +++ b/lib/js/package.json
 @@ -1,7 +1,7 @@
@@ -557,7 +558,7 @@ index 3644174..d917b12 100644
  
  export enum ErrorNames {
 diff --git a/lib/js/src/index.ts b/lib/js/src/index.ts
-index ab42d70..28ff6b7 100644
+index 7e61dab..d62876c 100644
 --- a/lib/js/src/index.ts
 +++ b/lib/js/src/index.ts
 @@ -48,13 +48,13 @@ export default class NetworkTest {
@@ -590,9 +591,8 @@ index ab42d70..28ff6b7 100644
    }
  
 -  private startLoggingEngine(applicationId: string, sessionId: string, proxyUrl: string): OTKLogger {
--    return new OTKLogger({
 +  private startLoggingEngine(apiKey: string, sessionId: string, proxyUrl: string): OTKLogger {
-+    return new OTKLogger({
+     return new OTKLogger({
        sessionId,
 -      partnerId: applicationId,
 +      partnerId: apiKey,
@@ -663,7 +663,7 @@ index 62e49fc..4908092 100644
    }
  }
 diff --git a/lib/js/src/testConnectivity/index.ts b/lib/js/src/testConnectivity/index.ts
-index 55ae29c..d0cae9b 100644
+index ac16dd0..02b4017 100644
 --- a/lib/js/src/testConnectivity/index.ts
 +++ b/lib/js/src/testConnectivity/index.ts
 @@ -76,11 +76,11 @@ function cleanPublisher(publisher: OT.Publisher): Promise<void> {
@@ -689,7 +689,7 @@ index 55ae29c..d0cae9b 100644
      session.connect(token, (error?: OT.OTError) => {
        if (errorHasName(error, OTErrorType.OT_AUTHENTICATION_ERROR)) {
          reject(new e.ConnectToSessionTokenError());
-@@ -273,13 +273,13 @@ function checkSubscribeToSession({ session, publisher }: PublishToSessionResults
+@@ -273,7 +273,7 @@ function checkSubscribeToSession({ session, publisher }: PublishToSessionResults
  }
  
  /**
@@ -698,12 +698,6 @@ index 55ae29c..d0cae9b 100644
   */
  function checkLoggingServer(OTInstance: typeof OT, options?: NetworkTestOptions): Promise<void>;
  function checkLoggingServer(
-   OTInstance: typeof OT,
-   options: NetworkTestOptions | undefined,
-   input: SubscribeToSessionResults):
- Promise<SubscribeToSessionResults>;
- function checkLoggingServer(OTInstance: typeof OT, options?: NetworkTestOptions, input?: SubscribeToSessionResults):
- Promise<SubscribeToSessionResults | void> {
 @@ -298,7 +298,7 @@ Promise<SubscribeToSessionResults | void> {
  }
  
@@ -727,9 +721,10 @@ index 1cbb201..8cf5432 100644
    }
  }
 diff --git a/lib/js/src/testQuality/index.ts b/lib/js/src/testQuality/index.ts
+index e46620a..20ac609 100644
 --- a/lib/js/src/testQuality/index.ts
 +++ b/lib/js/src/testQuality/index.ts
-@@ -59,7 +59,7 @@
+@@ -59,7 +59,7 @@ let stopTestTimeoutId: number;
  let stopTestTimeoutCompleted = false;
  let stopTestCalled = false;
  /**
@@ -738,7 +733,7 @@ diff --git a/lib/js/src/testQuality/index.ts b/lib/js/src/testQuality/index.ts
   */
  function connectToSession(session: OT.Session, token: string): Promise<OT.Session> {
    return new Promise((resolve, reject) => {
-@@ -88,7 +88,7 @@
+@@ -88,7 +88,7 @@ function connectToSession(session: OT.Session, token: string): Promise<OT.Sessio
   * Checks for camera support for a given resolution.
   *
   * See the "API reference" section of the README.md file in the root of the
@@ -747,7 +742,7 @@ diff --git a/lib/js/src/testQuality/index.ts b/lib/js/src/testQuality/index.ts
   */
  function checkCameraSupport(width: number, height: number): Promise<void> {
    return new Promise((resolve, reject) => {
-@@ -239,7 +239,7 @@
+@@ -239,7 +239,7 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
      });
  }
  /**
@@ -756,7 +751,7 @@ diff --git a/lib/js/src/testQuality/index.ts b/lib/js/src/testQuality/index.ts
   */
  function subscribeToTestStream(
    OTInstance: typeof OT,
-@@ -474,7 +474,7 @@
+@@ -453,7 +453,7 @@ function validateBrowser(): Promise<void> {
  }
  
  /**
@@ -765,7 +760,7 @@ diff --git a/lib/js/src/testQuality/index.ts b/lib/js/src/testQuality/index.ts
   */
  export function testQuality(
    OTInstance: typeof OT,
-@@ -524,7 +524,7 @@
+@@ -503,7 +503,7 @@ export function testQuality(
              sessionOptions.proxyUrl = options.proxyServerUrl;
            }
          }
@@ -774,6 +769,7 @@ diff --git a/lib/js/src/testQuality/index.ts b/lib/js/src/testQuality/index.ts
          checkSubscriberQuality(OTInstance, session, credentials, options, onUpdate)
            .then(onSuccess)
            .catch(onError);
+diff --git a/lib/js/src/types/session.ts b/lib/js/src/types/session.ts
 index cfa3017..c743f67 100644
 --- a/lib/js/src/types/session.ts
 +++ b/lib/js/src/types/session.ts
@@ -786,37 +782,8 @@ index cfa3017..c743f67 100644
    token: string;
 -  applicationId: string;
  }
-diff --git a/lib/js/test/testEnv.ts b/lib/js/test/testEnv.ts
---- a/lib/js/test/testEnv.ts
-+++ b/lib/js/test/testEnv.ts
-@@ -4,7 +4,7 @@
-  * Reads credentials.json (generated by setup.js) and exposes:
-  * - `credentials` — the session credential sets (primary, faultyLogging, faultyApi)
-  * - `apiUrl` — the custom video API host (undefined when using production)
-- * - `OT` — a mutable wrapper around the @vonage/client-sdk-video module that allows
-+ * - `OT` — a mutable wrapper around the @opentok/client module that allows
-  *   Jasmine's spyOn() to replace methods (the real module uses non-writable exports).
-  * - `createNetworkTest()` — factory that creates a NetworkTest instance with the
-  *   correct apiUrl baked in, so individual tests don't need to repeat the boilerplate.
-@@ -16,7 +16,7 @@
-  *   const networkTest = createNetworkTest(credentials.primary);
-  *   spyOn(OT, 'initSession').and.callFake(...);
-  */
--import * as OTClient from '@vonage/client-sdk-video';
-+import * as OTClient from '@opentok/client';
- import credentialsJson from './credentials.json';
- import NetworkTest, { NetworkTestOptions } from '../src';
- import { SessionCredentials } from '../src/types/session';
-@@ -45,7 +45,7 @@
- export const apiUrl: string | undefined = parsed.apiUrl;
- 
- /**
-- * A mutable wrapper around the @vonage/client-sdk-video module.
-+ * A mutable wrapper around the @opentok/client module.
-  *
-  * The SDK exports its methods via webpack's Object.defineProperty pattern
-  * (enumerable: true, configurable: false, writable: false), which prevents
 diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
+index 177fded..53c0bf8 100644
 --- a/lib/js/test/NetworkTest.spec.ts
 +++ b/lib/js/test/NetworkTest.spec.ts
 @@ -1,4 +1,6 @@
@@ -827,7 +794,7 @@ diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
  import { credentials, createNetworkTest, OT } from './testEnv';
  import {
    MissingOpenTokInstanceError,
-@@ -26,8 +28,8 @@
+@@ -26,8 +28,8 @@ declare global {
  
  const sessionCredentials = credentials.primary;
  const badLoggingCredentials = credentials.faultyLogging;
@@ -838,7 +805,7 @@ diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
  const validOnUpdateCallback = (stats: UpdateCallbackStats) => stats;
  
  const customMatchers: jasmine.CustomMatcherFactories = {
-@@ -101,8 +103,8 @@
+@@ -107,8 +109,8 @@ describe('NetworkTest', () => {
      const testConnectFailure = (errorName: OTErrorType, expectedType: string): Promise<void> => {
        return new Promise((resolve, reject) => {
          const realInitSession = OT.initSession;
@@ -849,7 +816,7 @@ diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
            spyOn(session, 'connect').and.callFake((token, callback) => {
              const error = new Error();
              error.name = errorName;
-@@ -203,8 +205,8 @@
+@@ -212,8 +214,8 @@ describe('NetworkTest', () => {
  
        it('results in a failed test if OT.getDevices() returns an error', (done) => {
          const realInitSession = OT.initSession;
@@ -860,7 +827,7 @@ diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
            spyOn(session, 'connect').and.callFake((token, callback) => {
              callback(undefined);
            });
-@@ -236,8 +238,8 @@
+@@ -245,8 +247,8 @@ describe('NetworkTest', () => {
  
        it('results in a failed test if there are no cameras or mics', (done) => {
          const realInitSession = OT.initSession;
@@ -871,7 +838,7 @@ diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
            spyOn(session, 'connect').and.callFake((token, callback) => {
              callback(undefined);
            });
-@@ -268,8 +270,8 @@
+@@ -277,8 +279,8 @@ describe('NetworkTest', () => {
  
        it('results in a failed test if OT.initPublisher() returns an error', (done) => {
          const realInitSession = OT.initSession;
@@ -882,7 +849,7 @@ diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
            spyOn(session, 'connect').and.callFake((token, callback) => {
              callback(undefined);
            });
-@@ -301,8 +303,8 @@
+@@ -310,8 +312,8 @@ describe('NetworkTest', () => {
        it('results in a failed test if Session.subscribe() returns an error', (done) => {
          const realInitSession = OT.initSession;
          const realGetDevices = OT.getDevices;
@@ -893,7 +860,7 @@ diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
            spyOn(session, 'connect').and.callFake((token, callback) => {
              callback(undefined);
            });
-@@ -367,8 +369,8 @@
+@@ -376,8 +378,8 @@ describe('NetworkTest', () => {
        };
        const testConnectFailure = (done: DoneFn, otErrorName: OTErrorType, netTestErrorName: string) => {
          const realInitSession = OT.initSession;
@@ -904,7 +871,7 @@ diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
            spyOn(session, 'connect').and.callFake((token, callback) => {
              const error = new Error();
              error.name = otErrorName;
-@@ -441,8 +443,8 @@
+@@ -452,8 +454,8 @@ describe('NetworkTest', () => {
  
        it('results in a failed test if OT.getDevices() returns an error', (done) => {
          const realInitSession = OT.initSession;
@@ -915,7 +882,7 @@ diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
            spyOn(session, 'connect').and.callFake((token, callback) => {
              callback(undefined);
            });
-@@ -463,8 +465,8 @@
+@@ -480,8 +482,8 @@ describe('NetworkTest', () => {
        it('results in a failed test if there are no mics', (done) => {
          const realInitSession = OT.initSession;
          const realOTGetDevices = OT.getDevices;
@@ -926,7 +893,7 @@ diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
            spyOn(session, 'connect').and.callFake((token, callback) => {
              callback(undefined);
            });
-@@ -616,8 +618,8 @@
+@@ -644,8 +646,8 @@ describe('NetworkTest', () => {
        it('results in a failed test if OT.initPublisher() returns an error', (done) => {
          const realInitSession = OT.initSession;
          const realGetDevices = OT.getDevices;
@@ -937,7 +904,7 @@ diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
            spyOn(session, 'connect').and.callFake((token, callback) => {
              callback(undefined);
            });
-@@ -647,8 +649,8 @@
+@@ -676,8 +678,8 @@ describe('NetworkTest', () => {
        it('results in a PermissionDeniedError if OT.initPublisher() returns OT_USER_MEDIA_ACCESS_DENIED', (done) => {
          const realInitSession = OT.initSession;
          const realGetDevices = OT.getDevices;
@@ -948,10 +915,10 @@ diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
            spyOn(session, 'connect').and.callFake((token, callback) => {
              callback(undefined);
            });
-@@ -682,8 +684,8 @@
-         let accessDeniedHandler: Function;
+@@ -712,8 +714,8 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
          const realGetDevices = OT.getDevices;
+         let sessionDisconnectSpy: jasmine.Spy;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
@@ -959,7 +926,7 @@ diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
            spyOn(session, 'connect').and.callFake((token, callback) => {
              callback(undefined);
            });
-@@ -721,8 +723,8 @@
+@@ -752,8 +754,8 @@ describe('NetworkTest', () => {
  
        it('results in a failed test if Session.subscribe() returns an error', (done) => {
          const realInitSession = OT.initSession;
@@ -970,7 +937,96 @@ diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
            spyOn(session, 'connect').and.callFake((token, callback) => {
              callback(undefined);
            });
+@@ -796,8 +798,8 @@ describe('NetworkTest', () => {
+       it('should disconnect the session when validateDevices fails with getDevices error', (done) => {
+         const realInitSession = OT.initSession;
+         let sessionDisconnectSpy: jasmine.Spy;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -825,8 +827,8 @@ describe('NetworkTest', () => {
+       it('should disconnect the session when validateDevices finds no audio devices', (done) => {
+         const realInitSession = OT.initSession;
+         let sessionDisconnectSpy: jasmine.Spy;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -858,8 +860,8 @@ describe('NetworkTest', () => {
+         const realInitSession = OT.initSession;
+         const realGetDevices = OT.getDevices;
+         let sessionDisconnectSpy: jasmine.Spy;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -915,8 +917,8 @@ describe('NetworkTest', () => {
+         const realInitSession = OT.initSession;
+         const realGetDevices = OT.getDevices;
+         let sessionDisconnectSpy: jasmine.Spy;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -960,8 +962,8 @@ describe('NetworkTest', () => {
+         const realInitSession = OT.initSession;
+         const realGetDevices = OT.getDevices;
+         let sessionDisconnectSpy: jasmine.Spy;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -1005,8 +1007,8 @@ describe('NetworkTest', () => {
+         const realInitSession = OT.initSession;
+         const realGetDevices = OT.getDevices;
+         let sessionDisconnectSpy: jasmine.Spy;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -1049,8 +1051,8 @@ describe('NetworkTest', () => {
+       it('connectToSession should not trigger publishAndSubscribe after rejecting on error', (done) => {
+         const realInitSession = OT.initSession;
+         let publishSpy: jasmine.Spy;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             const error = new Error();
+             error.name = 'OT_AUTHENTICATION_ERROR';
+@@ -1078,8 +1080,8 @@ describe('NetworkTest', () => {
+         const realInitSession = OT.initSession;
+         const realGetDevices = OT.getDevices;
+         let sessionDisconnectSpy: jasmine.Spy;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
 diff --git a/lib/js/test/setup/setup.js b/lib/js/test/setup/setup.js
+index 2e717a5..6dd33f1 100644
 --- a/lib/js/test/setup/setup.js
 +++ b/lib/js/test/setup/setup.js
 @@ -1,78 +1,52 @@
@@ -1061,15 +1117,15 @@ diff --git a/lib/js/test/setup/setup.js b/lib/js/test/setup/setup.js
 -async function generateCredentials(){
 -  try {
 -    const privateKey = fs.readFileSync(privateKeyPath);
-+function generateCredentials(){
-+  const create = () => createSessionAndToken({ apiKey, apiSecret });
- 
+-
 -    const sessions = await Promise.all([
 -      createSessionAndToken({ applicationId, privateKey }),
 -      createSessionAndToken({ applicationId, privateKey }),
 -      createSessionAndToken({ applicationId, privateKey }),
 -    ]);
--
++function generateCredentials(){
++  const create = () => createSessionAndToken({ apiKey, apiSecret });
+ 
 -    await writeCredentials(sessions);
 -    console.info('Generated session credentials for test.');
 -  } catch (e) {
@@ -1082,246 +1138,34 @@ diff --git a/lib/js/test/setup/setup.js b/lib/js/test/setup/setup.js
  }
  
  generateCredentials();
-diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
-diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
---- a/lib/js/test/NetworkTest.spec.ts
-+++ b/lib/js/test/NetworkTest.spec.ts
-@@ -1,4 +1,6 @@
+diff --git a/lib/js/test/testEnv.ts b/lib/js/test/testEnv.ts
+index 79a1089..eea38c8 100644
+--- a/lib/js/test/testEnv.ts
++++ b/lib/js/test/testEnv.ts
+@@ -4,7 +4,7 @@
+  * Reads credentials.json (generated by setup.js) and exposes:
+  * - `credentials` — the session credential sets (primary, faultyLogging, faultyApi)
+  * - `apiUrl` — the custom video API host (undefined when using production)
+- * - `OT` — a mutable wrapper around the @vonage/client-sdk-video module that allows
++ * - `OT` — a mutable wrapper around the @opentok/client module that allows
+  *   Jasmine's spyOn() to replace methods (the real module uses non-writable exports).
+  * - `createNetworkTest()` — factory that creates a NetworkTest instance with the
+  *   correct apiUrl baked in, so individual tests don't need to repeat the boilerplate.
+@@ -16,7 +16,7 @@
+  *   const networkTest = createNetworkTest(credentials.primary);
+  *   spyOn(OT, 'initSession').and.callFake(...);
+  */
 -import * as OTClient from '@vonage/client-sdk-video';
-+/* tslint: disable */
-+
 +import * as OTClient from '@opentok/client';
- import { credentials, createNetworkTest, OT } from './testEnv';
- import {
-   MissingOpenTokInstanceError,
-@@ -26,8 +28,8 @@
+ import credentialsJson from './credentials.json';
+ import NetworkTest, { NetworkTestOptions } from '../src';
+ import { SessionCredentials } from '../src/types/session';
+@@ -45,7 +45,7 @@ export const credentials = {
+ export const apiUrl: string | undefined = parsed.apiUrl;
  
- const sessionCredentials = credentials.primary;
- const badLoggingCredentials = credentials.faultyLogging;
--const malformedCredentials = { applicationId: '1234', invalidProp: '1234', token: '1234' };
--const badCredentials = { applicationId: '1234', sessionId: '1234', token: '1234' };
-+const malformedCredentials = { apiKey: '1234', invalidProp: '1234', token: '1234' };
-+const badCredentials = { apiKey: '1234', sessionId: '1234', token: '1234' };
- const validOnUpdateCallback = (stats: UpdateCallbackStats) => stats;
- 
- const customMatchers: jasmine.CustomMatcherFactories = {
-@@ -101,8 +103,8 @@
-     const testConnectFailure = (errorName: OTErrorType, expectedType: string): Promise<void> => {
-       return new Promise((resolve, reject) => {
-         const realInitSession = OT.initSession;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             const error = new Error();
-             error.name = errorName;
-@@ -203,8 +205,8 @@
- 
-       it('results in a failed test if OT.getDevices() returns an error', (done) => {
-         const realInitSession = OT.initSession;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             callback(undefined);
-           });
-@@ -236,8 +238,8 @@
- 
-       it('results in a failed test if there are no cameras or mics', (done) => {
-         const realInitSession = OT.initSession;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             callback(undefined);
-           });
-@@ -268,8 +270,8 @@
- 
-       it('results in a failed test if OT.initPublisher() returns an error', (done) => {
-         const realInitSession = OT.initSession;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             callback(undefined);
-           });
-@@ -301,8 +303,8 @@
-       it('results in a failed test if Session.subscribe() returns an error', (done) => {
-         const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             callback(undefined);
-           });
-@@ -367,8 +369,8 @@
-       };
-       const testConnectFailure = (done: DoneFn, otErrorName: OTErrorType, netTestErrorName: string) => {
-         const realInitSession = OT.initSession;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             const error = new Error();
-             error.name = otErrorName;
-@@ -441,8 +443,8 @@
- 
-       it('results in a failed test if OT.getDevices() returns an error', (done) => {
-         const realInitSession = OT.initSession;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             callback(undefined);
-           });
-@@ -469,8 +471,8 @@
-       it('results in a failed test if there are no mics', (done) => {
-         const realInitSession = OT.initSession;
-         const realOTGetDevices = OT.getDevices;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             callback(undefined);
-           });
-@@ -628,8 +630,8 @@
-       it('results in a failed test if OT.initPublisher() returns an error', (done) => {
-         const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             callback(undefined);
-           });
-@@ -660,8 +662,8 @@
-       it('results in a PermissionDeniedError if OT.initPublisher() returns OT_USER_MEDIA_ACCESS_DENIED', (done) => {
-         const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             callback(undefined);
-           });
-@@ -696,8 +698,8 @@
-         const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
-         let sessionDisconnectSpy: jasmine.Spy;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             callback(undefined);
-           });
-@@ -736,8 +738,8 @@
- 
-       it('results in a failed test if Session.subscribe() returns an error', (done) => {
-         const realInitSession = OT.initSession;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             callback(undefined);
-           });
-@@ -780,8 +782,8 @@
-       it('should disconnect the session when validateDevices fails with getDevices error', (done) => {
-         const realInitSession = OT.initSession;
-         let sessionDisconnectSpy: jasmine.Spy;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             callback(undefined);
-           });
-@@ -809,8 +811,8 @@
-       it('should disconnect the session when validateDevices finds no audio devices', (done) => {
-         const realInitSession = OT.initSession;
-         let sessionDisconnectSpy: jasmine.Spy;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             callback(undefined);
-           });
-@@ -842,8 +844,8 @@
-         const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
-         let sessionDisconnectSpy: jasmine.Spy;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             callback(undefined);
-           });
-@@ -899,8 +901,8 @@
-         const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
-         let sessionDisconnectSpy: jasmine.Spy;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             callback(undefined);
-           });
-@@ -944,8 +946,8 @@
-         const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
-         let sessionDisconnectSpy: jasmine.Spy;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             callback(undefined);
-           });
-@@ -989,8 +991,8 @@
-         const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
-         let sessionDisconnectSpy: jasmine.Spy;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             callback(undefined);
-           });
-@@ -1033,8 +1035,8 @@
-       it('connectToSession should not trigger publishAndSubscribe after rejecting on error', (done) => {
-         const realInitSession = OT.initSession;
-         let publishSpy: jasmine.Spy;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             const error = new Error();
-             error.name = 'OT_AUTHENTICATION_ERROR';
-@@ -1062,8 +1064,8 @@
-         const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
-         let sessionDisconnectSpy: jasmine.Spy;
--        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
--          const session = realInitSession(applicationId, sessionId);
-+        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
-+          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'connect').and.callFake((token, callback) => {
-             callback(undefined);
-           });
+ /**
+- * A mutable wrapper around the @vonage/client-sdk-video module.
++ * A mutable wrapper around the @opentok/client module.
+  *
+  * The SDK exports its methods via webpack's Object.defineProperty pattern
+  * (enumerable: true, configurable: false, writable: false), which prevents
