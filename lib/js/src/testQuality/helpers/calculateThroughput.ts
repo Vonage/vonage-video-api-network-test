@@ -35,24 +35,8 @@ function getAverageBitrateAndPlr(type: AV,
     publisherStats => publisherStats.simulcastEnabled,
   );
 
-  /**
-   * Determines the sustained `qualityLimitationReason` across all samples in the
-   * current measurement window.
-   *
-   * @remarks
-   * The WebRTC encoder can transiently report `"bandwidth"` during ramp-up or
-   * brief bitrate estimate fluctuations — even when no real constraint exists.
-   * Snapshotting only the last sample (previous behaviour) made the result
-   * susceptible to these spikes.
-   *
-   * By requiring the reason to appear in **more than half** of the samples we
-   * ensure only a sustained, genuine limitation is surfaced. A transient spike
-   * in 1 of 10 samples is suppressed; a real constraint present in 6 of 10 is
-   * reported correctly.
-   *
-   * @returns The most frequently occurring non-trivial reason if it exceeds the
-   * majority threshold, otherwise `undefined`.
-   */
+  // Determine the sustained qualityLimitationReason using a majority threshold
+  // to filter out transient spikes during ramp-up
   const qualityLimitationCounts: Record<string, number> = {};
   for (const publisherStats of publisherStatsList) {
     const reason = publisherStats.videoStats.find(
