@@ -391,21 +391,8 @@ function checkSubscriberQuality(
               if (!audioOnly && !isAudioQualityAcceptable(audioVideoResults) && !stopTestCalled) {
                 audioOnly = true;
                 /**
-                 * Preserve results from the initial audio-video run before restarting
-                 * in audio-only mode.
-                 *
-                 * @remarks
-                 * The audio-only fallback re-publishes on the same session, which
-                 * triggers a fresh ICE negotiation. This new negotiation may resolve
-                 * to a different media path (e.g. relayed instead of routed) depending
-                 * on transient network conditions at restart time — causing the
-                 * `mediaRouting` value to be inconsistent between runs.
-                 *
-                 * `mediaRouting` is a property of the session topology, not of audio
-                 * quality, so it should be determined once during the initial run and
-                 * remain stable. We capture it here and restore it after the audio-only
-                 * run completes so the final result always reflects the routing of the
-                 * original session negotiation.
+                 * Preserve video results from the initial audio-video run before
+                 * restarting in audio-only mode so that mediaRouting remains stable.
                  */
                 const videoResults = audioVideoResults.video;
                 // Capture the mediaRouting from the first (audio-video) run before restarting

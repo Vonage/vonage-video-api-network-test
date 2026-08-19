@@ -1073,7 +1073,7 @@ diff --git a/lib/js/test/setup/setup.js b/lib/js/test/setup/setup.js
 -    ]);
 -
 -    await writeCredentials(sessions);
--    console.info(`Generated session credentials for test.${videoApiUrl ? ` (API: ${videoApiUrl})` : ''}`);
+-    console.info('Generated session credentials for test.');
 -  } catch (e) {
 -    console.error('Failed to generate test credentials', e);
 -  }

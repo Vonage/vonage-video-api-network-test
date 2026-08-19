@@ -64,19 +64,7 @@ const calculateVideoBitrate = (
 };
 
 /**
- * Classifies the media routing path from the active ICE candidate pair.
- *
- * @param localCandidate - Local ICE candidate from the active pair, or `null`
- *   if stats are not yet available (valid transient state during ICE ramp-up).
- * @param remoteCandidate - Remote ICE candidate from the active pair, or `null`.
- * @returns A {@link MediaRouting} string — `'Unknown'` when either candidate is `null`.
- *
- * @remarks
- * | Local type | Remote type | Result |
- * |---|---|---|
- * | `host` / `prflx` | `host` | `'Routed'` |
- * | `relay` | any | `'Relayed (TURN/UDP)'` or `'Relayed (TURN/TCP)'` |
- * | `srflx` / `prflx` | any | `'Relayed (STUN)'` |
+ * Classify the media routing path from the active ICE candidate pair
  */
 const determineMediaRouting = (
   localCandidate: RTCIceCandidateStats | null,
@@ -165,18 +153,9 @@ const extractPublisherStats = (
     stats => stats.type === 'outbound-rtp') as RTCOutboundRtpStreamStats[];
 
   /**
-   * Selects the active ICE candidate pair by picking the one with the highest
-   * `availableOutgoingBitrate`. This is more reliable than filtering by `nominated`
-   * because in routed (SFU) sessions the browser may not set the `nominated` flag
-   * on the active pair, yet will always populate `availableOutgoingBitrate` on the
-   * pair that is currently carrying traffic.
-   *
-   * @remarks
-   * - **P2P / relayed**: the nominated pair always has the highest bitrate — result
-   *   is identical to a `nominated` filter.
-   * - **SFU / routed**: the active pair has a non-zero bitrate even without `nominated`.
-   * - `availableOutgoingBitrate` defaults to `0` when absent so unpopulated pairs
-   *   are always ranked below any pair actively sending data.
+   * Select the active ICE candidate pair by highest availableOutgoingBitrate.
+   * More reliable than filtering by `nominated` in routed (SFU) sessions where
+   * the browser may not set the nominated flag on the active pair.
    */
   const iceCandidatePairStats = (rtcStatsArray
     .filter((stats) => stats.type === 'candidate-pair') as RTCIceCandidatePairStats[])
