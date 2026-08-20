@@ -7,6 +7,9 @@ inputs:
   node_version:
     description: 'Node.js version to use (e.g. 24.x)'
     required: true
+  opentok_npm_token:
+    description: 'GitHub NPM token for @opentok scoped packages'
+    required: false
 
 runs:
   using: "composite"
@@ -16,11 +19,17 @@ runs:
       with:
         target: ${{ inputs.target }}
         node_version: ${{ inputs.node_version }}
+        opentok_npm_token: ${{ inputs.opentok_npm_token }}
 
     - name: Build
       shell: bash
       working-directory: lib/js
       run: npm run build
+
+    - name: Verify Bundles
+      uses: ./.github/actions/verify-bundles
+      with:
+        target: ${{ inputs.target }}
 
     - name: Package Tarball
       uses: ./.github/actions/package-tarball

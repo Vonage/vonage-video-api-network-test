@@ -3,7 +3,16 @@
   "version": "5.1.4",
   "description": "Precall network test for applications using the Vonage Video API platform.",
   "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
   "files": [
     "dist/"
   ],
@@ -13,13 +22,16 @@
     "build": "npm run build:js && npm run build:types",
     "test-setup": "node test/setup/setup.js",
     "test-teardown": "rm test/credentials.json",
-    "karma": "karma start",
+    "karma": "karma start karma.conf.mjs",
+    "karma:dist": "karma start karma.conf.dist.mjs",
+    "karma:dist:esm": "karma start karma.conf.dist.esm.mjs",
     "test": "npm run test-setup && npm run karma && npm run test-teardown",
+    "test:dist": "npm run build && npm run karma:dist && npm run karma:dist:esm",
     "example": "npm run build && cd ../../samples/js && npm install && npm run build && npx serve .",
     "lint": "npm run tslint",
     "lint-fix": "npm run tslint-fix",
-    "tslint": "eslint . --ext .js,.ts",
-    "tslint-fix": "eslint . --ext .js,.ts --fix"
+    "tslint": "eslint . --ext .js,.mjs,.ts",
+    "tslint-fix": "eslint . --ext .js,.mjs,.ts --fix"
   },
   "repository": {
     "type": "git",

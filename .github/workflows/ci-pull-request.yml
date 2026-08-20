@@ -8,7 +8,7 @@ on:
       - 'lib/js/package.json'
       - 'lib/js/package-lock.json'
       - 'lib/js/webpack.config.mjs'
-      - 'lib/js/karma.conf.js'
+      - 'lib/js/karma.conf*.mjs'
       - 'lib/js/tsconfig*.json'
       - 'lib/js/.eslintrc.cjs'
       - 'lib/js/opentok.patch'
@@ -112,3 +112,8 @@ jobs:
       - name: Build
         working-directory: lib/js
         run: npm run build
+
+      - name: Verify Bundles
+        uses: ./.github/actions/verify-bundles
+        with:
+          target: ${{ matrix.target }}
