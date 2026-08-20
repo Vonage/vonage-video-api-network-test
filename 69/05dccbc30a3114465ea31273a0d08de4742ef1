@@ -1,0 +1,56 @@
+.github/workflows/ci-pull-request.yml
+  s_3efa59671473e3::t_abac8c7db485c9 115-119
+.github/workflows/post-merge-validation.yml
+  s_3efa59671473e3::t_5bd42be87aebcb 46
+  s_3efa59671473e3::t_6cb3e332437d11 96,102-113
+  s_3efa59671473e3::t_d11512cf4c8ca4 76
+lib/js/test/dist-tests/dist-esm.spec.ts
+  s_1b8fa5c7876bb8::t_d556862cafaaaf 1-58
+.github/actions/verify-bundles/action.yml
+  s_3efa59671473e3::t_f06ee3948fadf5 1-18
+lib/js/karma.conf.mjs
+  s_1b8fa5c7876bb8::t_fb41d0253854e1 90
+  s_1b8fa5c7876bb8::t_95d9439f3cd8b0 7-8
+lib/js/.eslintrc.cjs
+  s_1b8fa5c7876bb8::t_f5ebdf3a9dfc69 7
+.github/actions/build-and-package-library/action.yml
+  s_3efa59671473e3::t_64b70b8ae57e4b 22
+  s_3efa59671473e3::t_64d4c2ff8640ca 10-12
+  s_3efa59671473e3::t_73afe4550f02b3 29-33
+lib/js/package.json
+  s_1b8fa5c7876bb8::t_bdc064c6e61b95 6,8-15
+  s_1b8fa5c7876bb8::t_c39b5d744d58ea 33-34
+  s_1b8fa5c7876bb8::t_551f181352ee31 25-27,29
+lib/js/webpack.config.mjs
+  s_1b8fa5c7876bb8::t_c4d305369cfcde 8,29-38,50-63,66-67
+lib/js/test/dist-tests/dist.spec.ts
+  s_1b8fa5c7876bb8::t_1373ed3f8d120c 1-66
+lib/js/karma.conf.dist.esm.mjs
+  s_1b8fa5c7876bb8::t_3855e2a5a336a7 1-117
+lib/js/karma.conf.dist.mjs
+  s_1b8fa5c7876bb8::t_5a20ceaf3e8c4e 1-116
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "6905dccbc30a3114465ea31273a0d08de4742ef1",
+  "prompts": {},
+  "sessions": {
+    "s_1b8fa5c7876bb8": {
+      "agent_id": {
+        "tool": "kiro",
+        "id": "sess_664271ac-6327-4b5f-a4c2-103c9426ab89",
+        "model": "auto"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    },
+    "s_3efa59671473e3": {
+      "agent_id": {
+        "tool": "kiro",
+        "id": "sess_2de1f7e7-6640-4205-ae37-d2158bf14edb",
+        "model": "auto"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
