@@ -1,0 +1,22 @@
+AGENTS.md
+  s_3efa59671473e3::t_6b1047e1f29855 188
+  s_3efa59671473e3::t_346439f6e9d1e1 206,209-244
+  s_3efa59671473e3::t_5368e9343aefef 198-199
+  s_3efa59671473e3::t_4cf8dd2ca1815d 12-21,26-27,30-43,76-81,84,98-101
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "80ea1df2cc422b3685e2209cba56bc55cd60ea7d",
+  "prompts": {},
+  "sessions": {
+    "s_3efa59671473e3": {
+      "agent_id": {
+        "tool": "kiro",
+        "id": "sess_2de1f7e7-6640-4205-ae37-d2158bf14edb",
+        "model": "auto"
+      },
+      "human_author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
