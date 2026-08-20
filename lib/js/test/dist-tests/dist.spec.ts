@@ -2,19 +2,18 @@
  * Integration tests for the built dist bundle — public API only.
  *
  * 'network-test-dist' is a webpack alias (defined in karma.conf.dist.mjs) that
- * points to the local dist bundle. karma-webpack bundles it via the CJS branch of
- * the UMD wrapper, so module.exports = { default: NetworkTest, ErrorNames, ... }.
- * Webpack's CJS→ESM interop makes that whole object the default import.
+ * points to the local dist bundle (UMD format). We use require() to load it
+ * because the UMD wrapper's `typeof exports` check conflicts with webpack 5's
+ * ESM-style module wrapping when loaded via `import`.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import distExports from 'network-test-dist';
+// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention
+const distExports = require('network-test-dist');
 
-// karma-webpack CJS interop: default import = module.exports = { default: NetworkTest, ErrorNames, ... }
-const exports = distExports as any;
+// UMD bundle's module.exports = { default: NetworkTest, ErrorNames, ... }
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const NetworkTest = exports.default ?? exports;
+const NetworkTest = distExports.default ?? distExports;
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const ErrorNames = exports.ErrorNames;
+const ErrorNames = distExports.ErrorNames;
 
 describe('dist bundle public API', () => {
   const validCredentials = { applicationId: 'a', sessionId: 'b', token: 'c' };

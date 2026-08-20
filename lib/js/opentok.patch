@@ -467,7 +467,6 @@ index 8828d22..9c3c4dd 100644
  
  ## Building the module
 diff --git a/lib/js/package.json b/lib/js/package.json
-index 03c11dd..7a04496 100644
 --- a/lib/js/package.json
 +++ b/lib/js/package.json
 @@ -1,7 +1,7 @@
@@ -478,9 +477,9 @@ index 03c11dd..7a04496 100644
 -  "description": "Precall network test for applications using the Vonage Video API platform.",
 +  "description": "Precall network test for applications using the OpenTok platform.",
    "main": "dist/index.js",
+   "module": "dist/index.mjs",
    "types": "dist/index.d.ts",
-   "files": [
-@@ -30,8 +30,8 @@
+@@ -42,8 +42,8 @@
      "access": "public"
    },
    "keywords": [
@@ -491,30 +490,32 @@ index 03c11dd..7a04496 100644
      "network test",
      "connectivity",
      "webrtc"
-@@ -59,8 +59,9 @@
+@@ -64,6 +64,7 @@
+   "devDependencies": {
+     "@changesets/changelog-github": "^0.5.2",
+     "@changesets/cli": "^2.31.1",
++    "@opentok/client": "^2.34.1",
+     "@types/expect.js": "^0.3.29",
+     "@types/jasmine": "^6.0.0",
+     "@types/jasmine-matchers": "^0.2.30",
+@@ -71,8 +72,6 @@
      "@types/node": "^26.0.0",
      "@typescript-eslint/eslint-plugin": "^7.6.0",
      "@typescript-eslint/parser": "^7.6.0",
 -    "@vonage/client-sdk-video": "^2.34.0",
-+    "@opentok/client": "^2.34.1",
-     "@vonage/server-sdk": "^3.29.0",
-+    "opentok": "^2.16.0",
+-    "@vonage/server-sdk": "^3.29.0",
      "dotenv": "^17.0.0",
      "eslint": "^8.44.0",
      "jasmine": "^6.0.0",
-@@ -77,10 +78,9 @@
+@@ -87,6 +86,7 @@
+     "karma-safaritechpreview-launcher": "2.0.2",
+     "karma-sourcemap-loader": "^0.4.0",
      "karma-webpack": "^5.0.0",
++    "opentok": "^2.16.0",
      "terser-webpack-plugin": "^5.3.9",
      "ts-loader": "^9.5.1",
--    "typescript": "^6.0.3",
--    "webpack": "^5.109.2",
-+    "typescript": "^5.4.5",
-+    "webpack": "^5.88.1",
-     "webpack-cli": "^6.0.0",
--    "webpack-merge": "6.0.1",
-     "webpack-node-externals": "^3.0.0"
-   },
-   "overrides": {
+     "typescript": "^6.0.3",
+
 diff --git a/lib/js/src/errors/index.ts b/lib/js/src/errors/index.ts
 index c3750f0..824f8f9 100644
 --- a/lib/js/src/errors/index.ts
