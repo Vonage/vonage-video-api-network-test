@@ -1,0 +1,18 @@
+name: 'Verify Bundles'
+description: 'Runs dist integration tests against the built UMD and ESM bundles'
+inputs:
+  target:
+    description: 'Target package (vonage or opentok)'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Verify UMD bundle
+      shell: bash
+      working-directory: lib/js
+      run: npm run karma:dist
+
+    - name: Verify ESM bundle
+      shell: bash
+      working-directory: lib/js
+      run: npm run karma:dist:esm

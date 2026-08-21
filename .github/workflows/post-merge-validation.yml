@@ -5,6 +5,18 @@ on:
     branches:
       - main
       - 'release-*'
+    paths:
+      - 'lib/js/src/**'
+      - 'lib/js/test/**'
+      - 'lib/js/package.json'
+      - 'lib/js/package-lock.json'
+      - 'lib/js/webpack.config.mjs'
+      - 'lib/js/karma.conf*.mjs'
+      - 'lib/js/tsconfig*.json'
+      - 'lib/js/.eslintrc.cjs'
+      - 'lib/js/opentok.patch'
+      - '.github/workflows/**'
+      - '.github/actions/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -31,6 +43,7 @@ jobs:
         with:
           target: ${{ matrix.target }}
           node_version: ${{ vars.NODE_VERSION }}
+          opentok_npm_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
 
       - name: Test
         uses: ./.github/actions/run-test
@@ -60,6 +73,7 @@ jobs:
         with:
           target: ${{ matrix.target }}
           node_version: ${{ vars.NODE_VERSION }}
+          opentok_npm_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
 
   verify-artifacts:
     name: Verify ${{ matrix.target }} tarball
@@ -79,15 +93,24 @@ jobs:
           name: ${{ matrix.target }}-package-tarball
           path: tarball
 
-      - name: Verify tarball contains dist/index.js
+      - name: Verify tarball contains expected bundles
         shell: bash
         run: |
           TARBALL=$(find tarball -name '*.tgz' | head -1)
           # Capture listing into a variable to avoid tar SIGPIPE under pipefail
           CONTENTS=$(tar tzf "$TARBALL")
-          if ! echo "$CONTENTS" | grep -qE 'package/dist/index\.js$'; then
-            echo "❌ dist/index.js not found in tarball — build output path mismatch"
+          FAILED=0
+          for FILE in dist/index.js dist/index.mjs dist/index.d.ts; do
+            if ! echo "$CONTENTS" | grep -qE "package/${FILE}$"; then
+              echo "❌ ${FILE} not found in tarball"
+              FAILED=1
+            else
+              echo "✅ ${FILE} present"
+            fi
+          done
+          if [ "$FAILED" -ne 0 ]; then
+            echo ""
+            echo "Tarball dist/ contents:"
             echo "$CONTENTS" | grep 'dist/' || echo "(no dist/ entries at all)"
             exit 1
           fi
-          echo "✅ dist/index.js present in $TARBALL"

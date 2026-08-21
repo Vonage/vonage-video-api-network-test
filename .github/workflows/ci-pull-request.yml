@@ -2,6 +2,18 @@ name: CI Pull Request
 
 on:
   pull_request:
+    paths:
+      - 'lib/js/src/**'
+      - 'lib/js/test/**'
+      - 'lib/js/package.json'
+      - 'lib/js/package-lock.json'
+      - 'lib/js/webpack.config.mjs'
+      - 'lib/js/karma.conf*.mjs'
+      - 'lib/js/tsconfig*.json'
+      - 'lib/js/.eslintrc.cjs'
+      - 'lib/js/opentok.patch'
+      - '.github/workflows/**'
+      - '.github/actions/**'
 
 permissions: read-all
 
@@ -100,3 +112,8 @@ jobs:
       - name: Build
         working-directory: lib/js
         run: npm run build
+
+      - name: Verify Bundles
+        uses: ./.github/actions/verify-bundles
+        with:
+          target: ${{ matrix.target }}
