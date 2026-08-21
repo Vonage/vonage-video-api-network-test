@@ -17,7 +17,7 @@ export default function getVideoQualityEvaluation(stats: AverageStatsBase): Qual
   let supported = false;
   let recommendedFrameRate  = 30;
   let recommendedResolution  = '';
-  let recommendedSetting : string;
+  let recommendedSetting: string;
 
   for (let i = 0; i < thresholds.length; i += 1) {
     const threshold = thresholds[i];

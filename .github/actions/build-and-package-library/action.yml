@@ -26,6 +26,11 @@ runs:
       working-directory: lib/js
       run: npm run build
 
+    - name: Verify Bundles
+      uses: ./.github/actions/verify-bundles
+      with:
+        target: ${{ inputs.target }}
+
     - name: Package Tarball
       uses: ./.github/actions/package-tarball
       with:

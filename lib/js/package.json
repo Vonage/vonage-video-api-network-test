@@ -3,7 +3,16 @@
   "version": "5.1.5",
   "description": "Precall network test for applications using the Vonage Video API platform.",
   "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
   "files": [
     "dist/"
   ],
@@ -13,17 +22,20 @@
     "build": "npm run build:js && npm run build:types",
     "test-setup": "node test/setup/setup.js",
     "test-teardown": "rm test/credentials.json",
-    "karma": "karma start",
+    "karma": "karma start karma.conf.mjs",
+    "karma:dist": "karma start karma.conf.dist.mjs",
+    "karma:dist:esm": "karma start karma.conf.dist.esm.mjs",
     "test": "npm run test-setup && npm run karma && npm run test-teardown",
-    "example": "npm run build && cd ../../samples/js && npm run build && python -m SimpleHTTPServer",
+    "test:dist": "npm run build && npm run karma:dist && npm run karma:dist:esm",
+    "example": "npm run build && cd ../../samples/js && npm install && npm run build && npx serve .",
     "lint": "npm run tslint",
     "lint-fix": "npm run tslint-fix",
-    "tslint": "eslint . --ext .js,.ts",
-    "tslint-fix": "eslint . --ext .js,.ts --fix"
+    "tslint": "eslint . --ext .js,.mjs,.ts",
+    "tslint-fix": "eslint . --ext .js,.mjs,.ts --fix"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Vonage/vonage-video-js-api-network-test.git"
+    "url": "git+https://github.com/Vonage/vonage-video-api-network-test.git"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/",
@@ -42,26 +54,25 @@
   },
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/Vonage/vonage-video-js-api-network-test/issues"
+    "url": "https://github.com/Vonage/vonage-video-api-network-test/issues"
   },
-  "homepage": "https://github.com/Vonage/vonage-video-js-api-network-test#readme",
+  "homepage": "https://github.com/Vonage/vonage-video-api-network-test#readme",
   "dependencies": {
-    "axios": "^1.8.3",
+    "axios": "^1.19.0",
     "@opentok/opentok-solutions-logging": "^1.1.5"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.2",
-    "@changesets/cli": "^2.29.8",
+    "@changesets/cli": "^2.31.1",
     "@types/expect.js": "^0.3.29",
     "@types/jasmine": "^6.0.0",
     "@types/jasmine-matchers": "^0.2.30",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^25.6.0",
+    "@types/node": "^26.0.0",
     "@typescript-eslint/eslint-plugin": "^7.6.0",
-    "@typescript-eslint/eslint-plugin-tslint": "^7.0.2",
     "@typescript-eslint/parser": "^7.6.0",
     "@vonage/client-sdk-video": "^2.34.2",
-    "@vonage/server-sdk": "^3.20.0",
+    "@vonage/server-sdk": "^3.29.0",
     "dotenv": "^17.0.0",
     "eslint": "^8.44.0",
     "jasmine": "^6.0.0",
@@ -74,26 +85,21 @@
     "karma-mocha-reporter": "^2.2.5",
     "karma-safari-launcher": "^1.0.0",
     "karma-safaritechpreview-launcher": "2.0.2",
-    "karma-sauce-launcher": "^4.3.6",
     "karma-sourcemap-loader": "^0.4.0",
     "karma-webpack": "^5.0.0",
     "terser-webpack-plugin": "^5.3.9",
     "ts-loader": "^9.5.1",
     "typescript": "^6.0.3",
-    "webpack": "^5.88.1",
+    "webpack": "^5.109.2",
     "webpack-cli": "^6.0.0",
     "webpack-merge": "6.0.1",
     "webpack-node-externals": "^3.0.0"
   },
   "overrides": {
-    "download": {
-      "got": "^11.8.6"
-    },
-    "find-versions": {
-      "semver-regex": "^4.0.5"
-    },
-    "bin-check": {
-      "execa": "1.0.0"
-    }
+    "brace-expansion": ">=1.1.17",
+    "js-yaml": ">=4.3.0",
+    "ws": ">=8.21.0",
+    "body-parser": ">=1.20.6",
+    "fast-uri": ">=3.1.4"
   }
 }

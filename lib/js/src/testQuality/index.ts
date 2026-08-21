@@ -77,6 +77,7 @@ function connectToSession(session: OT.Session, token: string): Promise<OT.Sessio
           } else {
             reject(new e.ConnectToSessionError());
           }
+          return;
         }
         resolve(session);
       });
@@ -234,7 +235,7 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
                 });
           });
         })
-        .catch(reject);
+        .catch((error: Error) => disconnectAndReject(error));
     });
 }
 /**
@@ -356,7 +357,7 @@ function checkSubscriberQuality(
     subscribeToTestStream(OTInstance, session, credentials, options)
       .then(({ publisher, subscriber }: PublisherSubscriber) => {
         if (!subscriber) {
-          reject(new e.MissingSubscriberError());
+          disconnectAndReject(new e.MissingSubscriberError());
         } else {
           try {
             const builder: QualityTestResultsBuilder = {
@@ -390,8 +391,10 @@ function checkSubscriberQuality(
               const audioVideoResults: QualityTestResults = buildResults(builder);
               if (!audioOnly && !isAudioQualityAcceptable(audioVideoResults) && !stopTestCalled) {
                 audioOnly = true;
-                // We don't want to lose the videoResults.
+                // Preserve video results from the initial audio-video run before
+                // restarting in audio-only mode so that mediaRouting remains stable.
                 const videoResults = audioVideoResults.video;
+
                 checkSubscriberQuality(OTInstance, session, credentials, options, onUpdate, true)
                   .then((results: QualityTestResults) => {
                     results.video = videoResults;
