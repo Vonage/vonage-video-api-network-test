@@ -1,0 +1,16 @@
+lib/js/opentok.patch
+  h_42c8d8f17b92d9 403
+lib/js/package.json
+  h_42c8d8f17b92d9 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "27cf490016e098c9f2d43667ab2b12614c1aabc4",
+  "prompts": {},
+  "humans": {
+    "h_42c8d8f17b92d9": {
+      "author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
