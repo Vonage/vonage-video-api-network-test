@@ -1,0 +1,14 @@
+lib/js/package-lock.json
+  h_42c8d8f17b92d9 3,9,1690-1692,5590-5592
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "521f39ea0b82d6ff8c98b9f2338d7cdea7e8c83b",
+  "prompts": {},
+  "humans": {
+    "h_42c8d8f17b92d9": {
+      "author": "LukaszPilarski <lukasz.pilarski@vonage.com>"
+    }
+  }
+}
