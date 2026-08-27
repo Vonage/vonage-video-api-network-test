@@ -1,19 +1,18 @@
 diff --git a/lib/js/README.md b/lib/js/README.md
+index 8828d22..7b7482e 100644
 --- a/lib/js/README.md
 +++ b/lib/js/README.md
-@@ -1,19 +1,24 @@
+@@ -1,19 +1,20 @@
 -# Vonage Video API Network Test
- 
--[![license](https://img.shields.io/github/license/vonage/vonage-video-js-api-network-test.svg)](https://github.com/Vonage/vonage-video-js-api-network-test/blob/develop/CONTRIBUTING.md)
--[![npm](https://img.shields.io/npm/v/opentok-network-test-js.svg)](https://www.npmjs.com/package/@vonage/video-client-network-test)
-+![logo](https://raw.githubusercontent.com/opentok/opentok-network-test-js/master/media/tokbox-logo.png)
- 
+-
+-[![license](https://img.shields.io/github/license/vonage/vonage-video-api-network-test.svg)](https://github.com/Vonage/vonage-video-api-network-test/blob/develop/CONTRIBUTING.md)
+-[![npm](https://img.shields.io/npm/v/@vonage/video-client-network-test.svg)](https://www.npmjs.com/package/@vonage/video-client-network-test)
 +# OpenTok Network Test
 +
 +[![Build Status](https://goo.gl/17JDLY)](https://travis-ci.com/opentok/opentok-network-test-js)
 +[![license](https://img.shields.io/github/license/opentok/opentok-network-test-js.svg)](https://github.com/opentok/opentok-network-test-js/blob/master/CONTRIBUTING.md)
 +[![npm](https://img.shields.io/npm/v/opentok-network-test-js.svg)](https://www.npmjs.com/package/opentok-network-test-js)
-+
+ 
  This Node module lets you check network connectivity to resources and services required
 -to use [Vonage Video API](https://www.vonage.com/communications-apis/video). Run this on a web client to get the following information:
 +to use [OpenTok](https://tokbox.com). Run this on a web client to get the following information:
@@ -27,12 +26,11 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  * A recommended frame rate and resolution to use for publishing to a session
  
 -For a sample that uses this module, see the [Vonage Video API Pre-call Test tool](https://tools.vonage.com/video/precall/).
-+For a sample that uses this module, see the [OpenTok Pre-call Test
-+tool](https://tokbox.com/developer/tools/precall/).
++For a sample that uses this module, see the [OpenTok Pre-call Test tool](https://tools.vonage.com/video/precall/).
  
  ## Instalation
  
-@@ -22,14 +27,14 @@
+@@ -22,14 +25,14 @@ For a sample that uses this module, see the [Vonage Video API Pre-call Test tool
  You can install the package from npm registry using this command:
  
  ```
@@ -43,19 +41,19 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  ### GitHub Packages
  
 -On top of npm registry, `@vonage/video-client-network-test` is published to [Github Packages](https://github.com/orgs/Vonage/packages/npm/package/video-client-network-test).
-+On top of npm registry, `opentok-network-test-js` is published to [Github Packages](https://github.com/orgs/Opentok/packages/npm/opentok-network-test-js).
++On top of npm registry, `opentok-network-test-js` is published to [Github Packages](https://github.com/orgs/Vonage/packages/npm/package/video-client-network-test).
  
 -To install `@vonage/video-client-network-test` from GitHub Packages' NPM registry, you need to configure npm to authenticate with GitHub:
 +To install `opentok-network-test-js` from GitHub Packages' NPM registry, you need to configure npm to authenticate with GitHub:
  
  **1. Create a GitHub Personal Access Token (PAT)**
  
-@@ -51,12 +56,12 @@
+@@ -51,20 +54,20 @@ Replace `YOUR_GITHUB_TOKEN` with your GitHub personal access token.
  Once configured, you can use standard `npm install` command to install the package.
  
  ```
 -$ npm install @vonage/video-client-network-test
-+$ npm install @opentok/opentok-network-test-js
++$ npm install opentok-network-test-js
  ```
  
  #### Note on Package Availability
@@ -65,16 +63,17 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  
  For more information about working with GitHub Packages' NPM registry, see the [GitHub Packages documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry).
  
-@@ -64,7 +69,7 @@
+ ## Configuration
  
- After successful instalation, you have to load the Vonage Video API Network Test in your project. The module exports two objects:
+-After successful instalation, you have to load the Vonage Video API Network Test in your project. The module exports two objects:
++After successful instalation, you have to load the OpenTok Network Test in your project. The module exports two objects:
  
 -* NetworkTest -- The class containing methods for testing your Vonage Video API connectivity and quality.
 +* NetworkTest -- The class containing methods for testing your OpenTok connectivity and quality.
    This is the default export.
  
  * ErrorNames -- An object enumerating error name values
-@@ -72,47 +77,47 @@
+@@ -72,34 +75,34 @@ After successful instalation, you have to load the Vonage Video API Network Test
  Using CommonJS:
  
  ```javascript
@@ -99,39 +98,34 @@ diff --git a/lib/js/README.md b/lib/js/README.md
 -Vonage Video web client SDK project, a session ID for a test session, and a token for that session:
 +Instantiate an instance of the test object, passing in the OpenTok.js OT object and
 +a configuration object. The configuration object contains an API key for your app's
-+OpenTok project, a session ID for a test session, and a token for that session:
++OpenTok.js project, a session ID for a test session, and a token for that session:
  
  ```javascript
 -const videoNetworkTest = new NetworkTest(OT, {
 -  applicationId: '123456', // Add the application ID for your Vonage Video API application here.
 +const otNetworkTest = new NetworkTest(OT, {
-+  apiKey: '123456', // Add the API key for your OpenTok project here.
++  apiKey: '123456', // Add the API key for your OpenTok application here.
    sessionId: '1_MX40NzIwMzJ-fjE1MDElGQkJJfn4', // Add a test session ID for that project
--  token: 'eyJhbGciOiJSUzI1...' // Add a token for that session here
-+  token: 'T1==cGFydG5lcXN0PQ==' // Add a token for that session here
+   token: 'eyJhbGciOiJSUzI1...' // Add a token for that session here
  });
  ```
  
 -Use the [Vonage Video API server SDKs](https://developer.vonage.com/en/tools) to generate a
-+Use the [OpenTok server SDKs](https://tokbox.com/developer/sdks/server/) to generate a
++Use the [OpenTok server SDKs](https://developer.vonage.com/en/tools) to generate a
  unique session ID for each client. This session ID is used for the network test, and it must
  be different than the session ID used for communication in the app. The test session must be
 -a routed session -- one that uses the [Vonage Video API Media
--Router](https://developer.vonage.com/en/video/guides/create-session#the-media-router-and-media-modes).
--Also generate a test token that has publish privileges.
 +a routed session -- one that uses the [OpenTok Media
-+Router](https://tokbox.com/developer/guides/create-session/#media-mode). Also generate a test
-+token that has publish privileges.
+ Router](https://developer.vonage.com/en/video/guides/create-session#the-media-router-and-media-modes).
+ Also generate a test token that has publish privileges.
  
- Then run the test methods:
+@@ -107,12 +110,12 @@ Then run the test methods:
  
  ```javascript
--videoNetworkTest.testConnectivity().then((results) => {
+ videoNetworkTest.testConnectivity().then((results) => {
 -  console.log('Vonage Video API connectivity test results', results);
--  videoNetworkTest.testQuality(function updateCallback(stats) {
-+otNetworkTest.testConnectivity().then((results) => {
 +  console.log('OpenTok connectivity test results', results);
-+  otNetworkTest.testQuality(function updateCallback(stats) {
+   videoNetworkTest.testQuality(function updateCallback(stats) {
      console.log('intermediate testQuality stats', stats);
    }).then((results) => {
      // This function is called when the quality test is completed.
@@ -140,7 +134,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
      let publisherSettings = {};
      if (results.video.reason) {
        console.log('Video not supported:', results.video.reason);
-@@ -132,10 +137,10 @@
+@@ -132,10 +135,10 @@ videoNetworkTest.testConnectivity().then((results) => {
        // Publish to the "real" session, using the publisherSettings object.
      }
    }).catch((error) => {
@@ -153,22 +147,20 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  });
  ```
  
-@@ -144,20 +149,20 @@
+@@ -144,20 +147,20 @@ with `audioOnly` set to `true` into the constructor:
  
  ```javascript
  const sessionInfo = {
 -  applicationId: '123456', // Add the application ID for your Vonage Video API application here.
-+  apiKey: '123456', // Add the API key for your OpenTok project here.
++  apiKey: '123456', // Add the API key for your OpenTok application here.
    sessionId: '1_MX40NzIwMzJ-fjE1MDElGQkJJfn4', // Add a test session ID for that project
--  token: 'eyJhbGciOiJSUzI1...' // Add a token for that session here
-+  token: 'T1==cGFydG5lcXN0PQ==' // Add a token for that session here
+   token: 'eyJhbGciOiJSUzI1...' // Add a token for that session here
  }
  const options = {audioOnly: true};
 -const videoNetworkTest = new NetworkTest(OT, sessionInfo, options);
 +const otNetworkTest = new NetworkTest(OT, sessionInfo, options);
  
--videoNetworkTest.testQuality(function updateCallback(stats) {
-+otNetworkTest.testQuality(function updateCallback(stats) {
+ videoNetworkTest.testQuality(function updateCallback(stats) {
    const currentStats = stats[stats.length - 1];
    console.log('testQuality stats', currentStats);
  }).then((results) => {
@@ -180,22 +172,18 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  });
  ```
  
-@@ -194,30 +199,33 @@
+@@ -194,25 +197,25 @@ The OTNetworkTest NPM module includes three public methods:
  
  The `OTNetworkTest()` constructor includes the following parameters:
  
 -* `ot` -- A reference to the Vonage Video web client SDK `OT` object. You must load Vonage Video web client SDK into the web page and pass the Vonage Video web client SDK `OT` into the `OTNetworkTest()` constructor.
-+* `ot` -- A reference to the OpenTok.js `OT` object. You must load OpenTok.js into the
-+  web page and pass the OpenTok.js `OT` into the `OTNetworkTest()` constructor.
++* `ot` -- A reference to the OpenTok.js `OT` object. You must load OpenTok.js into the web page and pass the OpenTok.js `OT` into the `OTNetworkTest()` constructor.
  
 -  Note that you may load Vonage Video web client SDK from the 
 -  [Vonage Video API server](https://unpkg.com/@vonage/client-sdk-video@2/dist/js/opentok.js) or via 
--  [NPM](https://www.npmjs.com/package/@vonage/server-sdk).
-+  Note that you may load OpenTok.js from the opentok.com server
-+  (https://static.opentok.com/v2/js/opentok.js) or via NPM
-+  (https://www.npmjs.com/package/@opentok/client). Or if your OpenTok project uses the [enterprise
-+  environment](https://tokbox.com/developer/enterprise/content/enterprise-overview.html),
-+  you will load OpenTok.js from the enterprise URL.
++  Note that you may load OpenTok.js from the
++  [OpenTok server](https://unpkg.com/@vonage/client-sdk-video@2/dist/js/opentok.js) or via
+   [NPM](https://www.npmjs.com/package/@vonage/server-sdk).
  
    Passing the OT object into the `OTNetworkTest()` constructor ensures that the tests will
 -  use the same version of Vonage Video API and the same Vonage Video API environment that will be used by the
@@ -206,25 +194,18 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  * `sessionInfo` -- An object containing the following:
  
 -  * `applicationId` -- The application ID corresponding to the Vonage Video API application the app uses.
-+  * `apiKey` -- The API key corresponding to the OpenTok project the app uses.
++  * `apiKey` -- The API key corresponding to the OpenTok application the app uses.
  
    * `sessionId` -- A test session ID. This must be an ID for a different session than
       the one that your application will be used for communication. Generate a unique
       session ID for each client. This session ID is used for the network test, and it
       must be different than the session ID used for communication in the app.
 -     The test session must be a routed session -- one that uses the [Vonage Video API Media
--     Router](https://developer.vonage.com/en/video/guides/create-session#the-media-router-and-media-modes).
 +     The test session must be a routed session -- one that uses the [OpenTok Media
-+     Router](https://tokbox.com/developer/guides/create-session/#media-mode).
+      Router](https://developer.vonage.com/en/video/guides/create-session#the-media-router-and-media-modes).
  
       To test connectivity
-      in a specific region, specify a location hint when [creating the test
--     session](https://developer.vonage.com/en/video/guides/create-session).
-+     session](https://tokbox.com/developer/guides/create-session/).
- 
-   * `token` -- A token corresponding to the test session. The role of the token must be
-     either `publisher` or `moderator`. The `sessionInfo` parameter is required.
-@@ -249,8 +257,8 @@
+@@ -249,8 +252,8 @@ The `OTNetworkTest()` constructor includes the following parameters:
      to be used by the test publisher. You can obtain a list of available devices,
      including audio input devices, by calling the `OT.getDevices()` method.
  
@@ -235,7 +216,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
      to grant permission to the correct device. Note that changing the audio device may not
      influence the quality test score.
  
-@@ -258,27 +266,29 @@
+@@ -258,8 +261,8 @@ The `OTNetworkTest()` constructor includes the following parameters:
      to be used by the test publisher. You can obtain a list of available devices,
      including audio input devices, by calling the `OT.getDevices()` method.
  
@@ -245,40 +226,26 @@ diff --git a/lib/js/README.md b/lib/js/README.md
 +    will be used in the real OpenTok session. This way, the test prompts the end user
      to grant permission to the correct device. Note that changing the video device may not
      influence the quality test score.
--  
--  * `initSessionOptions` (Object) -- An object that includes optional options 
--    for initializing the session 
--    ([Session Options](https://vonage.github.io/video-docs/video-js-reference/latest/OT.html#initSession)).
-+
-+  * `initSessionOptions` (Object) -- An object that includes optional options
-+    for initializing the session
-+    ([Session Options](https://tokbox.com/developer/sdks/js/reference/OT.html#initSession)).
-     This object includes the following properties:
--	  * `ipWhitelist ` (Boolean) -- Set this to `true` if IP white listing is enabled for your project. The default value is `false`. 
-+	  * `ipWhitelist ` (Boolean) -- This is available as an add-on feature
-+        for **enterprise accounts**. Set this to true if IP white listing
-+        is enabled for your project. The default value is false.
+   
+@@ -271,14 +274,14 @@ The `OTNetworkTest()` constructor includes the following parameters:
  	  * `iceConfig ` (Object) -- This feature is part of the configurable TURN add-on feature.
  
--  * `proxyServerUrl` (String) -- (Optional) Set this to the proxy server URL 
+   * `proxyServerUrl` (String) -- (Optional) Set this to the proxy server URL 
 -    you use in the Vonage Video API client SDKs (for example, when calling `OT.setProxyUrl()`
 -    in the Vonage Video web client SDK). For more information, please check the 
--    [IP Proxy Documentation](https://developer.vonage.com/en/video/guides/ip-proxy).
-+  * `proxyServerUrl` (String) -- (Optional) Set this to the proxy server URL
 +    you use in the OpenTok client SDKs (for example, when calling `OT.setProxyUrl()`
-+    in OpenTok.js). For more information, please check the
-+    [IP Proxy Documentation](https://tokbox.com/developer/guides/ip-proxy/).
++    in the OpenTok.js). For more information, please check the
+     [IP Proxy Documentation](https://developer.vonage.com/en/video/guides/ip-proxy).
  
    * `scalableVideo` (Boolean) -- (Optional) Whether to use
--    [scalable video](https://developer.vonage.com/en/video/guides/scalable-video)
-+    [scalable video](https://tokbox.com/developer/guides/scalable-video/)
+     [scalable video](https://developer.vonage.com/en/video/guides/scalable-video)
      (`true`) or not (`false`, the default). Disabling scalable video
 -    was added in Vonage Video web client SDK version 2.24.7.
 +    was added in OpenTok.js version 2.24.7.
  
    * `fullHd` (Boolean) -- (Optional) Allows publishing with a resolution of 1920x1080 (1080p).
      If the camera does not support 1920x1080 resolution, the `OTNetworkTest.testConnectivity()` method
-@@ -291,7 +301,7 @@
+@@ -291,7 +294,7 @@ the `ErrorNames` object (see [ErrorNames](#errornames)). For example:
  
  ```javascript
  try {
@@ -287,7 +254,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  } catch (error) {
    switch (error.name) {
      case ErrorNames.MISSING_OPENTOK_INSTANCE:
-@@ -300,7 +310,7 @@
+@@ -300,7 +303,7 @@ try {
      case ErrorNames.INCOMPLETE_SESSON_CREDENTIALS:
      case ErrorNames.MISSING_SESSON_CREDENTIALS:
      case ErrorNames.INVALID_SESSON_CREDENTIALS:
@@ -296,7 +263,7 @@ diff --git a/lib/js/README.md b/lib/js/README.md
        break;
      default:
        console.error('Unknown error .');
-@@ -310,11 +320,11 @@
+@@ -310,11 +313,11 @@ try {
  
  ### OTNetworkTest.testConnectivity()
  
@@ -310,14 +277,14 @@ diff --git a/lib/js/README.md b/lib/js/README.md
    any connectivity test failed.
  
  * `failedTests` (Array) -- If connectivity failed, this array contains an object for each
-@@ -322,23 +332,24 @@
+@@ -322,22 +325,22 @@ with a `results` object that has the following two properties:
  
    * `type` -- A sting defining the failure type. It will be set to one of the following values:
  
 -    * `'api'` -- The test could not connect to the Vonage Video API server. Connection to this
 -    server is required to connect to a Vonage Video API session.
-+    * `'api'` -- The test could not connect to the OpenTok API server. Connection to this
-+    server is required to connect to an OpenTok session.
++    * `'api'` -- The test could not connect to the OpenTok server. Connection to this
++    server is required to connect to a OpenTok session.
  
 -    * `'messaging'` -- The test could not establish a connection to the Vonage Video API messaging WebSocket.
 -    This connection is required to connect to an Vonage Video API session. In addition to other causes
@@ -338,66 +305,42 @@ diff --git a/lib/js/README.md b/lib/js/README.md
 -    * `'logging'` -- The test could not connect to the Vonage Video API logging server. The Vonage Video web client SDK library periodically logs data (such as video and audio quality) to this server. The client
 -    can still connect to a Vonage Video API session, however Vonage will not collect data that may help
 -    you debug issues with the session, using tools like [Vonage Video API
--    Inspector](https://tools.vonage.com/video/inspector/).
-+    * `'logging'` -- The test could not connect to the OpenTok logging server. The OpenTok.js
-+    library periodically logs data (such as video and audio quality) to this server. The client
-+    can still connect to an OpenTok session, however TokBox will not collect data that may help
++    * `'logging'` -- The test could not connect to the OpenTok logging server. The OpenTok.js library periodically logs data (such as video and audio quality) to this server. The client
++    can still connect to a OpenTok session, however Vonage will not collect data that may help
 +    you debug issues with the session, using tools like [OpenTok
-+    Inspector](https://tokbox.com/developer/tools/inspector/).
+     Inspector](https://tools.vonage.com/video/inspector/).
  
    * `error` -- An object defining the reason for the type of failure. This object includes
-   a `message` property and a `name` property. The message property describes the error.
-@@ -349,7 +360,7 @@
-     For example:
- 
-     ```javascript
--    videoNetworkTest.testConnectivity(function(results) {
-+    otNetworkTest.testConnectivity(function(results) {
-       results.failedTests && results.failedTests.forEach(result) => {
-         switch (failedTest.error.name) {
-           case ErrorNames.FAILED_TO_OBTAIN_MEDIA_DEVICES:
-@@ -371,7 +382,8 @@
+@@ -371,7 +374,7 @@ with a `results` object that has the following two properties:
  
  ### OTNetworkTest.testQuality(updateCallback)
  
 -This function runs a test publisher (using the application ID, session ID and token provided in the constructor). Based on the measured video bitrate, audio bitrate, and the audio packet loss for the published stream, it provides the following results:
-+This function runs a test publisher (using the API key, session ID and token provided in the constructor). Based on the measured video bitrate, audio bitrate, and the audio packet loss for
-+the published stream, it provides the following results:
++This function runs a test publisher (using the API key, session ID and token provided in the constructor). Based on the measured video bitrate, audio bitrate, and the audio packet loss for the published stream, it provides the following results:
  
  * Whether audio and video are supported and a reason why they aren't supported (if they aren't).
  
-@@ -422,7 +434,7 @@
+@@ -422,7 +425,7 @@ audio-video test), the property is set to `'audio-only'`.
  
  Pass in a `null` value if you do not want to register an `updateCallback` function.
  
 -Update: We advise using `'bytesSent'` to provide a more accurate result, especially if scalable video is enabled for the application ID.
-+Update: We advise using 'bytesSent' to provide a more accurate result, especially if scalable video is enabled for the API key
++Update: We advise using `'bytesSent'` to provide a more accurate result, especially if scalable video is enabled for the API key.
  
  #### Promise returned
  
-@@ -497,7 +509,7 @@
- (see [Error.name values](#errorname-values)).
- 
- ```javascript
--videoNetworkTest.testQuality(null, function updateCallback() {
-+otNetworkTest.testQuality(null, function updateCallback() {
-   // process intermediate results
- }).then((results) => {
-   // Display UI based on results
-@@ -538,9 +550,9 @@
+@@ -538,8 +541,8 @@ an error object (against the values defined in `ErrorNames`) to determine the ty
  
  | Error.name property set to this property of ErrorNames | Description |
  | ------------------------------------------------------------------ | ----------- |
 -|   `MISSING_OPENTOK_INSTANCE` | An instance of OT, the Vonage Video web client SDK, was not passed into the constructor. |
 -|   `INCOMPLETE_SESSON_CREDENTIALS` | The sessionInfo object passed into the constructor did not include an `applicationId`, `sessionId`,  or `token` object. |
--|   `MISSING_SESSON_CREDENTIALS` | No sessionInfo object was passed into the constructor. | 
-+|   `MISSING_OPENTOK_INSTANCE` | An instance of OT, the OpenTok.js client SDK, was not passed into the constructor. |
++|   `MISSING_OPENTOK_INSTANCE` | An instance of OT, the OpenTok.js, was not passed into the constructor. |
 +|   `INCOMPLETE_SESSON_CREDENTIALS` | The sessionInfo object passed into the constructor did not include an `apiKey`, `sessionId`,  or `token` object. |
-+|   `MISSING_SESSON_CREDENTIALS` | No sessionInfo object was passed into the constructor. |
+ |   `MISSING_SESSON_CREDENTIALS` | No sessionInfo object was passed into the constructor. | 
  
  #### testConnectivity() errors
- 
-@@ -551,22 +563,22 @@
+@@ -551,11 +554,11 @@ the following:
  
  | Error.name property set to this property of ErrorNames | Description |
  | -------------------------------------------------------------- | ----------- |
@@ -406,56 +349,39 @@ diff --git a/lib/js/README.md b/lib/js/README.md
 -|   `CONNECT_TO_SESSION_TOKEN_ERROR` | The test failed to connect to the test Vonage Video API session due to an invalid token. | 
 -|   `CONNECT_TO_SESSION_ID_ERROR` | The test failed to connect to the test Vonage Video API session due to an invalid session ID. | 
 -|   `CONNECT_TO_SESSION_NETWORK_ERROR` | The test failed to connect to the test Vonage Video API session due to a network error. | 
--|   `FAILED_TO_OBTAIN_MEDIA_DEVICES` | The test failed to obtain media devices (a camera or microphone). | 
--|   `NO_AUDIO_CAPTURE_DEVICES` | The browser cannot access a microphone. | 
--|   `NO_VIDEO_CAPTURE_DEVICES` | The browser cannot access a camera. | 
-+|   `API_CONNECTIVITY_ERROR` | The test failed to connect to OpenTOK API Server. |
++|   `API_CONNECTIVITY_ERROR` | The test failed to connect to OpenTok Server. |
 +|   `CONNECT_TO_SESSION_ERROR` | The test failed to connect to the test OpenTok session due to a network error. |
 +|   `CONNECT_TO_SESSION_TOKEN_ERROR` | The test failed to connect to the test OpenTok session due to an invalid token. |
 +|   `CONNECT_TO_SESSION_ID_ERROR` | The test failed to connect to the test OpenTok session due to an invalid session ID. |
 +|   `CONNECT_TO_SESSION_NETWORK_ERROR` | The test failed to connect to the test OpenTok session due to a network error. |
-+|   `FAILED_TO_OBTAIN_MEDIA_DEVICES` | The test failed to obtain media devices (a camera or microphone). |
-+|   `NO_AUDIO_CAPTURE_DEVICES` | The browser cannot access a microphone. |
-+|   `NO_VIDEO_CAPTURE_DEVICES` | The browser cannot access a camera. |
- |   `PUBLISH_TO_SESSION_ERROR` | Encountered an unknown error while attempting to publish to a session. | 
- |   `FAILED_MESSAGING_SERVER_TEST` | The test failed to connect to media server due to messaging server connection failure. | 
- |   `FAILED_TO_CREATE_LOCAL_PUBLISHER` | The test failed to create a local publisher object. | 
- |   `PUBLISH_TO_SESSION_NOT_CONNECTED` | The test failed to publish to the test session because the client was not connected to the session. | 
--|   `PUBLISH_TO_SESSION_PERMISSION_OR_TIMEOUT_ERROR` | The test failed to publish to the test session due a permissions error or timeout. | 
--|   `PUBLISH_TO_SESSION_NETWORK_ERROR` | The test failed to publish to the test session due a network error. | 
--|   `SUBSCRIBE_TO_SESSION_ERROR` | The test encountered an unknown error while attempting to subscribe to a test stream. | 
+ |   `FAILED_TO_OBTAIN_MEDIA_DEVICES` | The test failed to obtain media devices (a camera or microphone). | 
+ |   `NO_AUDIO_CAPTURE_DEVICES` | The browser cannot access a microphone. | 
+ |   `NO_VIDEO_CAPTURE_DEVICES` | The browser cannot access a camera. | 
+@@ -566,7 +569,7 @@ the following:
+ |   `PUBLISH_TO_SESSION_PERMISSION_OR_TIMEOUT_ERROR` | The test failed to publish to the test session due a permissions error or timeout. | 
+ |   `PUBLISH_TO_SESSION_NETWORK_ERROR` | The test failed to publish to the test session due a network error. | 
+ |   `SUBSCRIBE_TO_SESSION_ERROR` | The test encountered an unknown error while attempting to subscribe to a test stream. | 
 -|   `LOGGING_SERVER_CONNECTION_ERROR` | The test failed to connect to the Vonage Video API logging server. | 
-+|   `PUBLISH_TO_SESSION_PERMISSION_OR_TIMEOUT_ERROR` | The test failed to publish to the test session due a permissions error or timeout. |
-+|   `PUBLISH_TO_SESSION_NETWORK_ERROR` | The test failed to publish to the test session due a network error. |
-+|   `SUBSCRIBE_TO_SESSION_ERROR` | The test encountered an unknown error while attempting to subscribe to a test stream. |
 +|   `LOGGING_SERVER_CONNECTION_ERROR` | The test failed to connect to the OpenTok logging server. |
  
  #### testQuality() errors
  
-@@ -576,14 +588,14 @@
- | Error.name property set to this property of ErrorNames | Description |
+@@ -577,10 +580,10 @@ method has a `name` property set to one of the following:
  | -------------------------------------------------------------- | ----------- |
  |   `INVALID_ON_UPDATE_CALLBACK` | The `updateCallback` parameter is invalid. It must be a function that accepts a single parameter. |
--|   `UNSUPPORTED_BROWSER`  | The test is running on an unsupported browser (see [Supported browsers](#supported-browsers)). | 
+ |   `UNSUPPORTED_BROWSER`  | The test is running on an unsupported browser (see [Supported browsers](#supported-browsers)). | 
 -|   `CONNECT_TO_SESSION_ERROR` | The test failed to connect to the test Vonage Video API session due to a network error. | 
 -|   `CONNECT_TO_SESSION_TOKEN_ERROR` | The test failed to connect to the test Vonage Video API session due to an invalid token. | 
 -|   `CONNECT_TO_SESSION_ID_ERROR` | The test failed to connect to the test Vonage Video API session due to an invalid session ID. | 
 -|   `CONNECT_TO_SESSION_NETWORK_ERROR` | The test failed to connect to the test Vonage Video API session due to a network error. | 
--|   `FAILED_TO_OBTAIN_MEDIA_DEVICES` | The test failed to obtain media devices (a camera or microphone). | 
--|   `NO_AUDIO_CAPTURE_DEVICES` | The browser cannot access a microphone. | 
--|   `NO_VIDEO_CAPTURE_DEVICES` | The browser cannot access a camera. | 
-+|   `UNSUPPORTED_BROWSER`  | The test is running on an unsupported browser (see [Supported browsers](#supported-browsers)). |
 +|   `CONNECT_TO_SESSION_ERROR` | The test failed to connect to the test OpenTok session due to a network error. |
 +|   `CONNECT_TO_SESSION_TOKEN_ERROR` | The test failed to connect to the test OpenTok session due to an invalid token. |
 +|   `CONNECT_TO_SESSION_ID_ERROR` | The test failed to connect to the test OpenTok session due to an invalid session ID. |
 +|   `CONNECT_TO_SESSION_NETWORK_ERROR` | The test failed to connect to the test OpenTok session due to a network error. |
-+|   `FAILED_TO_OBTAIN_MEDIA_DEVICES` | The test failed to obtain media devices (a camera or microphone). |
-+|   `NO_AUDIO_CAPTURE_DEVICES` | The browser cannot access a microphone. |
-+|   `NO_VIDEO_CAPTURE_DEVICES` | The browser cannot access a camera. |
- |   `PUBLISH_TO_SESSION_ERROR` | The test encountered an unknown error while attempting to publish to a session. | 
- |   `INIT_PUBLISHER_ERROR` | The test failed to initialize a publisher. | 
- |   `PUBLISH_TO_SESSION_NOT_CONNECTED` | The test failed to publish to the test session because the client was not connected to the session. | 
-@@ -616,8 +628,8 @@
+ |   `FAILED_TO_OBTAIN_MEDIA_DEVICES` | The test failed to obtain media devices (a camera or microphone). | 
+ |   `NO_AUDIO_CAPTURE_DEVICES` | The browser cannot access a microphone. | 
+ |   `NO_VIDEO_CAPTURE_DEVICES` | The browser cannot access a camera. | 
+@@ -616,8 +619,8 @@ limit the range of scores from 1.0 to 4.5.
  | 1.7 - 2.39 | Poor      |
  | 1.0 - 1.69 | Bad       |
  
@@ -466,40 +392,25 @@ diff --git a/lib/js/README.md b/lib/js/README.md
  for audio, which is factored into the MOS calculation.
  
  ## Building the module
-@@ -646,4 +658,4 @@
- 
- [itu-g107]: https://www.itu.int/rec/dologin_pub.asp?lang=s&id=T-REC-G.107-201402-S!!PDF-E
- 
--[releases-page]: https://github.com/vonage/vonage-video-js-api-network-test/releases
-+[releases-page]: https://github.com/opentok/opentok-network-test-js/releases
 diff --git a/lib/js/package.json b/lib/js/package.json
-index bbcb01a..eec63b8 100644
+index d01cf28..d00747f 100644
 --- a/lib/js/package.json
 +++ b/lib/js/package.json
-@@ -1,12 +1,12 @@
+@@ -1,7 +1,7 @@
  {
 -  "name": "@vonage/video-client-network-test",
 +  "name": "@opentok/opentok-network-test-js",
-   "version": "5.1.5",
+   "version": "5.1.6",
 -  "description": "Precall network test for applications using the Vonage Video API platform.",
--  "main": "dist/index.js",
--  "types": "dist/index.d.ts",
 +  "description": "Precall network test for applications using the OpenTok platform.",
-+  "main": "dist/index.js",
-+  "types": "dist/index.d.ts",
-   "files": [
-     "dist/"
-   ],
-   "scripts": {
-     "build:js": "rm -rf dist && webpack --config webpack.config.mjs  --stats-error-details",
-     "build:types": "tsc --project ./tsconfig.json",
-@@ -21,17 +21,17 @@
-     "tslint": "eslint . --ext .js,.ts",
-     "tslint-fix": "eslint . --ext .js,.ts --fix"
+   "main": "dist/index.js",
+   "module": "dist/index.mjs",
+   "types": "dist/index.d.ts",
+@@ -35,15 +35,15 @@
    },
    "repository": {
      "type": "git",
--    "url": "git+https://github.com/Vonage/vonage-video-js-api-network-test.git"
+-    "url": "git+https://github.com/Vonage/vonage-video-api-network-test.git"
 +    "url": "git+https://github.com/opentok/opentok-network-test-js.git"
    },
    "publishConfig": {
@@ -514,37 +425,44 @@ index bbcb01a..eec63b8 100644
      "network test",
      "connectivity",
      "webrtc"
-@@ -40,9 +39,9 @@
+@@ -54,9 +54,9 @@
    },
    "license": "Apache-2.0",
    "bugs": {
--    "url": "https://github.com/Vonage/vonage-video-js-api-network-test/issues"
+-    "url": "https://github.com/Vonage/vonage-video-api-network-test/issues"
 +    "url": "https://github.com/opentok/network-connectivity-js/issues"
    },
--  "homepage": "https://github.com/Vonage/vonage-video-js-api-network-test#readme",
+-  "homepage": "https://github.com/Vonage/vonage-video-api-network-test#readme",
 +  "homepage": "https://github.com/opentok/network-connectivity-js#readme",
    "dependencies": {
-     "axios": "^1.8.3",
+     "axios": "^1.19.0",
      "@opentok/opentok-solutions-logging": "^1.1.5"
-@@ -60,7 +60,7 @@
+@@ -64,6 +64,7 @@
+   "devDependencies": {
+     "@changesets/changelog-github": "^0.5.2",
+     "@changesets/cli": "^2.31.1",
++    "@opentok/client": "^2.34.1",
+     "@types/expect.js": "^0.3.29",
+     "@types/jasmine": "^6.0.0",
+     "@types/jasmine-matchers": "^0.2.30",
+@@ -71,8 +72,6 @@
+     "@types/node": "^26.0.0",
      "@typescript-eslint/eslint-plugin": "^7.6.0",
-     "@typescript-eslint/eslint-plugin-tslint": "^7.0.2",
      "@typescript-eslint/parser": "^7.6.0",
 -    "@vonage/client-sdk-video": "^2.34.2",
-+    "@opentok/client": "^2.34.2",
-     "@vonage/server-sdk": "^3.20.0",
+-    "@vonage/server-sdk": "^3.29.0",
      "dotenv": "^17.0.0",
      "eslint": "^8.44.0",
-@@ -75,12 +75,12 @@
-     "karma-sauce-launcher": "^4.3.6",
+     "jasmine": "^6.0.0",
+@@ -87,12 +86,12 @@
+     "karma-safaritechpreview-launcher": "2.0.2",
      "karma-sourcemap-loader": "^0.4.0",
      "karma-webpack": "^5.0.0",
 +    "opentok": "^2.16.0",
      "terser-webpack-plugin": "^5.3.9",
      "ts-loader": "^9.5.1",
--    "typescript": "^6.0.3",
-+    "typescript": "^5.4.5",
-     "webpack": "^5.88.1",
+     "typescript": "^6.0.3",
+     "webpack": "^5.109.2",
      "webpack-cli": "^6.0.0",
 -    "webpack-merge": "6.0.1",
      "webpack-node-externals": "^3.0.0"
@@ -593,7 +511,7 @@ index 3644174..d917b12 100644
  
  export enum ErrorNames {
 diff --git a/lib/js/src/index.ts b/lib/js/src/index.ts
-index ab42d70..28ff6b7 100644
+index 7e61dab..d62876c 100644
 --- a/lib/js/src/index.ts
 +++ b/lib/js/src/index.ts
 @@ -48,13 +48,13 @@ export default class NetworkTest {
@@ -626,9 +544,8 @@ index ab42d70..28ff6b7 100644
    }
  
 -  private startLoggingEngine(applicationId: string, sessionId: string, proxyUrl: string): OTKLogger {
--    return new OTKLogger({
 +  private startLoggingEngine(apiKey: string, sessionId: string, proxyUrl: string): OTKLogger {
-+    return new OTKLogger({
+     return new OTKLogger({
        sessionId,
 -      partnerId: applicationId,
 +      partnerId: apiKey,
@@ -677,7 +594,7 @@ index 62e49fc..4908092 100644
  export class APIConnectivityError extends ConnectivityError {
    constructor() {
 -    const message = 'Failed to connect to Vonage Video API Server';
-+    const message = 'Failed to connect to OpenTOK API Server';
++    const message = 'Failed to connect to OpenTok API Server';
      super(message, ErrorNames.API_CONNECTIVITY_ERROR);
    }
  }
@@ -699,7 +616,7 @@ index 62e49fc..4908092 100644
    }
  }
 diff --git a/lib/js/src/testConnectivity/index.ts b/lib/js/src/testConnectivity/index.ts
-index 55ae29c..d0cae9b 100644
+index ac16dd0..02b4017 100644
 --- a/lib/js/src/testConnectivity/index.ts
 +++ b/lib/js/src/testConnectivity/index.ts
 @@ -76,11 +76,11 @@ function cleanPublisher(publisher: OT.Publisher): Promise<void> {
@@ -707,7 +624,7 @@ index 55ae29c..d0cae9b 100644
  
  /**
 - * Attempt to connect to the Vonage Video API session
-+ * Attempt to connect to the OpenTok sessionope
++ * Attempt to connect to the OpenTok session
   */
  function connectToSession(
    OTInstance: typeof OT,
@@ -725,21 +642,15 @@ index 55ae29c..d0cae9b 100644
      session.connect(token, (error?: OT.OTError) => {
        if (errorHasName(error, OTErrorType.OT_AUTHENTICATION_ERROR)) {
          reject(new e.ConnectToSessionTokenError());
-@@ -273,13 +273,13 @@ function checkSubscribeToSession({ session, publisher }: PublishToSessionResults
+@@ -273,7 +273,7 @@ function checkSubscribeToSession({ session, publisher }: PublishToSessionResults
  }
  
  /**
 - * Attempt to connect to the Vonage client logging server
-+ * Attempt to connect to the tokbox client logging server
++ * Attempt to connect to the OpenTok logging server
   */
  function checkLoggingServer(OTInstance: typeof OT, options?: NetworkTestOptions): Promise<void>;
  function checkLoggingServer(
-   OTInstance: typeof OT,
-   options: NetworkTestOptions | undefined,
-   input: SubscribeToSessionResults):
- Promise<SubscribeToSessionResults>;
- function checkLoggingServer(OTInstance: typeof OT, options?: NetworkTestOptions, input?: SubscribeToSessionResults):
- Promise<SubscribeToSessionResults | void> {
 @@ -298,7 +298,7 @@ Promise<SubscribeToSessionResults | void> {
  }
  
@@ -763,10 +674,10 @@ index 1cbb201..8cf5432 100644
    }
  }
 diff --git a/lib/js/src/testQuality/index.ts b/lib/js/src/testQuality/index.ts
-index 036be73..5aa418a 100644
+index e46620a..20ac609 100644
 --- a/lib/js/src/testQuality/index.ts
 +++ b/lib/js/src/testQuality/index.ts
-@@ -56,7 +56,7 @@ let stopTestTimeoutId: number;
+@@ -59,7 +59,7 @@ let stopTestTimeoutId: number;
  let stopTestTimeoutCompleted = false;
  let stopTestCalled = false;
  /**
@@ -775,7 +686,7 @@ index 036be73..5aa418a 100644
   */
  function connectToSession(session: OT.Session, token: string): Promise<OT.Session> {
    return new Promise((resolve, reject) => {
-@@ -84,7 +84,7 @@ function connectToSession(session: OT.Session, token: string): Promise<OT.Sessio
+@@ -88,7 +88,7 @@ function connectToSession(session: OT.Session, token: string): Promise<OT.Sessio
   * Checks for camera support for a given resolution.
   *
   * See the "API reference" section of the README.md file in the root of the
@@ -784,7 +695,7 @@ index 036be73..5aa418a 100644
   */
  function checkCameraSupport(width: number, height: number): Promise<void> {
    return new Promise((resolve, reject) => {
-@@ -227,7 +227,7 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
+@@ -239,7 +239,7 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
      });
  }
  /**
@@ -793,7 +704,7 @@ index 036be73..5aa418a 100644
   */
  function subscribeToTestStream(
    OTInstance: typeof OT,
-@@ -433,7 +433,7 @@ function validateBrowser(): Promise<void> {
+@@ -453,7 +453,7 @@ function validateBrowser(): Promise<void> {
  }
  
  /**
@@ -802,7 +713,7 @@ index 036be73..5aa418a 100644
   */
  export function testQuality(
    OTInstance: typeof OT,
-@@ -483,7 +483,7 @@ export function testQuality(
+@@ -503,7 +503,7 @@ export function testQuality(
              sessionOptions.proxyUrl = options.proxyServerUrl;
            }
          }
@@ -812,19 +723,18 @@ index 036be73..5aa418a 100644
            .then(onSuccess)
            .catch(onError);
 diff --git a/lib/js/src/types/session.ts b/lib/js/src/types/session.ts
-index cfa3017..c743f67 100644
+index cfa3017..187525d 100644
 --- a/lib/js/src/types/session.ts
 +++ b/lib/js/src/types/session.ts
-@@ -13,7 +13,7 @@ export type InitSessionOptions = {
- };
- 
+@@ -15,5 +15,5 @@ export type InitSessionOptions = {
  export interface SessionCredentials {
-+  apiKey: string;
    sessionId: string;
    token: string;
 -  applicationId: string;
++  apiKey: string;
  }
 diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
+index eefe6b8..8c0f21b 100644
 --- a/lib/js/test/NetworkTest.spec.ts
 +++ b/lib/js/test/NetworkTest.spec.ts
 @@ -1,4 +1,6 @@
@@ -832,21 +742,21 @@ diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
 +/* tslint: disable */
 +
 +import * as OTClient from '@opentok/client';
+ import { credentials, createNetworkTest, OT } from './testEnv';
  import {
-   primary as sessionCredentials,
-   faultyLogging as badLoggingCredentials,
-@@ -29,8 +31,8 @@
-   }
- }
+   MissingOpenTokInstanceError,
+@@ -26,8 +28,8 @@ declare global {
  
+ const sessionCredentials = credentials.primary;
+ const badLoggingCredentials = credentials.faultyLogging;
 -const malformedCredentials = { applicationId: '1234', invalidProp: '1234', token: '1234' };
 -const badCredentials = { applicationId: '1234', sessionId: '1234', token: '1234' };
 +const malformedCredentials = { apiKey: '1234', invalidProp: '1234', token: '1234' };
 +const badCredentials = { apiKey: '1234', sessionId: '1234', token: '1234' };
- const networkTest = new NetworkTest(OTClient, sessionCredentials);
- const networkTestWithOptions = new NetworkTest(OTClient, sessionCredentials, {
-   audioOnly: true,
-@@ -93,8 +95,8 @@
+ const validOnUpdateCallback = (stats: UpdateCallbackStats) => stats;
+ 
+ const customMatchers: jasmine.CustomMatcherFactories = {
+@@ -107,8 +109,8 @@ describe('NetworkTest', () => {
      const testConnectFailure = (errorName: OTErrorType, expectedType: string): Promise<void> => {
        return new Promise((resolve, reject) => {
          const realInitSession = OT.initSession;
@@ -857,20 +767,53 @@ diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
            spyOn(session, 'connect').and.callFake((token, callback) => {
              const error = new Error();
              error.name = errorName;
-@@ -214,8 +216,8 @@
-       }, 15000);
-       it('results in a failed test if Session.subscribe() returns an error', (done) => {
+@@ -212,8 +214,8 @@ describe('NetworkTest', () => {
+ 
+       it('results in a failed test if OT.getDevices() returns an error', (done) => {
          const realInitSession = OT.initSession;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
 +          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'subscribe').and.callFake(((stream: any, target: any, config: any, callback: any) => {
-             const error = new Error();
-             callback(error);
-@@ -244,8 +246,8 @@
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -244,8 +246,8 @@ describe('NetworkTest', () => {
  
-       const testConnectFailure = (otErrorName: OTErrorType, netTestErrorName: string) => {
+       it('results in a failed test if there are no cameras or mics', (done) => {
+         const realInitSession = OT.initSession;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -276,8 +278,8 @@ describe('NetworkTest', () => {
+ 
+       it('results in a failed test if OT.initPublisher() returns an error', (done) => {
+         const realInitSession = OT.initSession;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -309,8 +311,8 @@ describe('NetworkTest', () => {
+       it('results in a failed test if Session.subscribe() returns an error', (done) => {
+         const realInitSession = OT.initSession;
+         const realGetDevices = OT.getDevices;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -375,8 +377,8 @@ describe('NetworkTest', () => {
+       };
+       const testConnectFailure = (done: DoneFn, otErrorName: OTErrorType, netTestErrorName: string) => {
          const realInitSession = OT.initSession;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
@@ -879,7 +822,62 @@ diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
            spyOn(session, 'connect').and.callFake((token, callback) => {
              const error = new Error();
              error.name = otErrorName;
-@@ -498,8 +500,8 @@
+@@ -451,8 +453,8 @@ describe('NetworkTest', () => {
+ 
+       it('results in a failed test if OT.getDevices() returns an error', (done) => {
+         const realInitSession = OT.initSession;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -479,8 +481,8 @@ describe('NetworkTest', () => {
+       it('results in a failed test if there are no mics', (done) => {
+         const realInitSession = OT.initSession;
+         const realOTGetDevices = OT.getDevices;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -643,8 +645,8 @@ describe('NetworkTest', () => {
+       it('results in a failed test if OT.initPublisher() returns an error', (done) => {
+         const realInitSession = OT.initSession;
+         const realGetDevices = OT.getDevices;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -675,8 +677,8 @@ describe('NetworkTest', () => {
+       it('results in a PermissionDeniedError if OT.initPublisher() returns OT_USER_MEDIA_ACCESS_DENIED', (done) => {
+         const realInitSession = OT.initSession;
+         const realGetDevices = OT.getDevices;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -711,8 +713,8 @@ describe('NetworkTest', () => {
+         const realInitSession = OT.initSession;
+         const realGetDevices = OT.getDevices;
+         let sessionDisconnectSpy: jasmine.Spy;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -751,8 +753,8 @@ describe('NetworkTest', () => {
  
        it('results in a failed test if Session.subscribe() returns an error', (done) => {
          const realInitSession = OT.initSession;
@@ -887,82 +885,155 @@ diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
 -          const session = realInitSession(applicationId, sessionId);
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
 +          const session = realInitSession(apiKey, sessionId);
-           spyOn(session, 'subscribe').and.callFake(((stream: any, target: any, config: any, callback: any) => {
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -795,8 +797,8 @@ describe('NetworkTest', () => {
+       it('should disconnect the session when validateDevices fails with getDevices error', (done) => {
+         const realInitSession = OT.initSession;
+         let sessionDisconnectSpy: jasmine.Spy;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -824,8 +826,8 @@ describe('NetworkTest', () => {
+       it('should disconnect the session when validateDevices finds no audio devices', (done) => {
+         const realInitSession = OT.initSession;
+         let sessionDisconnectSpy: jasmine.Spy;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -857,8 +859,8 @@ describe('NetworkTest', () => {
+         const realInitSession = OT.initSession;
+         const realGetDevices = OT.getDevices;
+         let sessionDisconnectSpy: jasmine.Spy;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -914,8 +916,8 @@ describe('NetworkTest', () => {
+         const realInitSession = OT.initSession;
+         const realGetDevices = OT.getDevices;
+         let sessionDisconnectSpy: jasmine.Spy;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -959,8 +961,8 @@ describe('NetworkTest', () => {
+         const realInitSession = OT.initSession;
+         const realGetDevices = OT.getDevices;
+         let sessionDisconnectSpy: jasmine.Spy;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -1004,8 +1006,8 @@ describe('NetworkTest', () => {
+         const realInitSession = OT.initSession;
+         const realGetDevices = OT.getDevices;
+         let sessionDisconnectSpy: jasmine.Spy;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
+@@ -1048,8 +1050,8 @@ describe('NetworkTest', () => {
+       it('connectToSession should not trigger publishAndSubscribe after rejecting on error', (done) => {
+         const realInitSession = OT.initSession;
+         let publishSpy: jasmine.Spy;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
              const error = new Error();
-             callback(error);
+             error.name = 'OT_AUTHENTICATION_ERROR';
+@@ -1077,8 +1079,8 @@ describe('NetworkTest', () => {
+         const realInitSession = OT.initSession;
+         const realGetDevices = OT.getDevices;
+         let sessionDisconnectSpy: jasmine.Spy;
+-        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+-          const session = realInitSession(applicationId, sessionId);
++        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
++          const session = realInitSession(apiKey, sessionId);
+           spyOn(session, 'connect').and.callFake((token, callback) => {
+             callback(undefined);
+           });
 diff --git a/lib/js/test/setup/setup.js b/lib/js/test/setup/setup.js
-index 3cecd93..586674f 100644
+index 2e717a5..6dd33f1 100644
 --- a/lib/js/test/setup/setup.js
 +++ b/lib/js/test/setup/setup.js
-@@ -1,62 +1,41 @@
+@@ -1,78 +1,52 @@
  import dotenv from 'dotenv';
  dotenv.config();
 -import { Vonage } from '@vonage/server-sdk';
--import * as fs from 'fs';
--import { dirname } from 'path';
++import OpenTok from 'opentok';
+ import * as fs from 'fs';
+ import { dirname } from 'path';
+ 
 -const applicationId = process.env.TEST_APPLICATION_ID;
 -const privateKeyPath = './private.key';
++const apiKey = process.env.TEST_API_KEY;
++const apiSecret = process.env.TEST_API_SECRET;
+ 
+-/**
+- * Optional custom video API host.
+- * When set, both the Vonage server SDK (session creation) and the NetworkTest
+- * client (via initSessionOptions.apiUrl) will target this host instead of production.
+- *
+- * Set via the VIDEO_API_URL environment variable (or in .env).
+- */
+-const videoApiUrl = process.env.VIDEO_API_URL || undefined;
 -
 -if (!applicationId) {
 -  console.error('Environment variable TEST_APPLICATION_ID is not set. Please set it before running this script.');
--  process.exit(1);
--}
--
++if (!apiKey) {
++  console.error('Environment variable TEST_API_KEY is not set. Please set it before running this script.');
+   process.exit(1);
+ }
+ 
 -if (!fs.existsSync(privateKeyPath)) {
 -  console.error(
 -    `Private key file not found at path: ${privateKeyPath}. Please create or place your private.key file there.`
 -  );
--  process.exit(1);
--}
--
++if (!apiSecret) {
++  console.error('Environment variable TEST_API_SECRET is not set. Please set it before running this script.');
+   process.exit(1);
+ }
+ 
 -async function createSessionAndToken({applicationId, privateKey}) {
+-  const vonageOptions = videoApiUrl ? { videoHost: videoApiUrl } : {};
 -  const vonage = new Vonage({
 -    applicationId,
 -    privateKey,
--  });
+-  }, vonageOptions);
 -  try {
 -    const session = await vonage.video.createSession({ mediaMode: 'routed' });
 -    const token = vonage.video.generateClientToken(session.sessionId);
 -    const { sessionId } = session;
 -    return { applicationId, sessionId, token };
--  } catch(e) {
+-  } catch (e) {
 -    console.error(e);
 -    throw e;
 -  }
--}
--
--async function writeCredentials(credentialsArray) {
--  const [primary, faultyLogging, faultyApi] = credentialsArray;
--  const credentials = { primary, faultyLogging, faultyApi };
--  const filePath = './test/credentials.json';
--  await fs.promises.mkdir(dirname(filePath), { recursive: true });
--  return fs.promises.writeFile(filePath, JSON.stringify(credentials, null, 2));
--}
--
--async function generateCredentials(){
--  try {
--    const privateKey = fs.readFileSync(privateKeyPath);
--
--    const sessions = await Promise.all([
--      createSessionAndToken({ applicationId, privateKey }),
--      createSessionAndToken({ applicationId, privateKey }),
--      createSessionAndToken({ applicationId, privateKey }),
--    ]);
--
--    await writeCredentials(sessions);
--    console.info('Generated session credentials for test.');
--  } catch(e) {
--    console.error('Failed to generate test credentials', e);
--  }
--}
--
-+import OpenTok from 'opentok';
-+import * as fs from 'fs';
-+import { dirname } from 'path';
-+const apiKey = process.env.TEST_API_KEY;
-+const apiSecret = process.env.TEST_API_SECRET;
-+
-+function createSessionAndToken({ apiKey, apiSecret }) {
++function createSessionAndToken({apiKey, apiSecret}) {
 +  return new Promise((resolve, reject) => {
 +    const opentok = new OpenTok(apiKey, apiSecret);
 +    opentok.createSession({ mediaMode: 'routed' }, (error, session) => {
@@ -975,24 +1046,77 @@ index 3cecd93..586674f 100644
 +      }
 +    });
 +  });
-+}
-+
+ }
+ 
+-async function writeCredentials(credentialsArray) {
 +function writeCredentials(credentialsArray) {
-+  const [primary, faultyLogging, faultyApi] = credentialsArray;
+   const [primary, faultyLogging, faultyApi] = credentialsArray;
+-  const credentials = {
+-    primary,
+-    faultyLogging,
+-    faultyApi,
+-    ...(videoApiUrl ? { apiUrl: videoApiUrl } : {}),
+-  };
 +  const credentials = { primary, faultyLogging, faultyApi };
-+  const filePath = './test/credentials.json';
+   const filePath = './test/credentials.json';
+-  await fs.promises.mkdir(dirname(filePath), { recursive: true });
+-  return fs.promises.writeFile(filePath, JSON.stringify(credentials, null, 2));
 +  return fs.promises.mkdir(dirname(filePath), { recursive: true })
 +    .then(() => fs.promises.writeFile(filePath, JSON.stringify(credentials, null, 2)));
-+}
-+
+ }
+ 
+-async function generateCredentials(){
+-  try {
+-    const privateKey = fs.readFileSync(privateKeyPath);
+-
+-    const sessions = await Promise.all([
+-      createSessionAndToken({ applicationId, privateKey }),
+-      createSessionAndToken({ applicationId, privateKey }),
+-      createSessionAndToken({ applicationId, privateKey }),
+-    ]);
 +function generateCredentials(){
 +  const create = () => createSessionAndToken({ apiKey, apiSecret });
-+
+ 
+-    await writeCredentials(sessions);
+-    console.info('Generated session credentials for test.');
+-  } catch (e) {
+-    console.error('Failed to generate test credentials', e);
+-  }
 +  Promise.all([create(), create(), create()])
 +    .then(writeCredentials)
 +    .then(() => console.info('Generated session credentials for test.'))
 +    .catch(e => console.error('Failed to generate test credentials', e));
-+}
-+
+ }
+ 
  generateCredentials();
-
+diff --git a/lib/js/test/testEnv.ts b/lib/js/test/testEnv.ts
+index 79a1089..eea38c8 100644
+--- a/lib/js/test/testEnv.ts
++++ b/lib/js/test/testEnv.ts
+@@ -4,7 +4,7 @@
+  * Reads credentials.json (generated by setup.js) and exposes:
+  * - `credentials` — the session credential sets (primary, faultyLogging, faultyApi)
+  * - `apiUrl` — the custom video API host (undefined when using production)
+- * - `OT` — a mutable wrapper around the @vonage/client-sdk-video module that allows
++ * - `OT` — a mutable wrapper around the @opentok/client module that allows
+  *   Jasmine's spyOn() to replace methods (the real module uses non-writable exports).
+  * - `createNetworkTest()` — factory that creates a NetworkTest instance with the
+  *   correct apiUrl baked in, so individual tests don't need to repeat the boilerplate.
+@@ -16,7 +16,7 @@
+  *   const networkTest = createNetworkTest(credentials.primary);
+  *   spyOn(OT, 'initSession').and.callFake(...);
+  */
+-import * as OTClient from '@vonage/client-sdk-video';
++import * as OTClient from '@opentok/client';
+ import credentialsJson from './credentials.json';
+ import NetworkTest, { NetworkTestOptions } from '../src';
+ import { SessionCredentials } from '../src/types/session';
+@@ -45,7 +45,7 @@ export const credentials = {
+ export const apiUrl: string | undefined = parsed.apiUrl;
+ 
+ /**
+- * A mutable wrapper around the @vonage/client-sdk-video module.
++ * A mutable wrapper around the @opentok/client module.
+  *
+  * The SDK exports its methods via webpack's Object.defineProperty pattern
+  * (enumerable: true, configurable: false, writable: false), which prevents

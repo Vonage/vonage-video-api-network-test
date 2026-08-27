@@ -35,11 +35,23 @@ function getAverageBitrateAndPlr(type: AV,
     publisherStats => publisherStats.simulcastEnabled,
   );
 
-  const lastPublisherStats = publisherStatsList[publisherStatsList.length - 1];
-
-  const qualityLimitationReason = lastPublisherStats.videoStats.find(
-    videoStats => videoStats.qualityLimitationReason != null
-    && videoStats.qualityLimitationReason !== 'none')?.qualityLimitationReason ?? undefined;
+  // Determine the sustained qualityLimitationReason using a majority threshold
+  // to filter out transient spikes during ramp-up
+  const qualityLimitationCounts: Record<string, number> = {};
+  for (const publisherStats of publisherStatsList) {
+    const reason = publisherStats.videoStats.find(
+      videoStats => videoStats.qualityLimitationReason != null
+        && videoStats.qualityLimitationReason !== 'none'
+    )?.qualityLimitationReason;
+    if (reason) {
+      if (!qualityLimitationCounts[reason]) qualityLimitationCounts[reason] = 0;
+      qualityLimitationCounts[reason] += 1;
+    }
+  }
+  const majorityThreshold = publisherStatsList.length / 2;
+  const qualityLimitationReason = Object.entries(qualityLimitationCounts).find(([, count]) => {
+    return count > majorityThreshold;
+  })?.[0] ?? undefined;
 
   const averageStats: AverageStatsBase = {
     availableOutgoingBitrate: publisherStatsList[publisherStatsList.length - 1].availableOutgoingBitrate,

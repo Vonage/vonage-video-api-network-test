@@ -1,7 +1,7 @@
 # Vonage Video API Network Test
 
-[![license](https://img.shields.io/github/license/vonage/vonage-video-js-api-network-test.svg)](https://github.com/Vonage/vonage-video-js-api-network-test/blob/develop/CONTRIBUTING.md)
-[![npm](https://img.shields.io/npm/v/opentok-network-test-js.svg)](https://www.npmjs.com/package/@vonage/video-client-network-test)
+[![license](https://img.shields.io/github/license/vonage/vonage-video-api-network-test.svg)](https://github.com/Vonage/vonage-video-api-network-test/blob/develop/CONTRIBUTING.md)
+[![npm](https://img.shields.io/npm/v/@vonage/video-client-network-test.svg)](https://www.npmjs.com/package/@vonage/video-client-network-test)
 
 This Node module lets you check network connectivity to resources and services required
 to use [Vonage Video API](https://www.vonage.com/communications-apis/video). Run this on a web client to get the following information:
@@ -646,4 +646,4 @@ See the /samples/js subdirectory (and the /samples/js/README.md file) for a samp
 
 [itu-g107]: https://www.itu.int/rec/dologin_pub.asp?lang=s&id=T-REC-G.107-201402-S!!PDF-E
 
-[releases-page]: https://github.com/vonage/vonage-video-js-api-network-test/releases
+[releases-page]: https://github.com/vonage/vonage-video-api-network-test/releases

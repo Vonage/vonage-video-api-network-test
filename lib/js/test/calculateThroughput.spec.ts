@@ -122,42 +122,186 @@ describe('calculateThroughput', () => {
     expect(result.video.recommendedResolution).toBeDefined();
   });
 
-  it('returns qualityLimitationReason from the last publisher video stats when set', () => {
-    const pubStatWithLimitation = createPublisherStat(1000, {
-      videoStats: [{
-        ssrc: 1,
-        byteSent: 1000,
-        kbs: 500,
-        qualityLimitationReason: 'bandwidth',
-        resolution: '640x480',
-        framerate: 30,
-        active: true,
-        pliCount: 0,
-        nackCount: 0,
-        currentTimestamp: 1000,
-      }],
+  describe('majority-vote qualityLimitationReason', () => {
+    function createPubStatWithReason(
+      timestamp: number,
+      reason: string | undefined,
+    ): PublisherStats {
+      return createPublisherStat(timestamp, {
+        videoStats: [{
+          ssrc: 1,
+          byteSent: 1000,
+          kbs: 500,
+          qualityLimitationReason: reason,
+          resolution: '640x480',
+          framerate: 30,
+          active: true,
+          pliCount: 0,
+          nackCount: 0,
+          currentTimestamp: timestamp,
+        }],
+      });
+    }
+
+    it('returns undefined when all limitations are "none"', () => {
+      state.subscriberStatsLog.push(
+        createSubscriberStat(1000),
+        createSubscriberStat(2000),
+      );
+      state.publisherStatsLog.push(
+        createPubStatWithReason(1000, 'none'),
+        createPubStatWithReason(2000, 'none'),
+        createPubStatWithReason(3000, 'none'),
+      );
+
+      const result = calculateThroughput(state);
+
+      expect(result.video.qualityLimitationReason).toBeUndefined();
     });
-    state.subscriberStatsLog.push(
-      createSubscriberStat(1000),
-      createSubscriberStat(2000),
-    );
-    state.publisherStatsLog.push(pubStatWithLimitation);
 
-    const result = calculateThroughput(state);
+    it('returns undefined when all limitations are undefined/null', () => {
+      state.subscriberStatsLog.push(
+        createSubscriberStat(1000),
+        createSubscriberStat(2000),
+      );
+      state.publisherStatsLog.push(
+        createPubStatWithReason(1000, undefined),
+        createPubStatWithReason(2000, undefined),
+      );
 
-    expect(result.video.qualityLimitationReason).toBe('bandwidth');
-  });
+      const result = calculateThroughput(state);
 
-  it('returns undefined qualityLimitationReason when all limitations are none', () => {
-    state.subscriberStatsLog.push(
-      createSubscriberStat(1000),
-      createSubscriberStat(2000),
-    );
-    state.publisherStatsLog.push(createPublisherStat(1000));
+      expect(result.video.qualityLimitationReason).toBeUndefined();
+    });
 
-    const result = calculateThroughput(state);
+    it('suppresses a transient limitation that does not exceed majority threshold', () => {
+      state.subscriberStatsLog.push(
+        createSubscriberStat(1000),
+        createSubscriberStat(2000),
+      );
+      // 1 out of 10 samples reports "bandwidth" — should be suppressed
+      const samples = Array.from({ length: 10 }, (_, i) =>
+        createPubStatWithReason((i + 1) * 1000, i === 5 ? 'bandwidth' : 'none')
+      );
+      state.publisherStatsLog.push(...samples);
 
-    expect(result.video.qualityLimitationReason).toBeUndefined();
+      const result = calculateThroughput(state);
+
+      expect(result.video.qualityLimitationReason).toBeUndefined();
+    });
+
+    it('reports a sustained limitation that exceeds majority (>50%) threshold', () => {
+      state.subscriberStatsLog.push(
+        createSubscriberStat(1000),
+        createSubscriberStat(2000),
+      );
+      // All 10 samples within a 5s window; 6 report "bandwidth" — majority
+      const baseTs = 5000;
+      const samples = Array.from({ length: 10 }, (_, i) =>
+        createPubStatWithReason(baseTs + i * 400, i < 6 ? 'bandwidth' : 'none')
+      );
+      state.publisherStatsLog.push(...samples);
+
+      const result = calculateThroughput(state);
+
+      expect(result.video.qualityLimitationReason).toBe('bandwidth');
+    });
+
+    it('reports "cpu" when it exceeds majority threshold', () => {
+      state.subscriberStatsLog.push(
+        createSubscriberStat(1000),
+        createSubscriberStat(2000),
+      );
+      // 4 out of 6 samples report "cpu"
+      state.publisherStatsLog.push(
+        createPubStatWithReason(1000, 'cpu'),
+        createPubStatWithReason(2000, 'cpu'),
+        createPubStatWithReason(3000, 'none'),
+        createPubStatWithReason(4000, 'cpu'),
+        createPubStatWithReason(5000, 'none'),
+        createPubStatWithReason(6000, 'cpu'),
+      );
+
+      const result = calculateThroughput(state);
+
+      expect(result.video.qualityLimitationReason).toBe('cpu');
+    });
+
+    it('does not report a reason at exactly 50% (requires strictly more than half)', () => {
+      state.subscriberStatsLog.push(
+        createSubscriberStat(1000),
+        createSubscriberStat(2000),
+      );
+      // Exactly 5 out of 10 — at threshold, not above
+      const samples = Array.from({ length: 10 }, (_, i) =>
+        createPubStatWithReason((i + 1) * 1000, i < 5 ? 'bandwidth' : 'none')
+      );
+      state.publisherStatsLog.push(...samples);
+
+      const result = calculateThroughput(state);
+
+      expect(result.video.qualityLimitationReason).toBeUndefined();
+    });
+
+    it('picks the reason with the highest count when multiple reasons are present', () => {
+      state.subscriberStatsLog.push(
+        createSubscriberStat(1000),
+        createSubscriberStat(2000),
+      );
+      // 7 "bandwidth", 2 "cpu", 1 "none" — bandwidth is majority
+      state.publisherStatsLog.push(
+        createPubStatWithReason(1000, 'bandwidth'),
+        createPubStatWithReason(2000, 'bandwidth'),
+        createPubStatWithReason(3000, 'cpu'),
+        createPubStatWithReason(4000, 'bandwidth'),
+        createPubStatWithReason(5000, 'bandwidth'),
+        createPubStatWithReason(6000, 'cpu'),
+        createPubStatWithReason(7000, 'bandwidth'),
+        createPubStatWithReason(8000, 'bandwidth'),
+        createPubStatWithReason(9000, 'bandwidth'),
+        createPubStatWithReason(10000, 'none'),
+      );
+
+      const result = calculateThroughput(state);
+
+      expect(result.video.qualityLimitationReason).toBe('bandwidth');
+    });
+
+    it('returns undefined when multiple reasons are present but none exceeds majority', () => {
+      state.subscriberStatsLog.push(
+        createSubscriberStat(1000),
+        createSubscriberStat(2000),
+      );
+      // 4 "bandwidth", 4 "cpu", 2 "none" — neither exceeds 50%
+      state.publisherStatsLog.push(
+        createPubStatWithReason(1000, 'bandwidth'),
+        createPubStatWithReason(2000, 'bandwidth'),
+        createPubStatWithReason(3000, 'cpu'),
+        createPubStatWithReason(4000, 'cpu'),
+        createPubStatWithReason(5000, 'bandwidth'),
+        createPubStatWithReason(6000, 'cpu'),
+        createPubStatWithReason(7000, 'bandwidth'),
+        createPubStatWithReason(8000, 'cpu'),
+        createPubStatWithReason(9000, 'none'),
+        createPubStatWithReason(10000, 'none'),
+      );
+
+      const result = calculateThroughput(state);
+
+      expect(result.video.qualityLimitationReason).toBeUndefined();
+    });
+
+    it('reports reason when a single sample is the only sample (1 out of 1 = 100%)', () => {
+      state.subscriberStatsLog.push(
+        createSubscriberStat(1000),
+        createSubscriberStat(2000),
+      );
+      state.publisherStatsLog.push(createPubStatWithReason(1000, 'bandwidth'));
+
+      const result = calculateThroughput(state);
+
+      expect(result.video.qualityLimitationReason).toBe('bandwidth');
+    });
   });
 
   it('reports simulcast true when publisher stats have simulcast enabled', () => {

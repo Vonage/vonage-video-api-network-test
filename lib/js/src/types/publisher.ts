@@ -21,7 +21,7 @@ export interface PublisherStats {
   videoStats: VideoStats[];
   audioStats: AudioStats[];
   availableOutgoingBitrate: number;
-  videoByteSent:number;
+  videoByteSent: number;
   videoKbsSent: number;
   simulcastEnabled: boolean;
   transportProtocol: string;
