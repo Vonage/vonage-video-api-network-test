@@ -1,0 +1,195 @@
+name: Unpublish Package Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Package variant to unpublish'
+        required: true
+        type: choice
+        default: 'all'
+        options:
+          - 'all'
+          - '@vonage/video-client-network-test → npmjs.com'
+          - '@vonage/video-client-network-test → GitHub Packages'
+          - 'opentok-network-test-js → npmjs.com'
+          - '@opentok/opentok-network-test-js → GitHub Packages'
+      version:
+        description: 'Version to unpublish (e.g. 5.1.1). Leave empty to unpublish the version currently tagged as "latest".'
+        required: false
+        type: string
+      dry_run:
+        description: 'Dry run — print what would happen without unpublishing'
+        required: true
+        type: boolean
+        default: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false  # Never cancel: a removal mid-flight could leave the registry in an inconsistent state.
+
+permissions: read-all
+
+jobs:
+  unpublish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    name: Unpublish v${{ inputs.version || 'latest' }} (${{ inputs.target }})
+    permissions:
+      packages: write  # Required to delete GitHub Packages versions.
+    steps:
+      - name: Setup Node.js and npm auth
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      - name: '@vonage/video-client-network-test → npmjs.com'
+        if: inputs.target == 'all' || inputs.target == '@vonage/video-client-network-test → npmjs.com'
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          INPUT_VERSION: ${{ inputs.version }}
+          PACKAGE_NAME: '@vonage/video-client-network-test'
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_VONAGE }}
+        shell: bash
+        run: |
+          VERSION="${INPUT_VERSION:-$(npm view "${PACKAGE_NAME}" version --registry https://registry.npmjs.org 2>/dev/null || echo '')}"
+          if [ -z "$VERSION" ]; then
+            echo "⚠️  Could not resolve version for ${PACKAGE_NAME} on npmjs.com — skipping."
+            exit 0
+          fi
+          echo "Target: ${PACKAGE_NAME}@${VERSION}"
+
+          PUBLISHED=$(npm view "${PACKAGE_NAME}@${VERSION}" version \
+            --registry https://registry.npmjs.org 2>/dev/null || echo "")
+          if [ -z "$PUBLISHED" ]; then
+            echo "⚠️  ${PACKAGE_NAME}@${VERSION} not found on npmjs.com — skipping."
+            exit 0
+          fi
+
+          PUBLISHED_AT=$(npm view "${PACKAGE_NAME}@${VERSION}" time --json \
+            --registry https://registry.npmjs.org 2>/dev/null \
+            | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('${VERSION}',''))")
+          PUBLISHED_TS=$(date -d "$PUBLISHED_AT" +%s 2>/dev/null || echo 0)
+          ELAPSED_HOURS=$(( ($(date +%s) - PUBLISHED_TS) / 3600 ))
+          if [ "$ELAPSED_HOURS" -ge 72 ]; then
+            echo "⚠️  ${PACKAGE_NAME}@${VERSION} was published ${ELAPSED_HOURS}h ago — npm 72-hour unpublish window has passed. Skipping."
+            exit 0
+          fi
+
+          if [ "$DRY_RUN" == "true" ]; then
+            echo "✅ Dry run — would unpublish ${PACKAGE_NAME}@${VERSION} from npmjs.com (published ${ELAPSED_HOURS}h ago)"
+            exit 0
+          fi
+
+          npm unpublish "${PACKAGE_NAME}@${VERSION}" --registry https://registry.npmjs.org
+          echo "✅ Unpublished ${PACKAGE_NAME}@${VERSION} from npmjs.com"
+
+      - name: '@vonage/video-client-network-test → GitHub Packages'
+        if: inputs.target == 'all' || inputs.target == '@vonage/video-client-network-test → GitHub Packages'
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          INPUT_VERSION: ${{ inputs.version }}
+          GH_ORG: Vonage
+          PACKAGE_NAME: video-client-network-test
+          # @vonage packages live in this repo's org — GITHUB_TOKEN has write:packages.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          VERSION="${INPUT_VERSION:-$(npm view "@${GH_ORG}/${PACKAGE_NAME}" dist-tags.latest \
+            --registry https://npm.pkg.github.com 2>/dev/null || echo '')}"
+          if [ -z "$VERSION" ]; then
+            echo "⚠️  Could not resolve version for @${GH_ORG}/${PACKAGE_NAME} on GitHub Packages — skipping."
+            exit 0
+          fi
+          echo "Target: @${GH_ORG}/${PACKAGE_NAME}@${VERSION}"
+
+          VERSION_ID=$(gh api "/orgs/${GH_ORG}/packages/npm/${PACKAGE_NAME}/versions" \
+            --jq ".[] | select(.name == \"${VERSION}\") | .id" 2>/dev/null || echo "")
+          if [ -z "$VERSION_ID" ]; then
+            echo "⚠️  @${GH_ORG}/${PACKAGE_NAME}@${VERSION} not found on GitHub Packages — skipping."
+            exit 0
+          fi
+
+          if [ "$DRY_RUN" == "true" ]; then
+            echo "✅ Dry run — would delete @${GH_ORG}/${PACKAGE_NAME}@${VERSION} (id: ${VERSION_ID}) from GitHub Packages"
+            exit 0
+          fi
+
+          gh api --method DELETE "/orgs/${GH_ORG}/packages/npm/${PACKAGE_NAME}/versions/${VERSION_ID}"
+          echo "✅ Deleted @${GH_ORG}/${PACKAGE_NAME}@${VERSION} from GitHub Packages"
+
+      - name: 'opentok-network-test-js → npmjs.com'
+        if: inputs.target == 'all' || inputs.target == 'opentok-network-test-js → npmjs.com'
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          INPUT_VERSION: ${{ inputs.version }}
+          PACKAGE_NAME: 'opentok-network-test-js'
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_OPENTOK }}
+        shell: bash
+        run: |
+          VERSION="${INPUT_VERSION:-$(npm view "${PACKAGE_NAME}" version --registry https://registry.npmjs.org 2>/dev/null || echo '')}"
+          if [ -z "$VERSION" ]; then
+            echo "⚠️  Could not resolve version for ${PACKAGE_NAME} on npmjs.com — skipping."
+            exit 0
+          fi
+          echo "Target: ${PACKAGE_NAME}@${VERSION}"
+
+          PUBLISHED=$(npm view "${PACKAGE_NAME}@${VERSION}" version \
+            --registry https://registry.npmjs.org 2>/dev/null || echo "")
+          if [ -z "$PUBLISHED" ]; then
+            echo "⚠️  ${PACKAGE_NAME}@${VERSION} not found on npmjs.com — skipping."
+            exit 0
+          fi
+
+          PUBLISHED_AT=$(npm view "${PACKAGE_NAME}@${VERSION}" time --json \
+            --registry https://registry.npmjs.org 2>/dev/null \
+            | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('${VERSION}',''))")
+          PUBLISHED_TS=$(date -d "$PUBLISHED_AT" +%s 2>/dev/null || echo 0)
+          ELAPSED_HOURS=$(( ($(date +%s) - PUBLISHED_TS) / 3600 ))
+          if [ "$ELAPSED_HOURS" -ge 72 ]; then
+            echo "⚠️  ${PACKAGE_NAME}@${VERSION} was published ${ELAPSED_HOURS}h ago — npm 72-hour unpublish window has passed. Skipping."
+            exit 0
+          fi
+
+          if [ "$DRY_RUN" == "true" ]; then
+            echo "✅ Dry run — would unpublish ${PACKAGE_NAME}@${VERSION} from npmjs.com (published ${ELAPSED_HOURS}h ago)"
+            exit 0
+          fi
+
+          npm unpublish "${PACKAGE_NAME}@${VERSION}" --registry https://registry.npmjs.org
+          echo "✅ Unpublished ${PACKAGE_NAME}@${VERSION} from npmjs.com"
+
+      - name: '@opentok/opentok-network-test-js → GitHub Packages'
+        if: inputs.target == 'all' || inputs.target == '@opentok/opentok-network-test-js → GitHub Packages'
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          INPUT_VERSION: ${{ inputs.version }}
+          GH_ORG: opentok
+          PACKAGE_NAME: opentok-network-test-js
+          # @opentok packages live in a different org — PAT with write:packages on the opentok org is required.
+          GH_TOKEN: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
+        shell: bash
+        run: |
+          VERSION="${INPUT_VERSION:-$(npm view "@${GH_ORG}/${PACKAGE_NAME}" dist-tags.latest \
+            --registry https://npm.pkg.github.com 2>/dev/null || echo '')}"
+          if [ -z "$VERSION" ]; then
+            echo "⚠️  Could not resolve version for @${GH_ORG}/${PACKAGE_NAME} on GitHub Packages — skipping."
+            exit 0
+          fi
+          echo "Target: @${GH_ORG}/${PACKAGE_NAME}@${VERSION}"
+
+          VERSION_ID=$(gh api "/orgs/${GH_ORG}/packages/npm/${PACKAGE_NAME}/versions" \
+            --jq ".[] | select(.name == \"${VERSION}\") | .id" 2>/dev/null || echo "")
+          if [ -z "$VERSION_ID" ]; then
+            echo "⚠️  @${GH_ORG}/${PACKAGE_NAME}@${VERSION} not found on GitHub Packages — skipping."
+            exit 0
+          fi
+
+          if [ "$DRY_RUN" == "true" ]; then
+            echo "✅ Dry run — would delete @${GH_ORG}/${PACKAGE_NAME}@${VERSION} (id: ${VERSION_ID}) from GitHub Packages"
+            exit 0
+          fi
+
+          gh api --method DELETE "/orgs/${GH_ORG}/packages/npm/${PACKAGE_NAME}/versions/${VERSION_ID}"
+          echo "✅ Deleted @${GH_ORG}/${PACKAGE_NAME}@${VERSION} from GitHub Packages"

@@ -218,7 +218,6 @@ describe('NetworkTest', () => {
             callback(undefined);
           });
           spyOn(session, 'disconnect').and.callFake(() => {
-            // Trigger sessionDisconnected asynchronously since the listener is registered just before disconnect()
             setTimeout(() => {
               (session as any).dispatchEvent(
                 new (OT as any).SessionDisconnectEvent('sessionDisconnected', 'clientDisconnected'));
