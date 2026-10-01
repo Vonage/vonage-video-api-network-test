@@ -1,5 +1,3 @@
-// tsconfig.eslint.json
-
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
