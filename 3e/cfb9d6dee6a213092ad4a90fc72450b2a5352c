@@ -1,0 +1,26 @@
+.github/workflows/remove-package.yml
+  h_8b518d24069e0c 1-195
+lib/js/.eslintignore
+  h_8b518d24069e0c 1-2
+lib/js/opentok.patch
+  h_8b518d24069e0c 5,7,29,33,44,51,56,66,68-69,76,101,107,109,114,119-120,122,125,128,137,150,155,157,163,175,180,184-186,197,205,208,219,229-230,233,237-238,241,248,257,266,286-287,308-309,311,329,333,338,357,359,372,377-383,398,425,432,438-446,457-468,481,486,494-499,626,656,679,755,758,763,766,810,821,832,843,854,865,876,887,898,909,920,931,942,953,964,975,986,997,1106-1108,1121-1151
+lib/js/package-lock.json
+  h_8b518d24069e0c 3,9,25,1690-1692,5590-5592
+lib/js/package.json
+  h_8b518d24069e0c 3,74
+lib/js/test/tsconfig.json
+  h_8b518d24069e0c 1-10
+lib/js/tsconfig.eslint.json
+  h_8b518d24069e0c 1-16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3ecfb9d6dee6a213092ad4a90fc72450b2a5352c",
+  "prompts": {},
+  "humans": {
+    "h_8b518d24069e0c": {
+      "author": "Mike-Zhylevych <mike.zhylevych@vonage.com>"
+    }
+  }
+}
