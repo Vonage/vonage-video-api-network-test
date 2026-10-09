@@ -1,6 +1,6 @@
 {
   "name": "@vonage/video-client-network-test",
-  "version": "5.1.6",
+  "version": "5.1.7",
   "description": "Precall network test for applications using the Vonage Video API platform.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -64,15 +64,12 @@
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.2",
     "@changesets/cli": "^2.31.1",
-    "@types/expect.js": "^0.3.29",
     "@types/jasmine": "^6.0.0",
-    "@types/jasmine-matchers": "^0.2.30",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "^26.0.0",
+    "@types/node": "^26.6.4",
     "@typescript-eslint/eslint-plugin": "^7.6.0",
     "@typescript-eslint/parser": "^7.6.0",
-    "@vonage/client-sdk-video": "^2.34.2",
-    "@vonage/server-sdk": "^3.29.0",
+    "@vonage/client-sdk-video": "^2.35.3",
+    "@vonage/server-sdk": "^3.30.1",
     "dotenv": "^17.0.0",
     "eslint": "^8.44.0",
     "jasmine": "^6.0.0",
@@ -90,16 +87,11 @@
     "terser-webpack-plugin": "^5.3.9",
     "ts-loader": "^9.5.1",
     "typescript": "^6.0.3",
-    "webpack": "^5.109.2",
-    "webpack-cli": "^6.0.0",
-    "webpack-merge": "6.0.1",
-    "webpack-node-externals": "^3.0.0"
+    "webpack": "^5.111.1",
+    "webpack-cli": "^6.0.0"
   },
   "overrides": {
-    "brace-expansion": ">=1.1.17",
     "js-yaml": ">=4.3.0",
-    "ws": ">=8.21.0",
-    "body-parser": ">=1.20.6",
-    "fast-uri": ">=3.1.4"
+    "ws": ">=8.21.0"
   }
 }

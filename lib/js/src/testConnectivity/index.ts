@@ -78,39 +78,38 @@ function cleanPublisher(publisher: OT.Publisher): Promise<void> {
 /**
  * Attempt to connect to the Vonage Video API session
  */
-function connectToSession(
+async function connectToSession(
   OTInstance: typeof OT,
   { applicationId, sessionId, token }: SessionCredentials,
   options?: NetworkTestOptions,
 ): Promise<OT.Session> {
-  return new Promise((resolve, reject) => {
-    let sessionOptions: InitSessionOptions = {};
-    if (options && options.initSessionOptions) {
-      sessionOptions = options.initSessionOptions;
+  const sessionOptions: InitSessionOptions = options?.initSessionOptions ?? {};
+  if (options?.proxyServerUrl) {
+    // eslint-disable-next-line no-prototype-builtins
+    if (!OTInstance.hasOwnProperty('setProxyUrl')) { // Fallback for OT.version < 2.17.4
+      sessionOptions.proxyUrl = options.proxyServerUrl;
     }
-    if (options && options.proxyServerUrl) {
-      // eslint-disable-next-line no-prototype-builtins
-      if (!OTInstance.hasOwnProperty('setProxyUrl')) { // Fallback for OT.version < 2.17.4
-        sessionOptions.proxyUrl = options.proxyServerUrl;
-      }
+  }
+  const session = OTInstance.initSession(applicationId, sessionId, sessionOptions);
+  try {
+    await session.connect.promise(token);
+    return session;
+  } catch (error) {
+    const otError = error as OT.OTError;
+    if (errorHasName(otError, OTErrorType.OT_AUTHENTICATION_ERROR)) {
+      throw new e.ConnectToSessionTokenError();
     }
-    const session = OTInstance.initSession(applicationId, sessionId, sessionOptions);
-    session.connect(token, (error?: OT.OTError) => {
-      if (errorHasName(error, OTErrorType.OT_AUTHENTICATION_ERROR)) {
-        reject(new e.ConnectToSessionTokenError());
-      } else if (errorHasName(error, OTErrorType.OT_INVALID_SESSION_ID)) {
-        reject(new e.ConnectToSessionSessionIdError());
-      } else if (errorHasName(error, OTErrorType.OT_CONNECT_FAILED)) {
-        reject(new e.ConnectToSessionNetworkError());
-      } else if (errorHasName(error, OTErrorType.OT_INVALID_HTTP_STATUS)) {
-        reject(new e.APIConnectivityError());
-      } else if (error) {
-        reject(new e.ConnectToSessionError());
-      } else {
-        resolve(session);
-      }
-    });
-  });
+    if (errorHasName(otError, OTErrorType.OT_INVALID_SESSION_ID)) {
+      throw new e.ConnectToSessionSessionIdError();
+    }
+    if (errorHasName(otError, OTErrorType.OT_CONNECT_FAILED)) {
+      throw new e.ConnectToSessionNetworkError();
+    }
+    if (errorHasName(otError, OTErrorType.OT_INVALID_HTTP_STATUS)) {
+      throw new e.APIConnectivityError();
+    }
+    throw new e.ConnectToSessionError();
+  }
 }
 
 /**
@@ -119,25 +118,24 @@ function connectToSession(
 function validateDevices(OTInstance: typeof OT): Promise<AvailableDevices> {
   return new Promise((resolve, reject) => {
     OTInstance.getDevices((error?: OT.OTError, devices: OT.Device[] = []) => {
-
       if (error) {
         reject(new e.FailedToObtainMediaDevices());
-      } else {
-
-        const availableDevices: AvailableDevices = devices.reduce(
-          (acc: AvailableDevices, device: OT.Device) => {
-            const type: AV = device.kind === 'audioInput' ? 'audio' : 'video';
-            return { ...acc, [type]: { ...acc[type], [device.deviceId]: device } };
-          },
-          { audio: {}, video: {} },
-        );
-
-        if (!Object.keys(availableDevices.audio).length && !Object.keys(availableDevices.video).length) {
-          reject(new e.FailedToObtainMediaDevices());
-        } else {
-          resolve(availableDevices);
-        }
+        return;
       }
+
+      const availableDevices: AvailableDevices = devices.reduce(
+        (acc: AvailableDevices, device: OT.Device) => {
+          const type: AV = device.kind === 'audioInput' ? 'audio' : 'video';
+          return { ...acc, [type]: { ...acc[type], [device.deviceId]: device } };
+        },
+        { audio: {}, video: {} },
+      );
+
+      if (!Object.keys(availableDevices.audio).length && !Object.keys(availableDevices.video).length) {
+        reject(new e.FailedToObtainMediaDevices());
+        return;
+      }
+      resolve(availableDevices);
     });
   });
 }
@@ -185,21 +183,21 @@ function checkCreateLocalPublisher(
           publisherOptions.scalableVideo = options.scalableVideo;
         }
         const publisher = OTInstance.initPublisher(publisherDiv, publisherOptions, (error?: OT.OTError) => {
-          if (!error) {
-            resolve({ publisher });
-          } else {
+          if (error) {
             // Clean up the DOM element
             publisherDiv.parentNode?.removeChild(publisherDiv);
 
-            if (error && (error.name === 'OT_USER_MEDIA_ACCESS_DENIED' ||
+            if (error.name === 'OT_USER_MEDIA_ACCESS_DENIED' ||
                 (error.message && (error.message.toLowerCase().includes('permission') ||
                 error.message.toLowerCase().includes('access denied') ||
-                error.message.toLowerCase().includes('not allowed'))))) {
+                error.message.toLowerCase().includes('not allowed')))) {
               reject(new PermissionDeniedError());
             } else {
               reject(new e.FailedToCreateLocalPublisher());
             }
+            return;
           }
+          resolve({ publisher });
         });
         publisher.on('streamCreated', () => {
           publisherDiv.style.visibility = 'hidden';
@@ -223,21 +221,21 @@ function checkPublishToSession(
       });
     };
     checkCreateLocalPublisher(OTInstance, options)
-      .then(({ publisher }: CreateLocalPublisherResults) => {
-        session.publish(publisher, (error?: OT.OTError) => {
-          if (error) {
-            if (errorHasName(error, OTErrorType.NOT_CONNECTED)) {
-              disconnectAndReject(new e.PublishToSessionNotConnectedError());
-            } else if (errorHasName(error, OTErrorType.UNABLE_TO_PUBLISH)) {
-              disconnectAndReject(
-                new e.PublishToSessionPermissionOrTimeoutError());
-            } else if (error) {
-              disconnectAndReject(new e.PublishToSessionError());
-            }
-          } else {
-            resolve({ ...{ session }, ...{ publisher } });
+      .then(async ({ publisher }: CreateLocalPublisherResults) => {
+        try {
+          await session.publish.promise(publisher);
+          resolve({ ...{ session }, ...{ publisher } });
+        } catch (error) {
+          const otError = error as OT.OTError;
+          if (errorHasName(otError, OTErrorType.NOT_CONNECTED)) {
+            return disconnectAndReject(new e.PublishToSessionNotConnectedError());
           }
-        });
+          if (errorHasName(otError, OTErrorType.UNABLE_TO_PUBLISH)) {
+            return disconnectAndReject(
+              new e.PublishToSessionPermissionOrTimeoutError());
+          }
+          return disconnectAndReject(new e.PublishToSessionError());
+        }
       }).catch((error: e.ConnectivityError) => {
         disconnectAndReject(error);
       });
@@ -258,17 +256,17 @@ function checkSubscribeToSession({ session, publisher }: PublishToSessionResults
         });
     };
     if (!publisher.stream) {
-      disconnectAndReject(new e.SubscribeToSessionError());
-    } else {
-      const subscriberDiv = document.createElement('div');
-      const subscriber = session.subscribe(publisher.stream, subscriberDiv, config, (error?: OT.OTError) => {
-        if (error) {
-          disconnectAndReject(new e.SubscribeToSessionError());
-        } else {
-          resolve({ ...{ session }, ...{ publisher }, ...{ subscriber } });
-        }
-      });
+      return disconnectAndReject(new e.SubscribeToSessionError());
     }
+
+    const subscriberDiv = document.createElement('div');
+    session.subscribe.promise(publisher.stream, subscriberDiv, config)
+      .then((subscriber) => {
+        resolve({ ...{ session }, ...{ publisher }, ...{ subscriber } });
+      })
+      .catch(() => {
+        disconnectAndReject(new e.SubscribeToSessionError());
+      });
   });
 }
 
