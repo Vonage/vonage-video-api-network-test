@@ -1,0 +1,32 @@
+lib/js/src/errors/types.ts
+  s_f52a305abd9788::t_baae255fa14370 38
+lib/js/src/testConnectivity/index.ts
+  s_f52a305abd9788::t_baae255fa14370 35-64,69-82,84-86,95-100,102-103,109-114,116-117,123-156,163,178,180-183,235,241-243,251,277,282,286-294,305-307,321,326,330,332-334,358-361,365-367,369-371,375,383,423-454,460-464,467-470,472-473,475-503,505-517,520-524,526
+lib/js/src/index.ts
+  s_f52a305abd9788::t_baae255fa14370 14,154
+lib/js/test/NetworkTest.spec.ts
+  s_f52a305abd9788::t_baae255fa14370 188-203,209-211,220-294
+  s_f52a305abd9788::t_60a6eab03845b6 295
+lib/js/src/testConnectivity/errors/index.ts
+  s_f52a305abd9788::t_baae255fa14370 154-162
+lib/js/README.md
+  s_f52a305abd9788::t_baae255fa14370 314-315,527-536,554-555,577
+lib/js/opentok.patch
+  s_f52a305abd9788::t_baae255fa14370 2,7-8,32,50,75,121,136,149,174,207,218,229,247,256,265,271-272,279,313,322,331,342,359,364,366,370,385,397,502,515,518,534,543,556,571,580,588,590,611,619,621,624,635,638,644,646-647,656,739,772,783,794,805,816,827,838,849,860,871,882,893,904,915,926,937,948,959,970
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a7e03dfd6dadbd3ca8d7968d5cf1374ba40a5fd4",
+  "prompts": {},
+  "sessions": {
+    "s_f52a305abd9788": {
+      "agent_id": {
+        "tool": "mock_ai",
+        "id": "ai-thread-1791559886135609000",
+        "model": "unknown"
+      },
+      "human_author": "Mike-Zhylevych <mike.zhylevych@vonage.com>"
+    }
+  }
+}
