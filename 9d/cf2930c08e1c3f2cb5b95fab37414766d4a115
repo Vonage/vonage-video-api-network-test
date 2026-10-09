@@ -1,0 +1,26 @@
+lib/js/README.md
+  h_8b518d24069e0c 314-315,527-536,554-555,577
+lib/js/opentok.patch
+  h_8b518d24069e0c 2,305-306,313,350,359,387,400,428,433,437,460,564,567,583,592,605,620,629,637,669,672,683,686,692,694-695,704
+lib/js/src/errors/types.ts
+  h_8b518d24069e0c 38
+lib/js/src/index.ts
+  h_8b518d24069e0c 14,154
+lib/js/src/testConnectivity/errors/index.ts
+  h_8b518d24069e0c 154-162
+lib/js/src/testConnectivity/index.ts
+  h_8b518d24069e0c 35-64,69-82,84-86,95-100,102-103,109-114,116-117,123-156,163,178,180-183,235,241-243,251,277,282,286-294,305-307,321,326,330,332-334,358-361,365-367,369-371,375,383,423-454,460-464,467-470,472-473,475-503,505-517,520-524,526
+lib/js/test/NetworkTest.spec.ts
+  h_8b518d24069e0c 188-203,209-211,220-295
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9dcf2930c08e1c3f2cb5b95fab37414766d4a115",
+  "prompts": {},
+  "humans": {
+    "h_8b518d24069e0c": {
+      "author": "Mike-Zhylevych <mike.zhylevych@vonage.com>"
+    }
+  }
+}
