@@ -311,8 +311,8 @@ try {
 ### OTNetworkTest.testConnectivity()
 
 This method checks to see if the client can connect to Vonage Video API servers. The method returns
-a Promise that is resolved when the connectivity check completes. The promise is resolved
-with a `results` object that has the following two properties:
+a Promise that is resolved when all connectivity checks pass and rejected if any of them fail.
+In both cases the promise value is a `results` object that has the following two properties:
 
 * `success` (Boolean) -- `true` if connectivity to Vonage Video API servers succeeded; `false` if
   any connectivity test failed.
@@ -524,9 +524,16 @@ videoNetworkTest.testQuality(null, function updateCallback() {
 
 ### OTNetworkTest.stop()
 
-Stops the `testConnectivity()` test if it is running. The test will not stop until it has been
-running for at least 5 seconds (after the user has granted access to the camera and microphone).
-While you can call `stop()` prior to this, results will not be returned until the 5-second mark.
+Stops the `testConnectivity()` or `testQuality()` test if one is running, and releases the
+session, publisher, camera and microphone it was using. Calling `stop()` while no test is running
+has no effect.
+
+A `testConnectivity()` test stops right away. Its promise is rejected with a `results` object whose
+`failedTests` array contains an error named `CONNECTIVITY_TEST_ABORTED`.
+
+A `testQuality()` test will not stop until it has been running for at least 5 seconds (after the
+user has granted access to the camera and microphone). While you can call `stop()` prior to this,
+results will not be returned until the 5-second mark.
 
 ### ErrorNames
 
@@ -544,8 +551,8 @@ an error object (against the values defined in `ErrorNames`) to determine the ty
 
 #### testConnectivity() errors
 
-The `testConnectivity()` returns a JavaScript promise that succeeds with a `results` object.
-The `results` object contains a `failedTests` array, and each element of this array (if there are
+The `testConnectivity()` returns a JavaScript promise that is rejected with a `results` object
+when a test fails. The `results` object contains a `failedTests` array, and each element of this array (if there are
 any elements) has an `error` property, which is error object has a `name` property set to one of
 the following:
 
@@ -567,6 +574,7 @@ the following:
 |   `PUBLISH_TO_SESSION_NETWORK_ERROR` | The test failed to publish to the test session due a network error. | 
 |   `SUBSCRIBE_TO_SESSION_ERROR` | The test encountered an unknown error while attempting to subscribe to a test stream. | 
 |   `LOGGING_SERVER_CONNECTION_ERROR` | The test failed to connect to the Vonage Video API logging server. | 
+|   `CONNECTIVITY_TEST_ABORTED` | The test was stopped by calling `stop()` before it finished. | 
 
 #### testQuality() errors
 

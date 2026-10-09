@@ -185,11 +185,30 @@ describe('NetworkTest', () => {
             loggingURL: realLoggingURL.replace('tokbox', 'bad-tokbox'),
           },
         };
+        // Capture the session and publisher so their cleanup can be asserted
+        const spiedOT = badLoggingOT as any;
+        const realInitSession = spiedOT.initSession;
+        const realInitPublisher = spiedOT.initPublisher;
+        let session: any;
+        let publisher: any;
+        spyOn(spiedOT, 'initSession').and.callFake((...args: any[]) => {
+          session = realInitSession(...args);
+          spyOn(session, 'disconnect').and.callThrough();
+          return session;
+        });
+        spyOn(spiedOT, 'initPublisher').and.callFake((...args: any[]) => {
+          publisher = realInitPublisher(...args);
+          spyOn(publisher, 'destroy').and.callThrough();
+          return publisher;
+        });
         const badLoggingNetworkTest = new NetworkTest(badLoggingOT, badLoggingCredentials);
         badLoggingNetworkTest.testConnectivity()
           .then(() => done.fail('Expected testConnectivity to reject'))
           .catch((results: ConnectivityTestResults) => {
             expect(results.failedTests).toBeInstanceOf(Array);
+            // The session and publisher must be released before the promise is rejected
+            expect(session.disconnect).toHaveBeenCalled();
+            expect(publisher.destroy).toHaveBeenCalled();
             if (results.failedTests.find(f => f.type === 'logging')) {
               done();
             } else {
@@ -197,6 +216,82 @@ describe('NetworkTest', () => {
             }
           });
       }, 15000);
+
+      it('releases the session and publisher when only the logging check fails', (done) => {
+        const realInitSession = OT.initSession;
+        const badLoggingOT = {
+          ...OT,
+          properties: {
+            ...(OT as any).properties,
+            loggingURL: 'https://bad-tokbox.invalid',
+          },
+        } as any;
+        let session: any;
+        const destroyHandlers: Function[] = [];
+        const mockPublisher = {
+          stream: { streamId: 'mock-stream' },
+          on: jasmine.createSpy('on').and.callFake((event: string, handler: Function) => {
+            if (event === 'destroyed') destroyHandlers.push(handler);
+          }),
+          off: jasmine.createSpy('off'),
+          destroy: jasmine.createSpy('destroy').and.callFake(() => {
+            setTimeout(() => destroyHandlers.forEach(h => h()), 0);
+          }),
+        };
+        spyOn(badLoggingOT, 'initSession').and.callFake((applicationId: string, sessionId: string) => {
+          session = realInitSession(applicationId, sessionId);
+          spyOn(session, 'connect').and.callFake((token: string, callback: any) => callback(undefined));
+          spyOn(session, 'publish').and.callFake((publisher: any, callback: any) => callback(undefined));
+          spyOn(session, 'subscribe').and.callFake(((stream: any, target: any, config: any, callback: any) => {
+            setTimeout(() => callback(undefined), 0);
+            return { on: jasmine.createSpy('on'), off: jasmine.createSpy('off') };
+          }) as any);
+          spyOn(session, 'unsubscribe').and.callFake((subscriber: any) => {
+            subscriber.on.calls.allArgs().forEach(([, handler]: [string, Function]) => setTimeout(handler, 0));
+          });
+          spyOn(session, 'disconnect');
+          return session;
+        });
+        spyOn(badLoggingOT, 'initPublisher').and.callFake((target: any, options: any, callback: any) => {
+          setTimeout(() => callback(undefined), 0);
+          return mockPublisher;
+        });
+        new NetworkTest(badLoggingOT, sessionCredentials).testConnectivity()
+          .then(() => done.fail('Expected testConnectivity to reject'))
+          .catch((results: ConnectivityTestResults) => {
+            expect(results.failedTests.map(f => f.type)).toContain('logging');
+            expect(session.unsubscribe).toHaveBeenCalled();
+            expect(mockPublisher.destroy).toHaveBeenCalled();
+            expect(session.disconnect).toHaveBeenCalled();
+            done();
+          });
+      }, 15000);
+
+      it('stop() aborts a running testConnectivity() and releases the session', (done) => {
+        let session: any;
+        const realInitSession = OT.initSession;
+        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+          session = realInitSession(applicationId, sessionId);
+          // Never finish connecting so the test is still running when stop() is called
+          spyOn(session, 'connect');
+          spyOn(session, 'disconnect');
+          return session;
+        });
+        const netTest = createNetworkTest(sessionCredentials);
+        netTest.testConnectivity()
+          .then(() => done.fail('Expected testConnectivity to reject'))
+          .catch((results: ConnectivityTestResults) => {
+            expect(results.success).toBe(false);
+            expect(results.failedTests.map(f => f.error.name)).toContain(ErrorNames.CONNECTIVITY_TEST_ABORTED);
+            expect(session.disconnect).toHaveBeenCalled();
+            done();
+          });
+        netTest.stop();
+      }, 5000);
+
+      it('stop() does nothing when no test is running', () => {
+        expect(() => networkTest.stop()).not.toThrow();
+      });
 
       it('should result in a failed test if the API server cannot be reached', (done) => {
         testConnectFailure(OTErrorType.OT_CONNECT_FAILED, 'api').then(done).catch(done.fail);
