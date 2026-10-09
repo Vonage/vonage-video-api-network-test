@@ -11,6 +11,7 @@ import { SessionCredentials, InitSessionOptions } from './types/session';
 import { UpdateCallback } from './types/callbacks';
 import {
   testConnectivity,
+  stopConnectivityTest,
   ConnectivityTestResults,
 } from './testConnectivity';
 import {
@@ -150,6 +151,7 @@ export default class NetworkTest {
    * @vonage/video-client-network-test project for details.
    */
   stop() {
+    stopConnectivityTest();
     stopQualityTest();
   }
 }

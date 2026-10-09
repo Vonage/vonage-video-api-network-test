@@ -1,5 +1,5 @@
 diff --git a/lib/js/README.md b/lib/js/README.md
-index 8828d22..9c3c4dd 100644
+index 8e51904..9760dec 100644
 --- a/lib/js/README.md
 +++ b/lib/js/README.md
 @@ -1,19 +1,23 @@
@@ -302,15 +302,15 @@ index 8828d22..9c3c4dd 100644
  
 -This method checks to see if the client can connect to Vonage Video API servers. The method returns
 +This method checks to see if the client can connect to OpenTok servers. The method returns
- a Promise that is resolved when the connectivity check completes. The promise is resolved
- with a `results` object that has the following two properties:
+ a Promise that is resolved when all connectivity checks pass and rejected if any of them fail.
+ In both cases the promise value is a `results` object that has the following two properties:
  
 -* `success` (Boolean) -- `true` if connectivity to Vonage Video API servers succeeded; `false` if
 +* `success` (Boolean) -- `true` if connectivity to OpenTok servers succeeded; `false` if
    any connectivity test failed.
  
  * `failedTests` (Array) -- If connectivity failed, this array contains an object for each
-@@ -322,23 +331,24 @@ with a `results` object that has the following two properties:
+@@ -322,23 +331,24 @@ In both cases the promise value is a `results` object that has the following two
  
    * `type` -- A sting defining the failure type. It will be set to one of the following values:
  
@@ -347,7 +347,7 @@ index 8828d22..9c3c4dd 100644
  
    * `error` -- An object defining the reason for the type of failure. This object includes
    a `message` property and a `name` property. The message property describes the error.
-@@ -349,7 +359,7 @@ with a `results` object that has the following two properties:
+@@ -349,7 +359,7 @@ In both cases the promise value is a `results` object that has the following two
      For example:
  
      ```javascript
@@ -356,7 +356,7 @@ index 8828d22..9c3c4dd 100644
        results.failedTests && results.failedTests.forEach(result) => {
          switch (failedTest.error.name) {
            case ErrorNames.FAILED_TO_OBTAIN_MEDIA_DEVICES:
-@@ -371,7 +381,8 @@ with a `results` object that has the following two properties:
+@@ -371,7 +381,8 @@ In both cases the promise value is a `results` object that has the following two
  
  ### OTNetworkTest.testQuality(updateCallback)
  
@@ -384,7 +384,7 @@ index 8828d22..9c3c4dd 100644
    // process intermediate results
  }).then((results) => {
    // Display UI based on results
-@@ -538,9 +549,9 @@ an error object (against the values defined in `ErrorNames`) to determine the ty
+@@ -545,9 +556,9 @@ an error object (against the values defined in `ErrorNames`) to determine the ty
  
  | Error.name property set to this property of ErrorNames | Description |
  | ------------------------------------------------------------------ | ----------- |
@@ -397,7 +397,7 @@ index 8828d22..9c3c4dd 100644
  
  #### testConnectivity() errors
  
-@@ -551,22 +562,22 @@ the following:
+@@ -558,23 +569,23 @@ the following:
  
  | Error.name property set to this property of ErrorNames | Description |
  | -------------------------------------------------------------- | ----------- |
@@ -425,14 +425,16 @@ index 8828d22..9c3c4dd 100644
 -|   `PUBLISH_TO_SESSION_NETWORK_ERROR` | The test failed to publish to the test session due a network error. | 
 -|   `SUBSCRIBE_TO_SESSION_ERROR` | The test encountered an unknown error while attempting to subscribe to a test stream. | 
 -|   `LOGGING_SERVER_CONNECTION_ERROR` | The test failed to connect to the Vonage Video API logging server. | 
+-|   `CONNECTIVITY_TEST_ABORTED` | The test was stopped by calling `stop()` before it finished. | 
 +|   `PUBLISH_TO_SESSION_PERMISSION_OR_TIMEOUT_ERROR` | The test failed to publish to the test session due a permissions error or timeout. |
 +|   `PUBLISH_TO_SESSION_NETWORK_ERROR` | The test failed to publish to the test session due a network error. |
 +|   `SUBSCRIBE_TO_SESSION_ERROR` | The test encountered an unknown error while attempting to subscribe to a test stream. |
 +|   `LOGGING_SERVER_CONNECTION_ERROR` | The test failed to connect to the OpenTok logging server. |
++|   `CONNECTIVITY_TEST_ABORTED` | The test was stopped by calling `stop()` before it finished. |
  
  #### testQuality() errors
  
-@@ -576,14 +587,14 @@ method has a `name` property set to one of the following:
+@@ -584,14 +595,14 @@ method has a `name` property set to one of the following:
  | Error.name property set to this property of ErrorNames | Description |
  | -------------------------------------------------------------- | ----------- |
  |   `INVALID_ON_UPDATE_CALLBACK` | The `updateCallback` parameter is invalid. It must be a function that accepts a single parameter. |
@@ -455,7 +457,7 @@ index 8828d22..9c3c4dd 100644
  |   `PUBLISH_TO_SESSION_ERROR` | The test encountered an unknown error while attempting to publish to a session. | 
  |   `INIT_PUBLISHER_ERROR` | The test failed to initialize a publisher. | 
  |   `PUBLISH_TO_SESSION_NOT_CONNECTED` | The test failed to publish to the test session because the client was not connected to the session. | 
-@@ -616,8 +627,8 @@ limit the range of scores from 1.0 to 4.5.
+@@ -624,8 +635,8 @@ limit the range of scores from 1.0 to 4.5.
  | 1.7 - 2.39 | Poor      |
  | 1.0 - 1.69 | Bad       |
  
@@ -559,10 +561,10 @@ index 3644174..d917b12 100644
  
  export enum ErrorNames {
 diff --git a/lib/js/src/index.ts b/lib/js/src/index.ts
-index 7e61dab..d62876c 100644
+index f69b7a0..d0a0a92 100644
 --- a/lib/js/src/index.ts
 +++ b/lib/js/src/index.ts
-@@ -48,13 +48,13 @@ export default class NetworkTest {
+@@ -49,13 +49,13 @@ export default class NetworkTest {
  
    /**
     * Returns an instance of NetworkConnectivity. See the "API reference" section of the
@@ -578,7 +580,7 @@ index 7e61dab..d62876c 100644
      this.OTInstance = OTInstance;
      this.credentials = credentials;
      this.options = options;
-@@ -71,7 +71,7 @@ export default class NetworkTest {
+@@ -72,7 +72,7 @@ export default class NetworkTest {
      if (!credentials) {
        throw new MissingSessionCredentialsError();
      }
@@ -587,7 +589,7 @@ index 7e61dab..d62876c 100644
        throw new IncompleteSessionCredentialsError();
      }
    }
-@@ -89,10 +89,10 @@ export default class NetworkTest {
+@@ -90,10 +90,10 @@ export default class NetworkTest {
      }
    }
  
@@ -600,7 +602,7 @@ index 7e61dab..d62876c 100644
        source: window.location.href,
        clientVersion: `js-network-test-${version}`,
        name: 'opentok-network-test',
-@@ -103,11 +103,11 @@ export default class NetworkTest {
+@@ -104,11 +104,11 @@ export default class NetworkTest {
    }
  
    /**
@@ -615,7 +617,7 @@ index 7e61dab..d62876c 100644
     */
    testConnectivity(): Promise<ConnectivityTestResults> {
      this.otLogging.logEvent({ action: 'testConnectivity', variation: 'Attempt' });
-@@ -120,7 +120,7 @@ export default class NetworkTest {
+@@ -121,7 +121,7 @@ export default class NetworkTest {
     * results indicating the recommended supported publisher settings.
     *
     * See the "API reference" section of the README.md file in the root of the
@@ -624,7 +626,7 @@ index 7e61dab..d62876c 100644
     */
    testQuality(updateCallback?: UpdateCallback): Promise<QualityTestResults> {
      this.otLogging.logEvent({ action: 'testQuality', variation: 'Attempt' });
-@@ -147,7 +147,7 @@ export default class NetworkTest {
+@@ -148,7 +148,7 @@ export default class NetworkTest {
     * Stops the currently running test.
     *
     * See the "API reference" section of the README.md file in the root of the
@@ -632,7 +634,7 @@ index 7e61dab..d62876c 100644
 +   * opentok-network-test-js project for details.
     */
    stop() {
-     stopQualityTest();
+     stopConnectivityTest();
 diff --git a/lib/js/src/testConnectivity/errors/index.ts b/lib/js/src/testConnectivity/errors/index.ts
 index 62e49fc..4908092 100644
 --- a/lib/js/src/testConnectivity/errors/index.ts
@@ -664,10 +666,10 @@ index 62e49fc..4908092 100644
    }
  }
 diff --git a/lib/js/src/testConnectivity/index.ts b/lib/js/src/testConnectivity/index.ts
-index ac16dd0..02b4017 100644
+index d007cf8..ec9b52c 100644
 --- a/lib/js/src/testConnectivity/index.ts
 +++ b/lib/js/src/testConnectivity/index.ts
-@@ -76,11 +76,11 @@ function cleanPublisher(publisher: OT.Publisher): Promise<void> {
+@@ -155,11 +155,11 @@ export function stopConnectivityTest() {
  }
  
  /**
@@ -678,19 +680,19 @@ index ac16dd0..02b4017 100644
    OTInstance: typeof OT,
 -  { applicationId, sessionId, token }: SessionCredentials,
 +  { apiKey, sessionId, token }: SessionCredentials,
+   resources: Resources,
    options?: NetworkTestOptions,
  ): Promise<OT.Session> {
-   return new Promise((resolve, reject) => {
-@@ -94,7 +94,7 @@ function connectToSession(
+@@ -174,7 +174,7 @@ function connectToSession(
          sessionOptions.proxyUrl = options.proxyServerUrl;
        }
      }
 -    const session = OTInstance.initSession(applicationId, sessionId, sessionOptions);
 +    const session = OTInstance.initSession(apiKey, sessionId, sessionOptions);
+     resources.session = session;
      session.connect(token, (error?: OT.OTError) => {
-       if (errorHasName(error, OTErrorType.OT_AUTHENTICATION_ERROR)) {
-         reject(new e.ConnectToSessionTokenError());
-@@ -273,7 +273,7 @@ function checkSubscribeToSession({ session, publisher }: PublishToSessionResults
+       if (error) {
+@@ -386,7 +386,7 @@ function checkSubscribeToSession(
  }
  
  /**
@@ -699,7 +701,7 @@ index ac16dd0..02b4017 100644
   */
  function checkLoggingServer(OTInstance: typeof OT, options?: NetworkTestOptions): Promise<void>;
  function checkLoggingServer(
-@@ -298,7 +298,7 @@ Promise<SubscribeToSessionResults | void> {
+@@ -411,7 +411,7 @@ Promise<SubscribeToSessionResults | void> {
  }
  
  /**
