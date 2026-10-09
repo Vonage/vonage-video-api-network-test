@@ -72,9 +72,11 @@ async function connectToSession(session: OT.Session, token: string): Promise<OT.
     const otError = error as OT.OTError;
     if (errorHasName(otError, OTErrorType.OT_AUTHENTICATION_ERROR)) {
       throw new e.ConnectToSessionTokenError();
-    } else if (errorHasName(otError, OTErrorType.OT_INVALID_SESSION_ID)) {
+    }
+    if (errorHasName(otError, OTErrorType.OT_INVALID_SESSION_ID)) {
       throw new e.ConnectToSessionSessionIdError();
-    } else if (errorHasName(otError, OTErrorType.OT_CONNECT_FAILED)) {
+    }
+    if (errorHasName(otError, OTErrorType.OT_CONNECT_FAILED)) {
       throw new e.ConnectToSessionNetworkError();
     }
     throw new e.ConnectToSessionError();
@@ -94,11 +96,7 @@ function checkCameraSupport(width: number, height: number): Promise<void> {
         height: { exact: height },
       },
       audio: false,
-    }).then((mediaStream) => {
-      if (mediaStream) {
-        resolve();
-      }
-    }).catch((error) => {
+    }).then(() => resolve()).catch((error) => {
       switch (error.name) {
       case 'OverconstrainedError':
         reject(new UnsupportedResolutionError());
@@ -135,13 +133,14 @@ function validateDevices(OTInstance: typeof OT, options?: NetworkTestOptions): P
         reject(new e.NoAudioCaptureDevicesError());
         return;
       }
-      if (options?.fullHd) {
-        checkCameraSupport(FULL_HD_WIDTH, FULL_HD_HEIGHT)
-          .then(() => resolve(availableDevices))
-          .catch(reject);
-      } else {
+      if (!options?.fullHd) {
         resolve(availableDevices);
+        return;
       }
+
+      checkCameraSupport(FULL_HD_WIDTH, FULL_HD_HEIGHT)
+        .then(() => resolve(availableDevices))
+        .catch(reject);
     });
   });
 }
@@ -190,24 +189,22 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
           }
           const publisher = OTInstance.initPublisher(containerDiv, publisherOptions, async (error?: OT.OTError) => {
             if (error) {
-              if (error.name === 'OT_USER_MEDIA_ACCESS_DENIED') {
-                disconnectAndReject(new PermissionDeniedError());
-              } else {
-                disconnectAndReject(new e.InitPublisherError(error.message));
+              return disconnectAndReject(error.name === 'OT_USER_MEDIA_ACCESS_DENIED' ?
+                new PermissionDeniedError() :
+                new e.InitPublisherError(error.message));
+            }
+
+            try {
+              await session.publish.promise(publisher);
+            } catch (publishError) {
+              const otError = publishError as OT.OTError;
+              if (errorHasName(otError, OTErrorType.NOT_CONNECTED)) {
+                return disconnectAndReject(new e.PublishToSessionNotConnectedError());
               }
-            } else {
-              try {
-                await session.publish.promise(publisher);
-              } catch (publishError) {
-                const otError = publishError as OT.OTError;
-                if (errorHasName(otError, OTErrorType.NOT_CONNECTED)) {
-                  return disconnectAndReject(new e.PublishToSessionNotConnectedError());
-                }
-                if (errorHasName(otError, OTErrorType.UNABLE_TO_PUBLISH)) {
-                  return disconnectAndReject(new e.PublishToSessionPermissionOrTimeoutError());
-                }
-                return disconnectAndReject(new e.PublishToSessionError());
+              if (errorHasName(otError, OTErrorType.UNABLE_TO_PUBLISH)) {
+                return disconnectAndReject(new e.PublishToSessionPermissionOrTimeoutError());
               }
+              return disconnectAndReject(new e.PublishToSessionError());
             }
           });
 
@@ -354,85 +351,85 @@ function checkSubscriberQuality(
     subscribeToTestStream(OTInstance, session, credentials, options)
       .then(({ publisher, subscriber }: PublisherSubscriber) => {
         if (!subscriber) {
-          disconnectAndReject(new e.MissingSubscriberError());
-        } else {
-          try {
-            const builder: QualityTestResultsBuilder = {
-              state: new MOSState(audioOnlyFallback),
-              ... { subscriber },
-              ... { credentials },
-            };
+          return disconnectAndReject(new e.MissingSubscriberError());
+        }
 
-            const getStatsListener = (
-              error?: OT.OTError,
-              subscriberStats?: OT.SubscriberStats,
-              publisherStats?: PublisherStats,
-            ) => {
-              if (subscriberStats && publisherStats && onUpdate) {
-                const updateStats = getUpdateCallbackStats(subscriberStats, publisherStats, audioOnly ?
-                  'audio-only' :
-                  'audio-video'
-                );
-                onUpdate(updateStats);
-              }
-            };
+        try {
+          const builder: QualityTestResultsBuilder = {
+            state: new MOSState(audioOnlyFallback),
+            ... { subscriber },
+            ... { credentials },
+          };
 
-            publisher.on('streamDestroyed', (event: OT.Event<'streamDestroyed', OT.Publisher>) => {
-              if ((event as any).reason === 'mediaStopped') {
-                clearTimeout(mosEstimatorTimeoutId);
-                disconnectAndReject(new e.MediaAccessRevokedError());
-              }
-            });
+          const getStatsListener = (
+            error?: OT.OTError,
+            subscriberStats?: OT.SubscriberStats,
+            publisherStats?: PublisherStats,
+          ) => {
+            if (subscriberStats && publisherStats && onUpdate) {
+              const updateStats = getUpdateCallbackStats(subscriberStats, publisherStats, audioOnly ?
+                'audio-only' :
+                'audio-video'
+              );
+              onUpdate(updateStats);
+            }
+          };
 
-            const processResults = () => {
-              const audioVideoResults: QualityTestResults = buildResults(builder);
-              if (!audioOnly && !isAudioQualityAcceptable(audioVideoResults) && !stopTestCalled) {
-                audioOnly = true;
-                // Preserve video results from the initial audio-video run before
-                // restarting in audio-only mode so that mediaRouting remains stable.
-                const videoResults = audioVideoResults.video;
+          publisher.on('streamDestroyed', (event: OT.Event<'streamDestroyed', OT.Publisher>) => {
+            if ((event as any).reason === 'mediaStopped') {
+              clearTimeout(mosEstimatorTimeoutId);
+              disconnectAndReject(new e.MediaAccessRevokedError());
+            }
+          });
 
-                checkSubscriberQuality(OTInstance, session, credentials, options, onUpdate, true)
-                  .then((results: QualityTestResults) => {
-                    results.video = videoResults;
-                    resolve(results);
-                  });
-              } else {
-                session.on('sessionDisconnected', () => {
-                  resolve(audioVideoResults);
-                  session.off();
+          const processResults = () => {
+            const audioVideoResults: QualityTestResults = buildResults(builder);
+            if (!audioOnly && !isAudioQualityAcceptable(audioVideoResults) && !stopTestCalled) {
+              audioOnly = true;
+              // Preserve video results from the initial audio-video run before
+              // restarting in audio-only mode so that mediaRouting remains stable.
+              const videoResults = audioVideoResults.video;
+
+              checkSubscriberQuality(OTInstance, session, credentials, options, onUpdate, true)
+                .then((results: QualityTestResults) => {
+                  results.video = videoResults;
+                  resolve(results);
                 });
-                cleanSubscriber(session, subscriber)
-                  .then(() => cleanPublisher(session, publisher))
-                  .then(() => session.disconnect());
-              }
-            };
+            } else {
+              session.on('sessionDisconnected', () => {
+                resolve(audioVideoResults);
+                session.off();
+              });
+              cleanSubscriber(session, subscriber)
+                .then(() => cleanPublisher(session, publisher))
+                .then(() => session.disconnect());
+            }
+          };
 
-            stopTest = () => {
-              clearTimeout(mosEstimatorTimeoutId);
-              processResults();
-            };
+          stopTest = () => {
+            clearTimeout(mosEstimatorTimeoutId);
+            processResults();
+          };
 
-            const resultsCallback: MOSResultsCallback = () => {
-              clearTimeout(mosEstimatorTimeoutId);
-              processResults();
-            };
+          const resultsCallback: MOSResultsCallback = () => {
+            clearTimeout(mosEstimatorTimeoutId);
+            processResults();
+          };
 
-            subscriberMOS(builder.state, subscriber, publisher, getStatsListener, resultsCallback);
+          subscriberMOS(builder.state, subscriber, publisher, getStatsListener, resultsCallback);
 
-            mosEstimatorTimeoutId = window.setTimeout(processResults, testTimeout);
+          mosEstimatorTimeoutId = window.setTimeout(processResults, testTimeout);
 
-            window.clearTimeout(stopTestTimeoutId);
-            stopTestTimeoutId = window.setTimeout(() => {
-              stopTestTimeoutCompleted = true;
-              if (stopTestCalled && stopTest) {
-                stopTest();
-              }
-            }, 5000);
+          window.clearTimeout(stopTestTimeoutId);
+          stopTestTimeoutId = window.setTimeout(() => {
+            stopTestTimeoutCompleted = true;
+            if (stopTestCalled && stopTest) {
+              stopTest();
+            }
+          }, 5000);
 
-          } catch (exception) {
-            disconnectAndReject(new e.SubscriberGetStatsError());
-          }
+        } catch (exception) {
+          disconnectAndReject(new e.SubscriberGetStatsError());
         }
       })
       .catch(reject);
