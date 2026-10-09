@@ -82,7 +82,7 @@ const ErrorNames = require('@vonage/video-client-network-test').ErrorNames;
 import NetworkTest, { ErrorNames } from '@vonage/video-client-network-test';
 ```
 
-Load the Vonage Video web client SDK library.
+Load the Vonage Video web client SDK library. The network test requires a client SDK that supports `Session.connect.promise`, `Session.publish.promise`, and `Session.subscribe.promise`; `@vonage/client-sdk-video` 2.35.1 or later is required.
 
 Instantiate an instance of the test object, passing in the Vonage Video web client SDK OT object and
 a configuration object. The configuration object contains an application ID for your app's

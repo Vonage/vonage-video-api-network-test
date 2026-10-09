@@ -61,28 +61,24 @@ let stopTestCalled = false;
 /**
  * If not already connected, connect to the Vonage Video API Session
  */
-function connectToSession(session: OT.Session, token: string): Promise<OT.Session> {
-  return new Promise((resolve, reject) => {
-    if (session.connection) {
-      resolve(session);
-    } else {
-      session.connect(token, (error?: OT.OTError) => {
-        if (error) {
-          if (errorHasName(error, OTErrorType.OT_AUTHENTICATION_ERROR)) {
-            reject(new e.ConnectToSessionTokenError());
-          } else if (errorHasName(error, OTErrorType.OT_INVALID_SESSION_ID)) {
-            reject(new e.ConnectToSessionSessionIdError());
-          } else if (errorHasName(error, OTErrorType.OT_CONNECT_FAILED)) {
-            reject(new e.ConnectToSessionNetworkError());
-          } else {
-            reject(new e.ConnectToSessionError());
-          }
-          return;
-        }
-        resolve(session);
-      });
+async function connectToSession(session: OT.Session, token: string): Promise<OT.Session> {
+  if (session.connection) {
+    return session;
+  }
+  try {
+    await session.connect.promise(token);
+    return session;
+  } catch (error) {
+    const otError = error as OT.OTError;
+    if (errorHasName(otError, OTErrorType.OT_AUTHENTICATION_ERROR)) {
+      throw new e.ConnectToSessionTokenError();
+    } else if (errorHasName(otError, OTErrorType.OT_INVALID_SESSION_ID)) {
+      throw new e.ConnectToSessionSessionIdError();
+    } else if (errorHasName(otError, OTErrorType.OT_CONNECT_FAILED)) {
+      throw new e.ConnectToSessionNetworkError();
     }
-  });
+    throw new e.ConnectToSessionError();
+  }
 }
 /**
  * Checks for camera support for a given resolution.
@@ -192,7 +188,7 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
           if (audioOnly) {
             publisherOptions.videoSource = null;
           }
-          const publisher = OTInstance.initPublisher(containerDiv, publisherOptions, (error?: OT.OTError) => {
+          const publisher = OTInstance.initPublisher(containerDiv, publisherOptions, async (error?: OT.OTError) => {
             if (error) {
               if (error.name === 'OT_USER_MEDIA_ACCESS_DENIED') {
                 disconnectAndReject(new PermissionDeniedError());
@@ -200,18 +196,18 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
                 disconnectAndReject(new e.InitPublisherError(error.message));
               }
             } else {
-              session.publish(publisher, (publishError?: OT.OTError) => {
-                if (publishError) {
-                  if (errorHasName(publishError, OTErrorType.NOT_CONNECTED)) {
-                    return disconnectAndReject(new e.PublishToSessionNotConnectedError());
-                  }
-                  if (errorHasName(publishError, OTErrorType.UNABLE_TO_PUBLISH)) {
-                    return disconnectAndReject(new e.PublishToSessionPermissionOrTimeoutError());
-                  }
-                  return disconnectAndReject(new e.PublishToSessionError());
-                  // return reject(new e.PublishToSessionError(publishError.message));
+              try {
+                await session.publish.promise(publisher);
+              } catch (publishError) {
+                const otError = publishError as OT.OTError;
+                if (errorHasName(otError, OTErrorType.NOT_CONNECTED)) {
+                  return disconnectAndReject(new e.PublishToSessionNotConnectedError());
                 }
-              });
+                if (errorHasName(otError, OTErrorType.UNABLE_TO_PUBLISH)) {
+                  return disconnectAndReject(new e.PublishToSessionPermissionOrTimeoutError());
+                }
+                return disconnectAndReject(new e.PublishToSessionError());
+              }
             }
           });
 
@@ -223,16 +219,17 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
             disconnectAndReject(new e.MediaAccessRevokedError());
           });
 
-          publisher.on('streamCreated', (event: StreamCreatedEvent) => {
-            const subscriber =
-              session.subscribe(event.stream,
+          publisher.on('streamCreated', async (event: StreamCreatedEvent) => {
+            try {
+              const subscriber = await session.subscribe.promise(
+                event.stream,
                 containerDiv,
                 { testNetwork: true, insertMode: 'append', subscribeToAudio: true, subscribeToVideo: true },
-                (subscribeError?: OT.OTError) => {
-                  return subscribeError ?
-                    disconnectAndReject(new e.SubscribeToSessionError(subscribeError.message)) :
-                    resolve({ publisher, subscriber });
-                });
+              );
+              resolve({ publisher, subscriber });
+            } catch (error) {
+              disconnectAndReject(new e.SubscribeToSessionError());
+            }
           });
         })
         .catch((error: Error) => disconnectAndReject(error));

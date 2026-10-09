@@ -78,39 +78,38 @@ function cleanPublisher(publisher: OT.Publisher): Promise<void> {
 /**
  * Attempt to connect to the Vonage Video API session
  */
-function connectToSession(
+async function connectToSession(
   OTInstance: typeof OT,
   { applicationId, sessionId, token }: SessionCredentials,
   options?: NetworkTestOptions,
 ): Promise<OT.Session> {
-  return new Promise((resolve, reject) => {
-    let sessionOptions: InitSessionOptions = {};
-    if (options && options.initSessionOptions) {
-      sessionOptions = options.initSessionOptions;
+  let sessionOptions: InitSessionOptions = {};
+  if (options && options.initSessionOptions) {
+    sessionOptions = options.initSessionOptions;
+  }
+  if (options && options.proxyServerUrl) {
+    // eslint-disable-next-line no-prototype-builtins
+    if (!OTInstance.hasOwnProperty('setProxyUrl')) { // Fallback for OT.version < 2.17.4
+      sessionOptions.proxyUrl = options.proxyServerUrl;
     }
-    if (options && options.proxyServerUrl) {
-      // eslint-disable-next-line no-prototype-builtins
-      if (!OTInstance.hasOwnProperty('setProxyUrl')) { // Fallback for OT.version < 2.17.4
-        sessionOptions.proxyUrl = options.proxyServerUrl;
-      }
+  }
+  const session = OTInstance.initSession(applicationId, sessionId, sessionOptions);
+  try {
+    await session.connect.promise(token);
+    return session;
+  } catch (error) {
+    const otError = error as OT.OTError;
+    if (errorHasName(otError, OTErrorType.OT_AUTHENTICATION_ERROR)) {
+      throw new e.ConnectToSessionTokenError();
+    } else if (errorHasName(otError, OTErrorType.OT_INVALID_SESSION_ID)) {
+      throw new e.ConnectToSessionSessionIdError();
+    } else if (errorHasName(otError, OTErrorType.OT_CONNECT_FAILED)) {
+      throw new e.ConnectToSessionNetworkError();
+    } else if (errorHasName(otError, OTErrorType.OT_INVALID_HTTP_STATUS)) {
+      throw new e.APIConnectivityError();
     }
-    const session = OTInstance.initSession(applicationId, sessionId, sessionOptions);
-    session.connect(token, (error?: OT.OTError) => {
-      if (errorHasName(error, OTErrorType.OT_AUTHENTICATION_ERROR)) {
-        reject(new e.ConnectToSessionTokenError());
-      } else if (errorHasName(error, OTErrorType.OT_INVALID_SESSION_ID)) {
-        reject(new e.ConnectToSessionSessionIdError());
-      } else if (errorHasName(error, OTErrorType.OT_CONNECT_FAILED)) {
-        reject(new e.ConnectToSessionNetworkError());
-      } else if (errorHasName(error, OTErrorType.OT_INVALID_HTTP_STATUS)) {
-        reject(new e.APIConnectivityError());
-      } else if (error) {
-        reject(new e.ConnectToSessionError());
-      } else {
-        resolve(session);
-      }
-    });
-  });
+    throw new e.ConnectToSessionError();
+  }
 }
 
 /**
@@ -223,21 +222,21 @@ function checkPublishToSession(
       });
     };
     checkCreateLocalPublisher(OTInstance, options)
-      .then(({ publisher }: CreateLocalPublisherResults) => {
-        session.publish(publisher, (error?: OT.OTError) => {
-          if (error) {
-            if (errorHasName(error, OTErrorType.NOT_CONNECTED)) {
-              disconnectAndReject(new e.PublishToSessionNotConnectedError());
-            } else if (errorHasName(error, OTErrorType.UNABLE_TO_PUBLISH)) {
-              disconnectAndReject(
-                new e.PublishToSessionPermissionOrTimeoutError());
-            } else if (error) {
-              disconnectAndReject(new e.PublishToSessionError());
-            }
+      .then(async ({ publisher }: CreateLocalPublisherResults) => {
+        try {
+          await session.publish.promise(publisher);
+          resolve({ ...{ session }, ...{ publisher } });
+        } catch (error) {
+          const otError = error as OT.OTError;
+          if (errorHasName(otError, OTErrorType.NOT_CONNECTED)) {
+            disconnectAndReject(new e.PublishToSessionNotConnectedError());
+          } else if (errorHasName(otError, OTErrorType.UNABLE_TO_PUBLISH)) {
+            disconnectAndReject(
+              new e.PublishToSessionPermissionOrTimeoutError());
           } else {
-            resolve({ ...{ session }, ...{ publisher } });
+            disconnectAndReject(new e.PublishToSessionError());
           }
-        });
+        }
       }).catch((error: e.ConnectivityError) => {
         disconnectAndReject(error);
       });
@@ -261,13 +260,13 @@ function checkSubscribeToSession({ session, publisher }: PublishToSessionResults
       disconnectAndReject(new e.SubscribeToSessionError());
     } else {
       const subscriberDiv = document.createElement('div');
-      const subscriber = session.subscribe(publisher.stream, subscriberDiv, config, (error?: OT.OTError) => {
-        if (error) {
-          disconnectAndReject(new e.SubscribeToSessionError());
-        } else {
+      session.subscribe.promise(publisher.stream, subscriberDiv, config)
+        .then((subscriber) => {
           resolve({ ...{ session }, ...{ publisher }, ...{ subscriber } });
-        }
-      });
+        })
+        .catch(() => {
+          disconnectAndReject(new e.SubscribeToSessionError());
+        });
     }
   });
 }
