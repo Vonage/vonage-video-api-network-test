@@ -91,7 +91,7 @@ index 8828d22..7b7482e 100644
  ```
  
 -Load the Vonage Video web client SDK library. The network test requires a client SDK that supports `Session.connect.promise`, `Session.publish.promise`, and `Session.subscribe.promise`; `@vonage/client-sdk-video` 2.35.1 or later is required.
-+Load the OpenTok.js library. The network test requires a client SDK that supports `Session.connect.promise`, `Session.publish.promise`, and `Session.subscribe.promise`; use an OpenTok.js release that provides these promise helpers.
++Load the OpenTok.js library. The network test requires `Session.connect.promise`, `Session.publish.promise`, and `Session.subscribe.promise`; `@opentok/client` 2.35.0 or later is required.
  
 -Instantiate an instance of the test object, passing in the Vonage Video web client SDK OT object and
 -a configuration object. The configuration object contains an application ID for your app's
@@ -441,7 +441,7 @@ index d01cf28..d00747f 100644
    "devDependencies": {
      "@changesets/changelog-github": "^0.5.2",
      "@changesets/cli": "^2.31.1",
-+    "@opentok/client": "^2.34.1",
++    "@opentok/client": "^2.35.0",
      "@types/jasmine": "^6.0.0",
 @@ -71,8 +72,6 @@
      "@types/node": "^26.6.4",
@@ -665,15 +665,13 @@ index e46620a..20ac609 100644
 - * If not already connected, connect to the Vonage Video API Session
 + * If not already connected, connect to the OpenTok Session
   */
-@@ -88,7 +88,7 @@ function connectToSession(session: OT.Session, token: string): Promise<OT.Sessio
+@@ -86,5 +86,5 @@
   * Checks for camera support for a given resolution.
   *
   * See the "API reference" section of the README.md file in the root of the
 - * @vonage/video-client-network-test project for details.
 + * opentok-network-test-js project for details.
   */
- function checkCameraSupport(width: number, height: number): Promise<void> {
-   return new Promise((resolve, reject) => {
 @@ -239,7 +239,7 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
      });
  }
@@ -924,7 +922,7 @@ diff --git a/lib/js/test/setup/setup.js b/lib/js/test/setup/setup.js
 index 2e717a5..6dd33f1 100644
 --- a/lib/js/test/setup/setup.js
 +++ b/lib/js/test/setup/setup.js
-@@ -1,78 +1,52 @@
+@@ -1,78 +1,55 @@
  import dotenv from 'dotenv';
  dotenv.config();
 -import { Vonage } from '@vonage/server-sdk';
@@ -1029,7 +1027,10 @@ index 2e717a5..6dd33f1 100644
 +  Promise.all([create(), create(), create()])
 +    .then(writeCredentials)
 +    .then(() => console.info('Generated session credentials for test.'))
-+    .catch(e => console.error('Failed to generate test credentials', e));
++    .catch(e => {
++      console.error('Failed to generate test credentials', e);
++      process.exitCode = 1;
++    });
  }
  
  generateCredentials();
