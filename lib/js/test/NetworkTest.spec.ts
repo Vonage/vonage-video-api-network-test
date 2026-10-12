@@ -739,7 +739,8 @@ describe('NetworkTest', () => {
             }, 0);
             return Promise.resolve(publisher);
           });
-          (session.subscribe as any).promise = jasmine.createSpy().and.callFake(() => Promise.reject(new Error()));
+          const subscribeError = new Error('Subscribe failed');
+          (session.subscribe as any).promise = jasmine.createSpy().and.callFake(() => Promise.reject(subscribeError));
           spyOn(session, 'disconnect').and.callFake(() => {
             setTimeout(() => {
               (session as any).dispatchEvent(
@@ -753,6 +754,7 @@ describe('NetworkTest', () => {
           .then(() => done.fail('Expected testQuality to reject'))
           .catch((error?: QualityTestError) => {
             expect(error?.name).toBe(ErrorNames.SUBSCRIBE_TO_SESSION_ERROR);
+            expect(error?.message).toBe('Subscribe failed');
             done();
           });
       }, 15000);

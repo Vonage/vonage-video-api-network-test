@@ -88,27 +88,26 @@ async function connectToSession(session: OT.Session, token: string): Promise<OT.
  * See the "API reference" section of the README.md file in the root of the
  * @vonage/video-client-network-test project for details.
  */
-function checkCameraSupport(width: number, height: number): Promise<void> {
-  return new Promise((resolve, reject) => {
-    navigator.mediaDevices.getUserMedia({
+async function checkCameraSupport(width: number, height: number): Promise<void> {
+  try {
+    await navigator.mediaDevices.getUserMedia({
       video: {
         width: { exact: width },
         height: { exact: height },
       },
       audio: false,
-    }).then(() => resolve()).catch((error) => {
-      switch (error.name) {
-      case 'OverconstrainedError':
-        reject(new UnsupportedResolutionError());
-        break;
-      case 'NotAllowedError':
-        reject(new PermissionDeniedError());
-        break;
-      default:
-        reject(error);
-      }
     });
-  });
+  } catch (error) {
+    const mediaError = error as Error;
+    switch (mediaError.name) {
+    case 'OverconstrainedError':
+      throw new UnsupportedResolutionError();
+    case 'NotAllowedError':
+      throw new PermissionDeniedError();
+    default:
+      throw error;
+    }
+  }
 }
 /**
  * Ensure that audio and video devices are available
@@ -225,7 +224,8 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
               );
               resolve({ publisher, subscriber });
             } catch (error) {
-              disconnectAndReject(new e.SubscribeToSessionError());
+              const subscribeError = error as Error;
+              disconnectAndReject(new e.SubscribeToSessionError(subscribeError.message));
             }
           });
         })
@@ -240,12 +240,8 @@ function subscribeToTestStream(
   session: OT.Session,
   credentials: SessionCredentials,
   options?: NetworkTestOptions): Promise<PublisherSubscriber> {
-  return new Promise((resolve, reject) => {
-    connectToSession(session, credentials.token)
-      .then(publishAndSubscribe(OTInstance, options))
-      .then(resolve)
-      .catch(reject);
-  });
+  return connectToSession(session, credentials.token)
+    .then(publishAndSubscribe(OTInstance, options));
 }
 
 function buildResults(builder: QualityTestResultsBuilder): QualityTestResults {

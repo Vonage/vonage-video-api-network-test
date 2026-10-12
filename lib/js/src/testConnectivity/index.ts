@@ -210,64 +210,55 @@ function checkCreateLocalPublisher(
 /**
  * Attempt to publish to the session
  */
-function checkPublishToSession(
+async function checkPublishToSession(
   OTInstance: typeof OT, session: OT.Session,
   options?: NetworkTestOptions,
 ): Promise<PublishToSessionResults> {
-  return new Promise((resolve, reject) => {
-    const disconnectAndReject = (rejectError: Error) => {
-      disconnectFromSession(session).then(() => {
-        reject(rejectError);
-      });
-    };
-    checkCreateLocalPublisher(OTInstance, options)
-      .then(async ({ publisher }: CreateLocalPublisherResults) => {
-        try {
-          await session.publish.promise(publisher);
-          resolve({ ...{ session }, ...{ publisher } });
-        } catch (error) {
-          const otError = error as OT.OTError;
-          if (errorHasName(otError, OTErrorType.NOT_CONNECTED)) {
-            return disconnectAndReject(new e.PublishToSessionNotConnectedError());
-          }
-          if (errorHasName(otError, OTErrorType.UNABLE_TO_PUBLISH)) {
-            return disconnectAndReject(
-              new e.PublishToSessionPermissionOrTimeoutError());
-          }
-          return disconnectAndReject(new e.PublishToSessionError());
-        }
-      }).catch((error: e.ConnectivityError) => {
-        disconnectAndReject(error);
-      });
-  });
+  try {
+    const { publisher } = await checkCreateLocalPublisher(OTInstance, options);
+    try {
+      await session.publish.promise(publisher);
+      return { session, publisher };
+    } catch (error) {
+      const otError = error as OT.OTError;
+      if (errorHasName(otError, OTErrorType.NOT_CONNECTED)) {
+        throw new e.PublishToSessionNotConnectedError();
+      }
+      if (errorHasName(otError, OTErrorType.UNABLE_TO_PUBLISH)) {
+        throw new e.PublishToSessionPermissionOrTimeoutError();
+      }
+      throw new e.PublishToSessionError();
+    }
+  } catch (error) {
+    await disconnectFromSession(session);
+    throw error;
+  }
 }
 
 /**
  * Attempt to subscribe to our publisher
  */
-function checkSubscribeToSession({ session, publisher }: PublishToSessionResults): Promise<SubscribeToSessionResults> {
-  return new Promise((resolve, reject) => {
-    const config = { testNetwork: true, audioVolume: 0 };
-    const disconnectAndReject = (rejectError: Error) => {
-      cleanPublisher(publisher)
-        .then(() => disconnectFromSession(session))
-        .then(() => {
-          reject(rejectError);
-        });
-    };
-    if (!publisher.stream) {
-      return disconnectAndReject(new e.SubscribeToSessionError());
-    }
+async function checkSubscribeToSession(
+  { session, publisher }: PublishToSessionResults,
+): Promise<SubscribeToSessionResults> {
+  const config = { testNetwork: true, audioVolume: 0 };
+  const rejectAfterCleanup = async (error: e.SubscribeToSessionError): Promise<never> => {
+    await cleanPublisher(publisher);
+    await disconnectFromSession(session);
+    throw error;
+  };
 
-    const subscriberDiv = document.createElement('div');
-    session.subscribe.promise(publisher.stream, subscriberDiv, config)
-      .then((subscriber) => {
-        resolve({ ...{ session }, ...{ publisher }, ...{ subscriber } });
-      })
-      .catch(() => {
-        disconnectAndReject(new e.SubscribeToSessionError());
-      });
-  });
+  if (!publisher.stream) {
+    return rejectAfterCleanup(new e.SubscribeToSessionError());
+  }
+
+  const subscriberDiv = document.createElement('div');
+  try {
+    const subscriber = await session.subscribe.promise(publisher.stream, subscriberDiv, config);
+    return { session, publisher, subscriber };
+  } catch (error) {
+    return rejectAfterCleanup(new e.SubscribeToSessionError());
+  }
 }
 
 /**
