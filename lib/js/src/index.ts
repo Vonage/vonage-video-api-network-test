@@ -93,7 +93,7 @@ export default class NetworkTest {
     return new OTKLogger({
       sessionId,
       partnerId: applicationId,
-      source: window.location.href,
+      source: `${window.location.origin}${window.location.pathname}`,
       clientVersion: `js-network-test-${version}`,
       name: 'opentok-network-test',
       componentId: 'opentok-network-test',

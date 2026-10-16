@@ -104,6 +104,8 @@ function testQuality() {
 }
 
 function retryTest() {
+    videoNetworkTest?.stop();
+
     // Reset UI state and clean up
     ConnectivityUI.resetUIForRetry();
     
