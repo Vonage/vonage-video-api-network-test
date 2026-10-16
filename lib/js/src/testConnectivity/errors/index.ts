@@ -151,3 +151,12 @@ export class LoggingServerConnectionError extends ConnectivityError {
     super('Failed to connect to the Vonage Video API logging server.', ErrorNames.LOGGING_SERVER_CONNECTION_ERROR);
   }
 }
+
+/**
+ * Test Aborted Error
+ */
+export class ConnectivityTestAbortedError extends ConnectivityError {
+  constructor() {
+    super('The connectivity test was stopped before it finished.', ErrorNames.CONNECTIVITY_TEST_ABORTED);
+  }
+}
