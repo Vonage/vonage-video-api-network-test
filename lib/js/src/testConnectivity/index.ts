@@ -339,13 +339,21 @@ function checkLoggingServer(OTInstance: typeof OT, options?: NetworkTestOptions)
   });
 }
 
-async function runConnectivityChecks(
-  OTInstance: typeof OT,
-  credentials: SessionCredentials,
-  resources: Resources,
-  options: NetworkTestOptions | undefined,
-  otLogging: OTKLogger,
-): Promise<void> {
+type ConnectivityCheckContext = {
+  OTInstance: typeof OT;
+  credentials: SessionCredentials;
+  resources: Resources;
+  options?: NetworkTestOptions;
+  otLogging: OTKLogger;
+};
+
+async function runConnectivityChecks({
+  OTInstance,
+  credentials,
+  resources,
+  options,
+  otLogging,
+}: ConnectivityCheckContext): Promise<void> {
   const session = await connectToSession(OTInstance, credentials, resources, options);
   addSessionInfo(otLogging, session, credentials);
   throwIfAborted(resources);
@@ -457,7 +465,7 @@ export function testConnectivity(
       }
     };
 
-    runConnectivityChecks(OTInstance, credentials, resources, options, otLogging)
+    runConnectivityChecks({ OTInstance, credentials, resources, options, otLogging })
       .then(onSuccess, onFailure);
   });
 }
