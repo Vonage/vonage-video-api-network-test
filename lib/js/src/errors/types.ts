@@ -35,6 +35,7 @@ export enum ErrorNames {
   MEDIA_ACCESS_REVOKED_ERROR = 'MediaAccessRevokedError',
   SUBSCRIBE_TO_SESSION_ERROR = 'SubscribeToSessionError',
   LOGGING_SERVER_CONNECTION_ERROR = 'LoggingServerConnectionError',
+  CONNECTIVITY_TEST_ABORTED = 'ConnectivityTestAbortedError',
   QUALITY_TEST_ERROR = 'QualityTestError',
   UNSUPPORTED_BROWSER = 'UnsupportedBrowser',
   SUBSCRIBER_GET_STATS_ERROR = 'SubscriberGetStatsError',

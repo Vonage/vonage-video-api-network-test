@@ -9,7 +9,11 @@
 import packageJson from '../package.json';
 import { SessionCredentials, InitSessionOptions } from './types/session';
 import { UpdateCallback } from './types/callbacks';
-import { testConnectivity, type ConnectivityTestResults } from './testConnectivity';
+import {
+  testConnectivity,
+  stopConnectivityTest,
+  type ConnectivityTestResults,
+} from './testConnectivity';
 import {
   testQuality,
   stopQualityTest,
@@ -147,6 +151,7 @@ export default class NetworkTest {
    * @vonage/video-client-network-test project for details.
    */
   stop() {
+    stopConnectivityTest();
     stopQualityTest();
   }
 }
