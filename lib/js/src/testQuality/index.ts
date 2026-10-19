@@ -11,6 +11,7 @@
 
 /* tslint:disable */
 import OTKLogger from '@opentok/opentok-solutions-logging';
+import addSessionInfo from '../logging';
 import {
   NetworkTestOptions,
 } from '../index';
@@ -331,6 +332,7 @@ function checkSubscriberQuality(
   OTInstance: typeof OT,
   session: OT.Session,
   credentials: SessionCredentials,
+  otLogging: OTKLogger,
   options?: NetworkTestOptions,
   onUpdate?: UpdateCallback,
   audioOnlyFallback?: boolean,
@@ -346,6 +348,7 @@ function checkSubscriberQuality(
     };
     subscribeToTestStream(OTInstance, session, credentials, options)
       .then(({ publisher, subscriber }: PublisherSubscriber) => {
+        addSessionInfo(otLogging, session, credentials);
         if (!subscriber) {
           return disconnectAndReject(new e.MissingSubscriberError());
         }
@@ -386,7 +389,7 @@ function checkSubscriberQuality(
               // restarting in audio-only mode so that mediaRouting remains stable.
               const videoResults = audioVideoResults.video;
 
-              checkSubscriberQuality(OTInstance, session, credentials, options, onUpdate, true)
+              checkSubscriberQuality(OTInstance, session, credentials, otLogging, options, onUpdate, true)
                 .then((results: QualityTestResults) => {
                   results.video = videoResults;
                   resolve(results);
@@ -494,7 +497,7 @@ export function testQuality(
           }
         }
         const session = OTInstance.initSession(credentials.applicationId, credentials.sessionId, sessionOptions);
-        checkSubscriberQuality(OTInstance, session, credentials, options, onUpdate)
+        checkSubscriberQuality(OTInstance, session, credentials, otLogging, options, onUpdate)
           .then(onSuccess)
           .catch(onError);
       })

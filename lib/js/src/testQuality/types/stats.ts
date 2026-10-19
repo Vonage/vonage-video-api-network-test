@@ -33,6 +33,7 @@ export interface AverageStats {
   recommendedResolution?: string;
   mos?: number;
   mediaRouting?: string;
+  simulcast?: boolean;
 }
 
 export interface AverageStatsBase {

@@ -4,7 +4,12 @@
     // Allow test files (./test/) and source files (./src/) to coexist
     // without triggering TS6059 ("file not under rootDir")
     "rootDir": "./",
-    "types": ["jasmine"]
+    "types": ["jasmine", "node"],
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "network-test-dist": ["dist/index.d.ts"]
+    }
   },
   "include": [
     "./src/**/*",

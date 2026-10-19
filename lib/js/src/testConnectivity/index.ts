@@ -10,6 +10,7 @@
  */
 import axios from 'axios';
 import OTKLogger from '@opentok/opentok-solutions-logging';
+import addSessionInfo from '../logging';
 import {
   NetworkTestOptions,
 } from '../index';
@@ -353,7 +354,10 @@ export function testConnectivity(
     };
 
     connectToSession(OTInstance, credentials, options)
-      .then((session: OT.Session) => checkPublishToSession(OTInstance, session, options))
+      .then((session: OT.Session) => {
+        addSessionInfo(otLogging, session, credentials);
+        return checkPublishToSession(OTInstance, session, options);
+      })
       .then(checkSubscribeToSession)
       .then((results: SubscribeToSessionResults) => checkLoggingServer(OTInstance, options, results))
       .then(onSuccess)

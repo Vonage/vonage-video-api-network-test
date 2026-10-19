@@ -436,7 +436,7 @@ index d01cf28..d00747f 100644
 +  "homepage": "https://github.com/opentok/network-connectivity-js#readme",
    "dependencies": {
      "axios": "^1.19.0",
-     "@opentok/opentok-solutions-logging": "^1.1.5"
+     "@opentok/opentok-solutions-logging": "^1.1.6"
 @@ -64,4 +64,5 @@
    "devDependencies": {
      "@changesets/changelog-github": "^0.5.2",
@@ -546,7 +546,7 @@ index 7e61dab..d62876c 100644
 -      partnerId: applicationId,
 +      partnerId: apiKey,
        source: `${window.location.origin}${window.location.pathname}`,
-       clientVersion: `js-network-test-${version}`,
+       clientVersion: `js-network-test-${packageJson.version}`,
        name: 'opentok-network-test',
 @@ -103,11 +103,11 @@ export default class NetworkTest {
    }
@@ -696,7 +696,7 @@ index e46620a..20ac609 100644
          }
 -        const session = OTInstance.initSession(credentials.applicationId, credentials.sessionId, sessionOptions);
 +        const session = OTInstance.initSession(credentials.apiKey, credentials.sessionId, sessionOptions);
-         checkSubscriberQuality(OTInstance, session, credentials, options, onUpdate)
+         checkSubscriberQuality(OTInstance, session, credentials, otLogging, options, onUpdate)
            .then(onSuccess)
            .catch(onError);
 diff --git a/lib/js/src/types/session.ts b/lib/js/src/types/session.ts
@@ -775,7 +775,7 @@ index eefe6b8..8c0f21b 100644
 @@ -309,6 +311,6 @@ describe('NetworkTest', () => {
        it('results in a failed test if Session.subscribe() returns an error', (done) => {
          const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
+         const realGetDevices = (OT as any).getDevices;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
@@ -812,7 +812,7 @@ index eefe6b8..8c0f21b 100644
 @@ -643,6 +645,6 @@ describe('NetworkTest', () => {
        it('results in a failed test if OT.initPublisher() returns an error', (done) => {
          const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
+         const realGetDevices = (OT as any).getDevices;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
@@ -821,7 +821,7 @@ index eefe6b8..8c0f21b 100644
 @@ -675,6 +677,6 @@ describe('NetworkTest', () => {
        it('results in a PermissionDeniedError if OT.initPublisher() returns OT_USER_MEDIA_ACCESS_DENIED', (done) => {
          const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
+         const realGetDevices = (OT as any).getDevices;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
@@ -829,7 +829,7 @@ index eefe6b8..8c0f21b 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
 @@ -711,6 +713,6 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
+         const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
@@ -865,7 +865,7 @@ index eefe6b8..8c0f21b 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
 @@ -857,6 +859,6 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
+         const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
@@ -874,7 +874,7 @@ index eefe6b8..8c0f21b 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
 @@ -914,6 +916,6 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
+         const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
@@ -883,7 +883,7 @@ index eefe6b8..8c0f21b 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
 @@ -959,6 +961,6 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
+         const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
@@ -892,7 +892,7 @@ index eefe6b8..8c0f21b 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
 @@ -1004,6 +1006,6 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
+         const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
@@ -911,7 +911,7 @@ index eefe6b8..8c0f21b 100644
              Promise.reject(Object.assign(new Error(), { name: 'OT_AUTHENTICATION_ERROR' })));
 @@ -1077,6 +1079,6 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
+         const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
@@ -1065,3 +1065,36 @@ index 79a1089..eea38c8 100644
   *
   * The SDK exports its methods via webpack's Object.defineProperty pattern
   * (enumerable: true, configurable: false, writable: false), which prevents
+diff --git a/lib/js/src/logging.ts b/lib/js/src/logging.ts
+--- a/lib/js/src/logging.ts
++++ b/lib/js/src/logging.ts
+@@ -5,10 +5,10 @@ export default function addSessionInfo(
+   otLogging: OTKLogger,
+   session: OT.Session,
+-  { applicationId, sessionId }: SessionCredentials,
++  { apiKey, sessionId }: SessionCredentials,
+ ): void {
+   const connectionId = session.connection?.connectionId;
+   if (!connectionId) {
+     return;
+   }
+-  otLogging.addSessionInfo({ sessionId, connectionId, partnerId: applicationId });
++  otLogging.addSessionInfo({ sessionId, connectionId, partnerId: apiKey });
+ }
+diff --git a/lib/js/test/logging.spec.ts b/lib/js/test/logging.spec.ts
+--- a/lib/js/test/logging.spec.ts
++++ b/lib/js/test/logging.spec.ts
+@@ -7,4 +7,4 @@ const credentials: SessionCredentials = {
+-  applicationId: 'application-id',
++  apiKey: 'application-id',
+   sessionId: 'session-id',
+   token: 'token',
+ };
+@@ -29,6 +29,6 @@ describe('solutions logging integration', () => {
+     expect(logger.addSessionInfo).toHaveBeenCalledWith({
+       sessionId: credentials.sessionId,
+       connectionId: 'connection-id',
+-      partnerId: credentials.applicationId,
++      partnerId: credentials.apiKey,
+     });
+   });

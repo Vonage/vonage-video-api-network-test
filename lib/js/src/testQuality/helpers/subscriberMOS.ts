@@ -119,7 +119,7 @@ export default function subscriberMOS(
   mosState: MOSState,
   subscriber: OT.Subscriber,
   publisher: OT.Publisher,
-  getStatsListener: StatsListener,
+  getStatsListener: StatsListener | undefined,
   callback: (state: MOSState) => void,
 ) {
   mosState.intervalId = window.setInterval(() => {

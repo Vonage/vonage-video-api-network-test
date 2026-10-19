@@ -79,7 +79,7 @@ describe('subscriberMOS', () => {
     };
 
     capturedIntervalCallback = undefined;
-    setIntervalSpy = spyOn(window, 'setInterval').and.callFake((cb: any) => {
+    setIntervalSpy = spyOn(window as any, 'setInterval').and.callFake((cb: any) => {
       capturedIntervalCallback = cb;
       return 99 as any;
     });
@@ -143,7 +143,7 @@ describe('subscriberMOS', () => {
     ];
     mockSubscriber.getStats.and.callFake((cb: any) => cb(undefined, statsList[callCount++]));
 
-    subscriberMOS(mosState, mockSubscriber, mockPublisher, null, mockCallback);
+    subscriberMOS(mosState, mockSubscriber, mockPublisher, undefined, mockCallback);
     capturedIntervalCallback!();
     await flushPromises();
 
@@ -225,7 +225,7 @@ describe('subscriberMOS', () => {
       ];
       mockSubscriber.getStats.and.callFake((cb: any) => cb(undefined, statsList[getStatsCallCount++]));
 
-      subscriberMOS(mosState, mockSubscriber, mockPublisher, null, mockCallback);
+      subscriberMOS(mosState, mockSubscriber, mockPublisher, undefined, mockCallback);
 
       capturedIntervalCallback!();
       await flushPromises();
@@ -248,7 +248,7 @@ describe('subscriberMOS', () => {
       ];
       mockSubscriber.getStats.and.callFake((cb: any) => cb(undefined, statsList[getStatsCallCount++]));
 
-      subscriberMOS(mosState, mockSubscriber, mockPublisher, null, mockCallback);
+      subscriberMOS(mosState, mockSubscriber, mockPublisher, undefined, mockCallback);
 
       capturedIntervalCallback!();
       await flushPromises();
