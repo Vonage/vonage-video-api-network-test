@@ -29,8 +29,11 @@ index f645f42..eeb4fd3 100644
  
  ## Instalation
  
-@@ -22,14 +23,14 @@ For a sample that uses this module, see the [Vonage Video API Pre-call Test tool
- You can install the package from npm registry using this command:
+@@ -20,43 +20,43 @@
+ ### NPM
+ 
+-Install the package from [npmjs.com](https://www.npmjs.com/package/@vonage/video-client-network-test) without GitHub authentication:
++Install the package from [npmjs.com](https://www.npmjs.com/package/opentok-network-test-js) without GitHub authentication:
  
  ```
 -$ npm install @vonage/video-client-network-test
@@ -39,26 +42,31 @@ index f645f42..eeb4fd3 100644
  
  ### GitHub Packages
  
--On top of npm registry, `@vonage/video-client-network-test` is published to [Github Packages](https://github.com/orgs/Vonage/packages/npm/package/video-client-network-test).
-+On top of npm registry, `opentok-network-test-js` is published to [Github Packages](https://github.com/orgs/Vonage/packages/npm/package/video-client-network-test).
- 
--To install `@vonage/video-client-network-test` from GitHub Packages' NPM registry, you need to configure npm to authenticate with GitHub:
-+To install `opentok-network-test-js` from GitHub Packages' NPM registry, you need to configure npm to authenticate with GitHub:
+-The package is also published to [GitHub Packages](https://github.com/orgs/Vonage/packages/npm/package/video-client-network-test). To install it from GitHub Packages, configure npm to authenticate with GitHub:
++The package is also published to [GitHub Packages](https://github.com/orgs/Vonage/packages/npm/package/video-client-network-test). To install it from GitHub Packages, configure npm to authenticate with GitHub:
  
  **1. Create a GitHub Personal Access Token (PAT)**
  
-@@ -51,20 +52,20 @@ Replace `YOUR_GITHUB_TOKEN` with your GitHub personal access token.
- Once configured, you can use standard `npm install` command to install the package.
+ Generate a personal access token with `read:packages` scope from your GitHub account settings.
+ 
+ **2. Configure your `.npmrc` file**
+ 
+ Add the following configuration to your project's `.npmrc` file or your user-level `~/.npmrc` file:
+ 
+ ```
+ //npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
+-@vonage:registry=https://npm.pkg.github.com
++@opentok:registry=https://npm.pkg.github.com
+ ```
+ 
+ Replace `YOUR_GITHUB_TOKEN` with your GitHub personal access token.
+ 
+ **3. Install the package**
  
  ```
 -$ npm install @vonage/video-client-network-test
 +$ npm install opentok-network-test-js
  ```
- 
- #### Note on Package Availability
- 
--Both the traditional npm registry and GitHub Packages registry are kept in sync. You can choose either distribution method based on your organization's package management preferences. The traditional npm installation method (via `npm install @vonage/video-client-network-test` from the default registry) remains fully supported and requires no additional configuration.
-+Both the traditional npm registry and GitHub Packages registry are kept in sync. You can choose either distribution method based on your organization's package management preferences. The traditional npm installation method (via `npm install opentok-network-test-js` from the default registry) remains fully supported and requires no additional configuration.
  
  For more information about working with GitHub Packages' NPM registry, see the [GitHub Packages documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry).
  
@@ -72,7 +80,7 @@ index f645f42..eeb4fd3 100644
    This is the default export.
  
  * ErrorNames -- An object enumerating error name values
-@@ -72,34 +73,34 @@ After successful instalation, you have to load the Vonage Video API Network Test
+@@ -64,34 +64,34 @@ After successful instalation, you have to load the Vonage Video API Network Test
  Using CommonJS:
  
  ```javascript
@@ -712,7 +720,14 @@ index c84ec29..27a9c30 100644
          }
 -        const session = OTInstance.initSession(credentials.applicationId, credentials.sessionId, sessionOptions);
 +        const session = OTInstance.initSession(credentials.apiKey, credentials.sessionId, sessionOptions);
-         checkSubscriberQuality(OTInstance, session, credentials, otLogging, options, onUpdate)
+         checkSubscriberQuality({
+           OTInstance,
+           session,
+           credentials,
+           otLogging,
+           options,
+           onUpdate,
+         })
            .then(onSuccess)
            .catch(onError);
 diff --git a/lib/js/src/types/session.ts b/lib/js/src/types/session.ts
