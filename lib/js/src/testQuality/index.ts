@@ -11,6 +11,7 @@
 
 /* tslint:disable */
 import OTKLogger from '@opentok/opentok-solutions-logging';
+import addSessionInfo from '../logging';
 import {
   NetworkTestOptions,
 } from '../index';
@@ -51,6 +52,15 @@ type MOSResultsCallback = (state: MOSState) => void;
 type DeviceMap = { [deviceId: string]: OT.Device };
 type AvailableDevices = { audio: DeviceMap; video: DeviceMap };
 type PublisherSubscriber = { publisher: OT.Publisher; subscriber: OT.Subscriber };
+type QualityTestContext = {
+  OTInstance: typeof OT;
+  session: OT.Session;
+  credentials: SessionCredentials;
+  otLogging: OTKLogger;
+  options?: NetworkTestOptions;
+  onUpdate?: UpdateCallback;
+  audioOnlyFallback?: boolean;
+};
 
 let audioOnly = false; // By default, the initial test is audio-video
 let testTimeout: number;
@@ -327,14 +337,15 @@ function cleanPublisher(session: OT.Session, publisher: OT.Publisher): Promise<v
   });
 }
 
-function checkSubscriberQuality(
-  OTInstance: typeof OT,
-  session: OT.Session,
-  credentials: SessionCredentials,
-  options?: NetworkTestOptions,
-  onUpdate?: UpdateCallback,
-  audioOnlyFallback?: boolean,
-): Promise<QualityTestResults> {
+function checkSubscriberQuality({
+  OTInstance,
+  session,
+  credentials,
+  otLogging,
+  options,
+  onUpdate,
+  audioOnlyFallback,
+}: QualityTestContext): Promise<QualityTestResults> {
 
   let mosEstimatorTimeoutId: number;
 
@@ -346,6 +357,7 @@ function checkSubscriberQuality(
     };
     subscribeToTestStream(OTInstance, session, credentials, options)
       .then(({ publisher, subscriber }: PublisherSubscriber) => {
+        addSessionInfo(otLogging, session, credentials);
         if (!subscriber) {
           return disconnectAndReject(new e.MissingSubscriberError());
         }
@@ -386,7 +398,15 @@ function checkSubscriberQuality(
               // restarting in audio-only mode so that mediaRouting remains stable.
               const videoResults = audioVideoResults.video;
 
-              checkSubscriberQuality(OTInstance, session, credentials, options, onUpdate, true)
+              checkSubscriberQuality({
+                OTInstance,
+                session,
+                credentials,
+                otLogging,
+                options,
+                onUpdate,
+                audioOnlyFallback: true,
+              })
                 .then((results: QualityTestResults) => {
                   results.video = videoResults;
                   resolve(results);
@@ -494,7 +514,14 @@ export function testQuality(
           }
         }
         const session = OTInstance.initSession(credentials.applicationId, credentials.sessionId, sessionOptions);
-        checkSubscriberQuality(OTInstance, session, credentials, options, onUpdate)
+        checkSubscriberQuality({
+          OTInstance,
+          session,
+          credentials,
+          otLogging,
+          options,
+          onUpdate,
+        })
           .then(onSuccess)
           .catch(onError);
       })

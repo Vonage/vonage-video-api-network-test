@@ -29,8 +29,11 @@ index f645f42..eeb4fd3 100644
  
  ## Instalation
  
-@@ -22,14 +23,14 @@ For a sample that uses this module, see the [Vonage Video API Pre-call Test tool
- You can install the package from npm registry using this command:
+@@ -20,43 +20,43 @@
+ ### NPM
+ 
+-Install the package from [npmjs.com](https://www.npmjs.com/package/@vonage/video-client-network-test) without GitHub authentication:
++Install the package from [npmjs.com](https://www.npmjs.com/package/opentok-network-test-js) without GitHub authentication:
  
  ```
 -$ npm install @vonage/video-client-network-test
@@ -39,26 +42,31 @@ index f645f42..eeb4fd3 100644
  
  ### GitHub Packages
  
--On top of npm registry, `@vonage/video-client-network-test` is published to [Github Packages](https://github.com/orgs/Vonage/packages/npm/package/video-client-network-test).
-+On top of npm registry, `opentok-network-test-js` is published to [Github Packages](https://github.com/orgs/Vonage/packages/npm/package/video-client-network-test).
- 
--To install `@vonage/video-client-network-test` from GitHub Packages' NPM registry, you need to configure npm to authenticate with GitHub:
-+To install `opentok-network-test-js` from GitHub Packages' NPM registry, you need to configure npm to authenticate with GitHub:
+-The package is also published to [GitHub Packages](https://github.com/orgs/Vonage/packages/npm/package/video-client-network-test). To install it from GitHub Packages, configure npm to authenticate with GitHub:
++The package is also published to [GitHub Packages](https://github.com/orgs/Vonage/packages/npm/package/video-client-network-test). To install it from GitHub Packages, configure npm to authenticate with GitHub:
  
  **1. Create a GitHub Personal Access Token (PAT)**
  
-@@ -51,20 +52,20 @@ Replace `YOUR_GITHUB_TOKEN` with your GitHub personal access token.
- Once configured, you can use standard `npm install` command to install the package.
+ Generate a personal access token with `read:packages` scope from your GitHub account settings.
+ 
+ **2. Configure your `.npmrc` file**
+ 
+ Add the following configuration to your project's `.npmrc` file or your user-level `~/.npmrc` file:
+ 
+ ```
+ //npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
+-@vonage:registry=https://npm.pkg.github.com
++@opentok:registry=https://npm.pkg.github.com
+ ```
+ 
+ Replace `YOUR_GITHUB_TOKEN` with your GitHub personal access token.
+ 
+ **3. Install the package**
  
  ```
 -$ npm install @vonage/video-client-network-test
 +$ npm install opentok-network-test-js
  ```
- 
- #### Note on Package Availability
- 
--Both the traditional npm registry and GitHub Packages registry are kept in sync. You can choose either distribution method based on your organization's package management preferences. The traditional npm installation method (via `npm install @vonage/video-client-network-test` from the default registry) remains fully supported and requires no additional configuration.
-+Both the traditional npm registry and GitHub Packages registry are kept in sync. You can choose either distribution method based on your organization's package management preferences. The traditional npm installation method (via `npm install opentok-network-test-js` from the default registry) remains fully supported and requires no additional configuration.
  
  For more information about working with GitHub Packages' NPM registry, see the [GitHub Packages documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry).
  
@@ -72,7 +80,7 @@ index f645f42..eeb4fd3 100644
    This is the default export.
  
  * ErrorNames -- An object enumerating error name values
-@@ -72,34 +73,34 @@ After successful instalation, you have to load the Vonage Video API Network Test
+@@ -64,34 +64,34 @@ After successful instalation, you have to load the Vonage Video API Network Test
  Using CommonJS:
  
  ```javascript
@@ -437,7 +445,7 @@ index f8d2dbd..ea2090f 100644
 +  "homepage": "https://github.com/opentok/network-connectivity-js#readme",
    "dependencies": {
      "axios": "^1.19.0",
-     "@opentok/opentok-solutions-logging": "^1.1.5"
+     "@opentok/opentok-solutions-logging": "^1.1.6"
 @@ -64,12 +64,11 @@
    "devDependencies": {
      "@changesets/changelog-github": "^0.5.2",
@@ -541,8 +549,8 @@ index f69b7a0..d0a0a92 100644
        sessionId,
 -      partnerId: applicationId,
 +      partnerId: apiKey,
-       source: window.location.href,
-       clientVersion: `js-network-test-${version}`,
+       source: `${window.location.origin}${window.location.pathname}`,
+       clientVersion: `js-network-test-${packageJson.version}`,
        name: 'opentok-network-test',
 @@ -104,11 +104,11 @@ export default class NetworkTest {
    }
@@ -712,7 +720,14 @@ index c84ec29..27a9c30 100644
          }
 -        const session = OTInstance.initSession(credentials.applicationId, credentials.sessionId, sessionOptions);
 +        const session = OTInstance.initSession(credentials.apiKey, credentials.sessionId, sessionOptions);
-         checkSubscriberQuality(OTInstance, session, credentials, options, onUpdate)
+         checkSubscriberQuality({
+           OTInstance,
+           session,
+           credentials,
+           otLogging,
+           options,
+           onUpdate,
+         })
            .then(onSuccess)
            .catch(onError);
 diff --git a/lib/js/src/types/session.ts b/lib/js/src/types/session.ts
@@ -769,7 +784,7 @@ index a1701a5..c61f057 100644
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
 +          const session = realInitSession(apiKey, sessionId);
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
-           spyOn(session, 'disconnect').and.callFake(() => {
+           spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
 @@ -455,8 +457,8 @@ describe('NetworkTest', () => {
  
@@ -780,7 +795,7 @@ index a1701a5..c61f057 100644
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
 +          const session = realInitSession(apiKey, sessionId);
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
-           spyOn(session, 'disconnect').and.callFake(() => {
+           spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
 @@ -485,8 +487,8 @@ describe('NetworkTest', () => {
  
@@ -791,18 +806,18 @@ index a1701a5..c61f057 100644
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
 +          const session = realInitSession(apiKey, sessionId);
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
-           spyOn(session, 'disconnect').and.callFake(() => {
+           spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
 @@ -516,8 +518,8 @@ describe('NetworkTest', () => {
        it('results in a failed test if Session.subscribe() returns an error', (done) => {
          const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
+         const realGetDevices = (OT as any).getDevices;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
 +          const session = realInitSession(apiKey, sessionId);
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
-           spyOn(session.publish, 'promise').and.returnValue(Promise.resolve());
+           spyOn(session.publish as any, 'promise').and.returnValue(Promise.resolve());
            (session.subscribe as any).promise = jasmine.createSpy().and.callFake(() => Promise.reject(new Error()));
 @@ -575,8 +577,8 @@ describe('NetworkTest', () => {
        };
@@ -824,7 +839,7 @@ index a1701a5..c61f057 100644
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
 +          const session = realInitSession(apiKey, sessionId);
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
-           spyOn(session, 'disconnect').and.callFake(() => {
+           spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
 @@ -674,8 +676,8 @@ describe('NetworkTest', () => {
        it('results in a failed test if there are no mics', (done) => {
@@ -835,40 +850,40 @@ index a1701a5..c61f057 100644
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
 +          const session = realInitSession(apiKey, sessionId);
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
-           spyOn(session, 'disconnect').and.callFake(() => {
+           spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
 @@ -836,8 +838,8 @@ describe('NetworkTest', () => {
        it('results in a failed test if OT.initPublisher() returns an error', (done) => {
          const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
+         const realGetDevices = (OT as any).getDevices;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
 +          const session = realInitSession(apiKey, sessionId);
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
-           spyOn(session, 'disconnect').and.callFake(() => {
+           spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
 @@ -866,8 +868,8 @@ describe('NetworkTest', () => {
        it('results in a PermissionDeniedError if OT.initPublisher() returns OT_USER_MEDIA_ACCESS_DENIED', (done) => {
          const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
+         const realGetDevices = (OT as any).getDevices;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
 +          const session = realInitSession(apiKey, sessionId);
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
-           spyOn(session, 'disconnect').and.callFake(() => {
+           spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
 @@ -900,8 +902,8 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
+         const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
 +          const session = realInitSession(apiKey, sessionId);
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
-           sessionDisconnectSpy = spyOn(session, 'disconnect').and.callFake(() => {
+           sessionDisconnectSpy = spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
 @@ -938,8 +940,8 @@ describe('NetworkTest', () => {
  
@@ -879,7 +894,7 @@ index a1701a5..c61f057 100644
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
 +          const session = realInitSession(apiKey, sessionId);
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
-           spyOn(session.publish, 'promise').and.callFake((publisher: any) => {
+           spyOn(session.publish as any, 'promise').and.callFake((publisher: any) => {
              setTimeout(() => {
 @@ -978,8 +980,8 @@ describe('NetworkTest', () => {
        it('should disconnect the session when validateDevices fails with getDevices error', (done) => {
@@ -890,7 +905,7 @@ index a1701a5..c61f057 100644
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
 +          const session = realInitSession(apiKey, sessionId);
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
-           sessionDisconnectSpy = spyOn(session, 'disconnect').and.callFake(() => {
+           sessionDisconnectSpy = spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
 @@ -1005,8 +1007,8 @@ describe('NetworkTest', () => {
        it('should disconnect the session when validateDevices finds no audio devices', (done) => {
@@ -901,51 +916,51 @@ index a1701a5..c61f057 100644
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
 +          const session = realInitSession(apiKey, sessionId);
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
-           sessionDisconnectSpy = spyOn(session, 'disconnect').and.callFake(() => {
+           sessionDisconnectSpy = spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
 @@ -1036,8 +1038,8 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
+         const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
 +          const session = realInitSession(apiKey, sessionId);
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
-           spyOn(session.publish, 'promise').and.returnValue(Promise.resolve());
+           spyOn(session.publish as any, 'promise').and.returnValue(Promise.resolve());
            // subscribe resolves without a subscriber
 @@ -1086,8 +1088,8 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
+         const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
 +          const session = realInitSession(apiKey, sessionId);
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
-           spyOn(session.publish, 'promise').and.callFake(() =>
+           spyOn(session.publish as any, 'promise').and.callFake(() =>
              Promise.reject(Object.assign(new Error('Publish failed'), { name: 'SOME_UNKNOWN_PUBLISH_ERROR' })));
 @@ -1124,8 +1126,8 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
+         const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
 +          const session = realInitSession(apiKey, sessionId);
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
-           spyOn(session.publish, 'promise').and.callFake(() =>
+           spyOn(session.publish as any, 'promise').and.callFake(() =>
              Promise.reject(Object.assign(new Error('Not connected'), { name: 'NOT_CONNECTED' })));
 @@ -1162,8 +1164,8 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
+         const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
 +        spyOn(OT, 'initSession').and.callFake((apiKey, sessionId) => {
 +          const session = realInitSession(apiKey, sessionId);
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
-           spyOn(session.publish, 'promise').and.callFake(() =>
+           spyOn(session.publish as any, 'promise').and.callFake(() =>
              Promise.reject(Object.assign(new Error('Unable to publish'), { name: 'UNABLE_TO_PUBLISH' })));
 @@ -1199,8 +1201,8 @@ describe('NetworkTest', () => {
        it('connectToSession should not trigger publishAndSubscribe after rejecting on error', (done) => {
@@ -957,10 +972,10 @@ index a1701a5..c61f057 100644
 +          const session = realInitSession(apiKey, sessionId);
            spyOn(session.connect, 'promise').and.returnValue(
              Promise.reject(Object.assign(new Error(), { name: 'OT_AUTHENTICATION_ERROR' })));
-           publishSpy = spyOn(session.publish, 'promise');
+           publishSpy = spyOn(session.publish as any, 'promise');
 @@ -1225,8 +1227,8 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
-         const realGetDevices = OT.getDevices;
+         const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
 -        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
 -          const session = realInitSession(applicationId, sessionId);
@@ -968,7 +983,7 @@ index a1701a5..c61f057 100644
 +          const session = realInitSession(apiKey, sessionId);
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            // Mock publish to remain pending while media access is revoked
-           spyOn(session.publish, 'promise').and.returnValue(new Promise(() => {}));
+           spyOn(session.publish as any, 'promise').and.returnValue(new Promise(() => {}));
 diff --git a/lib/js/test/setup/setup.js b/lib/js/test/setup/setup.js
 index 2e717a5..f00b42f 100644
 --- a/lib/js/test/setup/setup.js
@@ -1116,3 +1131,36 @@ index 79a1089..eea38c8 100644
   *
   * The SDK exports its methods via webpack's Object.defineProperty pattern
   * (enumerable: true, configurable: false, writable: false), which prevents
+diff --git a/lib/js/src/logging.ts b/lib/js/src/logging.ts
+--- a/lib/js/src/logging.ts
++++ b/lib/js/src/logging.ts
+@@ -5,10 +5,10 @@ export default function addSessionInfo(
+   otLogging: OTKLogger,
+   session: OT.Session,
+-  { applicationId, sessionId }: SessionCredentials,
++  { apiKey, sessionId }: SessionCredentials,
+ ): void {
+   const connectionId = session.connection?.connectionId;
+   if (!connectionId) {
+     return;
+   }
+-  otLogging.addSessionInfo({ sessionId, connectionId, partnerId: applicationId });
++  otLogging.addSessionInfo({ sessionId, connectionId, partnerId: apiKey });
+ }
+diff --git a/lib/js/test/logging.spec.ts b/lib/js/test/logging.spec.ts
+--- a/lib/js/test/logging.spec.ts
++++ b/lib/js/test/logging.spec.ts
+@@ -7,4 +7,4 @@ const credentials: SessionCredentials = {
+-  applicationId: 'application-id',
++  apiKey: 'application-id',
+   sessionId: 'session-id',
+   token: 'token',
+ };
+@@ -29,6 +29,6 @@ describe('solutions logging integration', () => {
+     expect(logger.addSessionInfo).toHaveBeenCalledWith({
+       sessionId: credentials.sessionId,
+       connectionId: 'connection-id',
+-      partnerId: credentials.applicationId,
++      partnerId: credentials.apiKey,
+     });
+   });

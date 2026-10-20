@@ -54,12 +54,8 @@ function calculateVideoScore(subscriber: OT.Subscriber, stats: OT.SubscriberStat
 }
 
 function calculateAudioScore(
-  subscriber: OT.Subscriber, publisherStats: PublisherStats | undefined,
+  subscriber: OT.Subscriber,
   stats: OT.SubscriberStats[]): number {
-  const getDelay = (): number => {
-    // Return default delay until proper calculation
-    return DEFAULT_DELAY;
-  };
 
   const audioScore = (packetLossRatio: number) => {
     const LOCAL_DELAY = 30; // 30 msecs: typical frame duration
@@ -68,7 +64,7 @@ function calculateAudioScore(
     const a = 0; // ILBC: a=10
     const b = 19.8;
     const c = 29.7;
-    const delay = getDelay();
+    const delay = DEFAULT_DELAY;
     /**
      * Calculate the transmission rating factor, R
      */
@@ -119,7 +115,7 @@ export default function subscriberMOS(
   mosState: MOSState,
   subscriber: OT.Subscriber,
   publisher: OT.Publisher,
-  getStatsListener: StatsListener,
+  getStatsListener: StatsListener | undefined,
   callback: (state: MOSState) => void,
 ) {
   mosState.intervalId = window.setInterval(() => {
@@ -141,25 +137,21 @@ export default function subscriberMOS(
         const publisherStats = await getPublisherStats(publisher, mosState.getLastPublisherStats());
 
         // Push subscriber stats to MOSState statsLog array
-        subscriberStats && mosState.subscriberStatsLog.push(subscriberStats);
+        mosState.subscriberStatsLog.push(subscriberStats);
         publisherStats && mosState.publisherStatsLog.push(publisherStats);
 
         // Call getStatsListener if it exists
-        if (getStatsListener && typeof getStatsListener === 'function') {
+        if (getStatsListener) {
           getStatsListener(error, subscriberStats, publisherStats);
         }
 
         // Calculate MOSState stats and push to appropriate logs
-        if (mosState.publisherStatsLog.length && mosState.publisherStatsLog.length >= 2) {
+        if (mosState.publisherStatsLog.length >= 2) {
           mosState.stats = calculateThroughput(mosState);
           const videoScore = calculateVideoScore(subscriber, mosState.subscriberStatsLog);
           mosState.videoScoresLog.push(videoScore);
 
-          const audioScore = calculateAudioScore(
-            subscriber,
-            publisherStats,
-            mosState.subscriberStatsLog,
-          );
+          const audioScore = calculateAudioScore(subscriber, mosState.subscriberStatsLog);
           mosState.audioScoresLog.push(audioScore);
           mosState.pruneScores();
 

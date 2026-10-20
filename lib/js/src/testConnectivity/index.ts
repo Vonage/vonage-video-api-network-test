@@ -10,6 +10,7 @@
  */
 import axios from 'axios';
 import OTKLogger from '@opentok/opentok-solutions-logging';
+import addSessionInfo from '../logging';
 import {
   NetworkTestOptions,
 } from '../index';
@@ -338,13 +339,23 @@ function checkLoggingServer(OTInstance: typeof OT, options?: NetworkTestOptions)
   });
 }
 
-async function runConnectivityChecks(
-  OTInstance: typeof OT,
-  credentials: SessionCredentials,
-  resources: Resources,
-  options?: NetworkTestOptions,
-): Promise<void> {
+type ConnectivityCheckContext = {
+  OTInstance: typeof OT;
+  credentials: SessionCredentials;
+  resources: Resources;
+  options?: NetworkTestOptions;
+  otLogging: OTKLogger;
+};
+
+async function runConnectivityChecks({
+  OTInstance,
+  credentials,
+  resources,
+  options,
+  otLogging,
+}: ConnectivityCheckContext): Promise<void> {
   const session = await connectToSession(OTInstance, credentials, resources, options);
+  addSessionInfo(otLogging, session, credentials);
   throwIfAborted(resources);
   const publisher = await checkPublishToSession(OTInstance, session, resources, options);
   throwIfAborted(resources);
@@ -454,7 +465,7 @@ export function testConnectivity(
       }
     };
 
-    runConnectivityChecks(OTInstance, credentials, resources, options)
+    runConnectivityChecks({ OTInstance, credentials, resources, options, otLogging })
       .then(onSuccess, onFailure);
   });
 }

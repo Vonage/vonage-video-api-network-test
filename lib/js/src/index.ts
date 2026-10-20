@@ -6,18 +6,18 @@
 * Define Network Connectivy class
 */
 
-import { version } from '../package.json';
+import packageJson from '../package.json';
 import { SessionCredentials, InitSessionOptions } from './types/session';
 import { UpdateCallback } from './types/callbacks';
 import {
   testConnectivity,
   stopConnectivityTest,
-  ConnectivityTestResults,
+  type ConnectivityTestResults,
 } from './testConnectivity';
 import {
   testQuality,
   stopQualityTest,
-  QualityTestResults,
+  type QualityTestResults,
 } from './testQuality';
 import {
   IncompleteSessionCredentialsError,
@@ -38,8 +38,8 @@ export interface NetworkTestOptions {
   fullHd?: boolean;
 }
 
-export { QualityTestResults } from './testQuality';
-export { ConnectivityTestResults } from './testConnectivity';
+export type { QualityTestResults } from './testQuality';
+export type { ConnectivityTestResults } from './testConnectivity';
 
 export default class NetworkTest {
   credentials: SessionCredentials;
@@ -94,8 +94,8 @@ export default class NetworkTest {
     return new OTKLogger({
       sessionId,
       partnerId: applicationId,
-      source: window.location.href,
-      clientVersion: `js-network-test-${version}`,
+      source: `${window.location.origin}${window.location.pathname}`,
+      clientVersion: `js-network-test-${packageJson.version}`,
       name: 'opentok-network-test',
       componentId: 'opentok-network-test',
     }, {

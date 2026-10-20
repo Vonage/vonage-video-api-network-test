@@ -103,7 +103,7 @@ describe('getUpdateCallbackStats', () => {
 
     it('maps subscriber audio stats correctly when audio stats are not available', () => {
       const subscriberStats = createSubscriberStats();
-      subscriberStats.audio = undefined;
+      (subscriberStats as any).audio = undefined;
       const result = getUpdateCallbackStats(
         subscriberStats,
         createPublisherStats(),
