@@ -20,7 +20,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false  # Never cancel: package artifacts may be mid-upload.
+  cancel-in-progress: false  # Never cancel: package artifacts may be mid-upload
 
 permissions: read-all
 
