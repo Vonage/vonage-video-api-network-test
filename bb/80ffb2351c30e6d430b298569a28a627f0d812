@@ -1,0 +1,19 @@
+.github/workflows/required-ai-adoption-label.yml
+  s_f8876a58e35935::t_3cd6834d6e26f7 1-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "bb80ffb2351c30e6d430b298569a28a627f0d812",
+  "prompts": {},
+  "sessions": {
+    "s_f8876a58e35935": {
+      "agent_id": {
+        "tool": "kiro",
+        "id": "sess_7d474f66-56fd-44f7-9627-3dc14031351b",
+        "model": "auto"
+      },
+      "human_author": "Marina Serrano Montes <marina.serranomontes@vonage.com>"
+    }
+  }
+}
