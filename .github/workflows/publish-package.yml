@@ -1,136 +1,143 @@
-name: Publish Package
+name: Publish Packages (GitHub + NPMJS)
 
+# npmjs.com uses GitHub Actions Trusted Publishing (OIDC).
+# GitHub Packages keeps token-based publishing because GitHub Packages does not
+# support npm Trusted Publishing.
 on:
   workflow_dispatch:
     inputs:
-      target:
-        description: 'Target package'
-        required: true
-        type: choice
-        default: 'vonage'
-        options:
-          - 'vonage'
-          - 'opentok'
-      registry:
-        description: 'NPM registry to publish to'
-        required: true
-        type: choice
-        default: 'npmjs.com'
-        options:
-          - 'github.com'
-          - 'npmjs.com'
       dry_run:
-        description: 'Dry run mode (test without publishing)'
+        description: 'Run registry publish dry runs only'
         required: true
         type: boolean
         default: true
       tag:
-        description: 'Pre-release tag appended to the version and used as the dist-tag (e.g., alpha → 1.2.3-alpha). Leave empty to publish the version as-is with the "latest" dist-tag.'
-        required: false
-        type: string
-        default: ''
-      run_id:
-        description: 'Numeric CI run ID to publish from (find it in the Actions tab URL). Leave empty to use the latest successful run on the current branch.'
+        description: 'Pre-release tag appended to the version and used as the dist-tag (e.g., alpha → 1.2.3-alpha.1). Leave empty to publish the version as-is with the latest dist-tag.'
         required: false
         type: string
         default: ''
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false  # Never cancel: a publish mid-flight could leave the registry in an inconsistent state.
-
-permissions: read-all
+  # Publishing is a global registry operation, so serialize runs from all branches.
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 jobs:
-  publish:
+  publish-github:
+    name: Publish ${{ matrix.target }} to GitHub Packages
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    name: Publish ${{ inputs.target }} to ${{ inputs.registry }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [vonage, opentok]
     permissions:
-      contents: write  # Required to create tags and GitHub Releases.
+      contents: read
       packages: write
       actions: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # dry_run, tag, run_id, and github_token are shared across all three steps;
-      # update all three if publish-package gains new shared inputs.
-      - name: Publish Vonage Package
-        id: publish-vonage
-        if: inputs.target == 'vonage'
+      - name: Publish package
         uses: ./.github/actions/publish-package
         with:
-          target: vonage
-          registry: ${{ inputs.registry }}
-          dry_run: ${{ inputs.dry_run }}
-          tag: ${{ inputs.tag }}
-          run_id: ${{ inputs.run_id }}
-          organization: vonage
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          npm_token: ${{ secrets.NPM_TOKEN_VONAGE }}
-          node_version: ${{ vars.NODE_VERSION }}
-          # @vonage packages live in this repo's org, so the built-in GITHUB_TOKEN has write:packages.
-          github_packages_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish OpenTok Package to GitHub
-        id: publish-opentok-github
-        if: inputs.target == 'opentok' && inputs.registry == 'github.com'
-        uses: ./.github/actions/publish-package
-        with:
-          target: opentok
+          target: ${{ matrix.target }}
           registry: github.com
           dry_run: ${{ inputs.dry_run }}
           tag: ${{ inputs.tag }}
-          run_id: ${{ inputs.run_id }}
-          organization: opentok
+          organization: ${{ matrix.target == 'vonage' && 'vonage' || 'opentok' }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          # @opentok packages live in a different GitHub org; GITHUB_TOKEN cannot publish
-          # across org boundaries, so a PAT with write:packages on the opentok org is required.
-          github_packages_token: ${{ secrets.NPM_TOKEN_OPENTOK_GITHUB }}
+          github_packages_token: ${{ matrix.target == 'vonage' && secrets.GITHUB_TOKEN || secrets.NPM_TOKEN_OPENTOK_GITHUB }}
           node_version: ${{ vars.NODE_VERSION }}
 
-      - name: Publish OpenTok Package to NPM
-        id: publish-opentok-npm
-        if: inputs.target == 'opentok' && inputs.registry == 'npmjs.com'
+  publish-npmjs:
+    name: Publish ${{ matrix.target }} to npmjs.com
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [vonage, opentok]
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Publish package
         uses: ./.github/actions/publish-package
         with:
-          target: opentok
+          target: ${{ matrix.target }}
           registry: npmjs.com
           dry_run: ${{ inputs.dry_run }}
           tag: ${{ inputs.tag }}
-          run_id: ${{ inputs.run_id }}
-          organization: unscoped
+          organization: ${{ matrix.target == 'vonage' && 'vonage' || 'unscoped' }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          npm_token: ${{ secrets.NPM_TOKEN_OPENTOK }}
-          node_version: ${{ vars.NODE_VERSION }}
+          node_version: 24
 
-      # Reads the final version and name written to lib/js/package.json by the publish action.
-      # Skipped entirely on dry runs — no tag or release is created.
+  release:
+    name: Create GitHub release
+    needs: [publish-github, publish-npmjs]
+    if: inputs.dry_run == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Resolve published version
-        if: ${{ !fromJSON(inputs.dry_run) }}
-        id: release-meta
+        id: version
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
         shell: bash
         run: |
-          VERSION=$(node -p "require('./lib/js/package.json').version")
-          NAME=$(node -p "require('./lib/js/package.json').name")
+          BASE_VERSION=$(node -p "require('./lib/js/package.json').version")
+          VERSION="$BASE_VERSION"
+          if [ -n "$INPUT_TAG" ]; then
+            PREFIX="${BASE_VERSION}-${INPUT_TAG}."
+            for attempt in {1..30}; do
+              VERSIONS=$(npm view "@vonage/video-client-network-test" versions --json --registry https://registry.npmjs.org 2>/dev/null || echo '[]')
+              VERSION=$(BASE_VERSION="$BASE_VERSION" TAG="$INPUT_TAG" VERSIONS="$VERSIONS" node - <<'NODE'
+          const versions = JSON.parse(process.env.VERSIONS);
+          const values = Array.isArray(versions) ? versions : [versions];
+          const prefix = `${process.env.BASE_VERSION}-${process.env.TAG}.`;
+          const matches = values
+            .filter((version) => version.startsWith(prefix))
+            .map((version) => Number(version.slice(prefix.length)))
+            .filter(Number.isInteger);
+          if (matches.length > 0) console.log(`${prefix}${Math.max(...matches)}`);
+          NODE
+              )
+              if [ -n "$VERSION" ]; then
+                break
+              fi
+              if [ "$attempt" -lt 30 ]; then
+                echo "Version ${PREFIX}<number> is not visible on npmjs.com yet; retrying in 10 seconds ($attempt/30)."
+                sleep 10
+              fi
+            done
+            if [ -z "$VERSION" ]; then
+              echo "No published version found for $PREFIX after 5 minutes."
+              exit 1
+            fi
+          fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "package_name=$NAME" >> "$GITHUB_OUTPUT"
-          # All targets (vonage, opentok) share the same version tag so that publishing
-          # vonage and opentok variants of the same version produces a single GitHub Release.
           echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
 
-      # Promotes the Release Drafter draft if one exists (accumulated changelog from all
-      # PR merges since the last release). Falls back to a fresh release with auto-generated
-      # notes if no draft is found (e.g., first release or draft was manually deleted).
-      # Idempotent: if the release already exists (a sibling target published first),
-      # this step is a no-op — all four publish targets share the same version tag.
       - name: Publish GitHub Release
-        if: ${{ !fromJSON(inputs.dry_run) }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ steps.release-meta.outputs.tag }}
-          VERSION: ${{ steps.release-meta.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
         shell: bash
         run: |
           if gh release view "$TAG" &>/dev/null; then
@@ -147,4 +154,67 @@ jobs:
           else
             echo "No draft found — creating release '$TAG'"
             gh release create "$TAG" --title "v${VERSION}" --generate-notes
+          fi
+
+  publish-summary:
+    name: Publish summary
+    needs: [publish-github, publish-npmjs, release]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Write publish summary
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          GITHUB_RESULT: ${{ needs.publish-github.result }}
+          NPM_RESULT: ${{ needs.publish-npmjs.result }}
+          RELEASE_RESULT: ${{ needs.release.result }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          RELEASE_TAG: ${{ needs.release.outputs.tag }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RELEASE_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ needs.release.outputs.tag }}
+        shell: bash
+        run: |
+          {
+            echo "## Publish summary"
+            echo ""
+            echo "Workflow run: [$GITHUB_RUN_ID]($RUN_URL)"
+            echo ""
+            echo "| Destination | Result |"
+            echo "|---|---|"
+            echo "| GitHub Packages | $GITHUB_RESULT |"
+            echo "| npmjs.com | $NPM_RESULT |"
+            echo "| GitHub release | $RELEASE_RESULT |"
+            echo ""
+            echo "### Package links"
+            echo ""
+            echo "- [Vonage package on npmjs.com](https://www.npmjs.com/package/@vonage/video-client-network-test)"
+            echo "- [OpenTok package on npmjs.com](https://www.npmjs.com/package/opentok-network-test-js)"
+            echo "- [Vonage package on GitHub Packages](https://github.com/orgs/Vonage/packages/npm/package/video-client-network-test)"
+            echo "- [OpenTok package on GitHub Packages](https://github.com/orgs/opentok/packages/npm/package/opentok-network-test-js)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "### Package job details" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Package job | Result | Failed step | Details |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs?per_page=100" \
+            --jq '.jobs[] | select(.name | startswith("Publish ")) | [(.name | gsub("\\|"; "\\\\|")), (.conclusion // .status), ([.steps[] | select(.conclusion == "failure") | .name] | join(", ") | if . == "" then "—" else gsub("\\|"; "\\\\|") end), .html_url] | @tsv' \
+            | while IFS=$'\t' read -r job result failed_step details_url; do
+                echo "| $job | $result | $failed_step | [Open job]($details_url) |" >> "$GITHUB_STEP_SUMMARY"
+              done
+
+          if [ -n "$RELEASE_TAG" ]; then
+            echo "- [GitHub release $RELEASE_TAG]($RELEASE_URL)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          if [ "$DRY_RUN" = "false" ] && { [ "$GITHUB_RESULT" != "success" ] || [ "$NPM_RESULT" != "success" ]; }; then
+            {
+              echo ""
+              echo "Publishing did not complete successfully. Open the workflow run above and inspect the failed matrix job for the exact command output."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
           fi
