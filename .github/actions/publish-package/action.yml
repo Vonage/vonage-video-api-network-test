@@ -18,9 +18,6 @@ inputs:
   node_version:
     description: 'Node.js version to use (e.g. 24.x)'
     required: true
-  npm_token:
-    description: 'NPM token for publishing to registry.npmjs.org — required when registry is npmjs.com'
-    required: false
   github_packages_token:
     description: 'PAT with write:packages scope for publishing to GitHub Packages — required when registry is github.com'
     required: false
@@ -31,34 +28,23 @@ inputs:
     description: 'NPM scope to apply before publishing — "vonage", "opentok", or "unscoped" for legacy unscoped packages. Leave empty to publish with the scope already in the tarball.'
     required: false
     default: ''
-  run_id:
-    description: 'CI workflow run ID to download the artifact from. Leave empty to use the latest successful run on the current branch.'
-    required: false
-    default: ''
 
 runs:
   using: "composite"
   steps:
-    - name: Resolve auth token
+    - name: Configure registry authentication
       shell: bash
       env:
-        NPM_TOKEN: ${{ inputs.npm_token }}
         GH_PACKAGES_TOKEN: ${{ inputs.github_packages_token }}
         REGISTRY: ${{ inputs.registry }}
       run: |
-        # NODE_AUTH_TOKEN is read automatically by npm when publishing.
+        # npmjs.com uses GitHub Actions Trusted Publishing (OIDC).
         if [ "$REGISTRY" == "github.com" ]; then
           if [ -z "$GH_PACKAGES_TOKEN" ]; then
             echo "❌ Error: github_packages_token is required when publishing to github.com"
             exit 1
           fi
           echo "NODE_AUTH_TOKEN=$GH_PACKAGES_TOKEN" >> "$GITHUB_ENV"
-        else
-          if [ -z "$NPM_TOKEN" ]; then
-            echo "❌ Error: npm_token is required when publishing to npmjs.com"
-            exit 1
-          fi
-          echo "NODE_AUTH_TOKEN=$NPM_TOKEN" >> "$GITHUB_ENV"
         fi
 
     - name: Setup Node
@@ -70,6 +56,11 @@ runs:
         # Defaults to GitHub Packages when registry is not npmjs.com.
         registry-url: ${{ inputs.registry == 'npmjs.com' && 'https://registry.npmjs.org' || 'https://npm.pkg.github.com/' }}
 
+    - name: Setup npm for Trusted Publishing
+      if: inputs.registry == 'npmjs.com'
+      shell: bash
+      run: npm install --global npm@11.15.0
+
     - name: Clean publish directory
       shell: bash
       run: rm -rf lib/js && mkdir -p lib/js
@@ -79,10 +70,7 @@ runs:
       with:
         github_token: ${{ inputs.github_token }}
         workflow: post-merge-validation.yml
-        run_id: ${{ inputs.run_id }}
-        # When run_id is provided, branch is set to '' — dawidd6 treats an explicit empty
-        # string the same as omitting the parameter (no branch filter applied).
-        branch: ${{ inputs.run_id == '' && github.ref_name || '' }}
+        branch: ${{ github.ref_name }}
         name: ${{ inputs.target }}-package-tarball
         path: lib/js
 
@@ -129,6 +117,28 @@ runs:
           npm pkg set name="@${ORGANIZATION}/${BASE_NAME}"
         fi
 
+    - name: Verify package identity
+      working-directory: lib/js
+      shell: bash
+      env:
+        TARGET: ${{ inputs.target }}
+        REGISTRY: ${{ inputs.registry }}
+      run: |
+        PACKAGE_NAME=$(node -p "require('./package.json').name")
+        if [ "$TARGET" == "vonage" ] && [ "$PACKAGE_NAME" != "@vonage/video-client-network-test" ]; then
+          echo "❌ Unexpected Vonage package name: $PACKAGE_NAME"
+          exit 1
+        fi
+        if [ "$TARGET" == "opentok" ] && [ "$REGISTRY" == "github.com" ] && [ "$PACKAGE_NAME" != "@opentok/opentok-network-test-js" ]; then
+          echo "❌ Unexpected OpenTok GitHub package name: $PACKAGE_NAME"
+          exit 1
+        fi
+        if [ "$TARGET" == "opentok" ] && [ "$REGISTRY" == "npmjs.com" ] && [ "$PACKAGE_NAME" != "opentok-network-test-js" ]; then
+          echo "❌ Unexpected OpenTok npmjs.com package name: $PACKAGE_NAME"
+          exit 1
+        fi
+        echo "Publishing expected package: $PACKAGE_NAME"
+
     - name: Apply Pre-release Tag to Version
       if: inputs.tag != ''
       working-directory: lib/js
@@ -156,6 +166,7 @@ runs:
         npm pkg set version="${CURRENT_VERSION}-${TAG}.${PRERELEASE_NUM}"
 
     - name: Check if version already published
+      id: check
       working-directory: lib/js
       shell: bash
       env:
@@ -168,11 +179,14 @@ runs:
         PUBLISHED_VERSION=$(npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" version 2>/dev/null || echo "")
 
         if [ "$PUBLISHED_VERSION" == "$PACKAGE_VERSION" ]; then
-          echo "❌ Error: Version $PACKAGE_VERSION is already published on $REGISTRY!"
-          exit 1
+          echo "Version $PACKAGE_VERSION is already published on $REGISTRY; skipping."
+          echo "published=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "published=false" >> "$GITHUB_OUTPUT"
         fi
 
     - name: Publish
+      if: steps.check.outputs.published != 'true'
       working-directory: lib/js
       shell: bash
       env:
