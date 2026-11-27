@@ -756,7 +756,7 @@ index cfa3017..187525d 100644
 +  apiKey: string;
  }
 diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
-index 9f1987c..d62e407 100644
+index 55bbfa0..d62e407 100644
 --- a/lib/js/test/NetworkTest.spec.ts
 +++ b/lib/js/test/NetworkTest.spec.ts
 @@ -1,4 +1,6 @@
@@ -789,38 +789,7 @@ index 9f1987c..d62e407 100644
            spyOn(session.connect, 'promise').and.returnValue(
              Promise.reject(Object.assign(new Error(), { name: errorName })));
            return session;
-@@ -354,8 +356,8 @@ describe('NetworkTest', () => {
-         });
-         spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
-           setTimeout(() => {
--            callback(undefined);
-             publisher.emit('accessDenied');
-+            callback(undefined);
-           }, 0);
-           return publisher;
-         }) as any);
-@@ -380,8 +382,8 @@ describe('NetworkTest', () => {
-         });
-         spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
-           setTimeout(() => {
--            callback(undefined);
-             publisher.emit('mediaStopped');
-+            callback(undefined);
-           }, 0);
-           return publisher;
-         }) as any);
-@@ -406,8 +408,9 @@ describe('NetworkTest', () => {
-         });
-         spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
-           setTimeout(() => {
-+            publisher.emit('streamDestroyed', { reason: 'networkDisconnected' });
-+            publisher.emit('mediaStopped');
-             callback(undefined);
--            publisher.emit('streamDestroyed', { reason: 'mediaStopped' });
-           }, 0);
-           return publisher;
-         }) as any);
-@@ -503,8 +506,8 @@ describe('NetworkTest', () => {
+@@ -504,8 +506,8 @@ describe('NetworkTest', () => {
  
        it('results in a failed test if OT.getDevices() returns an error', (done) => {
          const realInitSession = OT.initSession;
@@ -831,7 +800,7 @@ index 9f1987c..d62e407 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -533,8 +536,8 @@ describe('NetworkTest', () => {
+@@ -534,8 +536,8 @@ describe('NetworkTest', () => {
  
        it('results in a failed test if there are no cameras or mics', (done) => {
          const realInitSession = OT.initSession;
@@ -842,7 +811,7 @@ index 9f1987c..d62e407 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -563,8 +566,8 @@ describe('NetworkTest', () => {
+@@ -564,8 +566,8 @@ describe('NetworkTest', () => {
  
        it('results in a failed test if OT.initPublisher() returns an error', (done) => {
          const realInitSession = OT.initSession;
@@ -853,7 +822,7 @@ index 9f1987c..d62e407 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -594,8 +597,8 @@ describe('NetworkTest', () => {
+@@ -595,8 +597,8 @@ describe('NetworkTest', () => {
        it('results in a failed test if Session.subscribe() returns an error', (done) => {
          const realInitSession = OT.initSession;
          const realGetDevices = (OT as any).getDevices;
@@ -864,7 +833,7 @@ index 9f1987c..d62e407 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session.publish as any, 'promise').and.returnValue(Promise.resolve());
            (session.subscribe as any).promise = jasmine.createSpy().and.callFake(() => Promise.reject(new Error()));
-@@ -651,8 +654,8 @@ describe('NetworkTest', () => {
+@@ -652,8 +654,8 @@ describe('NetworkTest', () => {
        };
        const testConnectFailure = (done: DoneFn, otErrorName: OTErrorType, netTestErrorName: string) => {
          const realInitSession = OT.initSession;
@@ -875,7 +844,7 @@ index 9f1987c..d62e407 100644
            spyOn(session.connect, 'promise').and.returnValue(
              Promise.reject(Object.assign(new Error(), { name: otErrorName })));
            // Ensure the session has no prior connection so connectToSession doesn't skip connect()
-@@ -724,8 +727,8 @@ describe('NetworkTest', () => {
+@@ -725,8 +727,8 @@ describe('NetworkTest', () => {
  
        it('results in a failed test if OT.getDevices() returns an error', (done) => {
          const realInitSession = OT.initSession;
@@ -886,7 +855,7 @@ index 9f1987c..d62e407 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -750,8 +753,8 @@ describe('NetworkTest', () => {
+@@ -751,8 +753,8 @@ describe('NetworkTest', () => {
        it('results in a failed test if there are no mics', (done) => {
          const realInitSession = OT.initSession;
          const realOTGetDevices = OT.getDevices;
@@ -897,7 +866,7 @@ index 9f1987c..d62e407 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -912,8 +915,8 @@ describe('NetworkTest', () => {
+@@ -913,8 +915,8 @@ describe('NetworkTest', () => {
        it('results in a failed test if OT.initPublisher() returns an error', (done) => {
          const realInitSession = OT.initSession;
          const realGetDevices = (OT as any).getDevices;
@@ -908,7 +877,7 @@ index 9f1987c..d62e407 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -942,8 +945,8 @@ describe('NetworkTest', () => {
+@@ -943,8 +945,8 @@ describe('NetworkTest', () => {
        it('results in a PermissionDeniedError if OT.initPublisher() returns OT_USER_MEDIA_ACCESS_DENIED', (done) => {
          const realInitSession = OT.initSession;
          const realGetDevices = (OT as any).getDevices;
@@ -919,7 +888,7 @@ index 9f1987c..d62e407 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -976,8 +979,8 @@ describe('NetworkTest', () => {
+@@ -977,8 +979,8 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
          const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
@@ -930,7 +899,7 @@ index 9f1987c..d62e407 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            sessionDisconnectSpy = spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -1014,8 +1017,8 @@ describe('NetworkTest', () => {
+@@ -1015,8 +1017,8 @@ describe('NetworkTest', () => {
  
        it('results in a failed test if Session.subscribe() returns an error', (done) => {
          const realInitSession = OT.initSession;
@@ -941,7 +910,7 @@ index 9f1987c..d62e407 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session.publish as any, 'promise').and.callFake((publisher: any) => {
              setTimeout(() => {
-@@ -1054,8 +1057,8 @@ describe('NetworkTest', () => {
+@@ -1055,8 +1057,8 @@ describe('NetworkTest', () => {
        it('should disconnect the session when validateDevices fails with getDevices error', (done) => {
          const realInitSession = OT.initSession;
          let sessionDisconnectSpy: jasmine.Spy;
@@ -952,7 +921,7 @@ index 9f1987c..d62e407 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            sessionDisconnectSpy = spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -1081,8 +1084,8 @@ describe('NetworkTest', () => {
+@@ -1082,8 +1084,8 @@ describe('NetworkTest', () => {
        it('should disconnect the session when validateDevices finds no audio devices', (done) => {
          const realInitSession = OT.initSession;
          let sessionDisconnectSpy: jasmine.Spy;
@@ -963,7 +932,7 @@ index 9f1987c..d62e407 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            sessionDisconnectSpy = spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -1112,8 +1115,8 @@ describe('NetworkTest', () => {
+@@ -1113,8 +1115,8 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
          const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
@@ -974,7 +943,7 @@ index 9f1987c..d62e407 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session.publish as any, 'promise').and.returnValue(Promise.resolve());
            // subscribe resolves without a subscriber
-@@ -1162,8 +1165,8 @@ describe('NetworkTest', () => {
+@@ -1163,8 +1165,8 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
          const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
@@ -985,7 +954,7 @@ index 9f1987c..d62e407 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session.publish as any, 'promise').and.callFake(() =>
              Promise.reject(Object.assign(new Error('Publish failed'), { name: 'SOME_UNKNOWN_PUBLISH_ERROR' })));
-@@ -1200,8 +1203,8 @@ describe('NetworkTest', () => {
+@@ -1201,8 +1203,8 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
          const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
@@ -996,7 +965,7 @@ index 9f1987c..d62e407 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session.publish as any, 'promise').and.callFake(() =>
              Promise.reject(Object.assign(new Error('Not connected'), { name: 'NOT_CONNECTED' })));
-@@ -1238,8 +1241,8 @@ describe('NetworkTest', () => {
+@@ -1239,8 +1241,8 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
          const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
@@ -1007,7 +976,7 @@ index 9f1987c..d62e407 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session.publish as any, 'promise').and.callFake(() =>
              Promise.reject(Object.assign(new Error('Unable to publish'), { name: 'UNABLE_TO_PUBLISH' })));
-@@ -1275,8 +1278,8 @@ describe('NetworkTest', () => {
+@@ -1276,8 +1278,8 @@ describe('NetworkTest', () => {
        it('connectToSession should not trigger publishAndSubscribe after rejecting on error', (done) => {
          const realInitSession = OT.initSession;
          let publishSpy: jasmine.Spy;
@@ -1018,7 +987,7 @@ index 9f1987c..d62e407 100644
            spyOn(session.connect, 'promise').and.returnValue(
              Promise.reject(Object.assign(new Error(), { name: 'OT_AUTHENTICATION_ERROR' })));
            publishSpy = spyOn(session.publish as any, 'promise');
-@@ -1301,8 +1304,8 @@ describe('NetworkTest', () => {
+@@ -1302,8 +1304,8 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
          const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
