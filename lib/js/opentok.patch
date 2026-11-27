@@ -1,8 +1,8 @@
 diff --git a/lib/js/README.md b/lib/js/README.md
-index f645f42..eeb4fd3 100644
+index f7d4cd8..792ab2b 100644
 --- a/lib/js/README.md
 +++ b/lib/js/README.md
-@@ -1,19 +1,20 @@
+@@ -1,28 +1,29 @@
 -# Vonage Video API Network Test
 +# OpenTok Network Test
  
@@ -29,7 +29,6 @@ index f645f42..eeb4fd3 100644
  
  ## Instalation
  
-@@ -20,43 +20,43 @@
  ### NPM
  
 -Install the package from [npmjs.com](https://www.npmjs.com/package/@vonage/video-client-network-test) without GitHub authentication:
@@ -41,17 +40,7 @@ index f645f42..eeb4fd3 100644
  ```
  
  ### GitHub Packages
- 
--The package is also published to [GitHub Packages](https://github.com/orgs/Vonage/packages/npm/package/video-client-network-test). To install it from GitHub Packages, configure npm to authenticate with GitHub:
-+The package is also published to [GitHub Packages](https://github.com/orgs/Vonage/packages/npm/package/video-client-network-test). To install it from GitHub Packages, configure npm to authenticate with GitHub:
- 
- **1. Create a GitHub Personal Access Token (PAT)**
- 
- Generate a personal access token with `read:packages` scope from your GitHub account settings.
- 
- **2. Configure your `.npmrc` file**
- 
- Add the following configuration to your project's `.npmrc` file or your user-level `~/.npmrc` file:
+@@ -39,7 +40,7 @@ Add the following configuration to your project's `.npmrc` file or your user-lev
  
  ```
  //npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
@@ -60,7 +49,7 @@ index f645f42..eeb4fd3 100644
  ```
  
  Replace `YOUR_GITHUB_TOKEN` with your GitHub personal access token.
- 
+@@ -47,16 +48,16 @@ Replace `YOUR_GITHUB_TOKEN` with your GitHub personal access token.
  **3. Install the package**
  
  ```
@@ -80,7 +69,7 @@ index f645f42..eeb4fd3 100644
    This is the default export.
  
  * ErrorNames -- An object enumerating error name values
-@@ -64,34 +64,34 @@ After successful instalation, you have to load the Vonage Video API Network Test
+@@ -64,34 +65,34 @@ After successful instalation, you have to load the Vonage Video API Network Test
  Using CommonJS:
  
  ```javascript
@@ -98,7 +87,7 @@ index f645f42..eeb4fd3 100644
  ```
  
 -Load the Vonage Video web client SDK library. The network test requires a client SDK that supports `Session.connect.promise`, `Session.publish.promise`, and `Session.subscribe.promise`; `@vonage/client-sdk-video` 2.35.1 or later is required.
-+Load the OpenTok.js library. The network test requires `Session.connect.promise`, `Session.publish.promise`, and `Session.subscribe.promise`; `@opentok/client` 2.35.0 or later is required.
++Load the OpenTok.js library. The network test requires `Session.connect.promise`, `Session.publish.promise`, and `Session.subscribe.promise`; `@opentok/client` 2.36.0 or later is required.
  
 -Instantiate an instance of the test object, passing in the Vonage Video web client SDK OT object and
 -a configuration object. The configuration object contains an application ID for your app's
@@ -126,7 +115,7 @@ index f645f42..eeb4fd3 100644
  Router](https://developer.vonage.com/en/video/guides/create-session#the-media-router-and-media-modes).
  Also generate a test token that has publish privileges.
  
-@@ -107,12 +108,12 @@ Then run the test methods:
+@@ -99,12 +100,12 @@ Then run the test methods:
  
  ```javascript
  videoNetworkTest.testConnectivity().then((results) => {
@@ -141,7 +130,7 @@ index f645f42..eeb4fd3 100644
      let publisherSettings = {};
      if (results.video.reason) {
        console.log('Video not supported:', results.video.reason);
-@@ -132,10 +133,10 @@ videoNetworkTest.testConnectivity().then((results) => {
+@@ -124,10 +125,10 @@ videoNetworkTest.testConnectivity().then((results) => {
        // Publish to the "real" session, using the publisherSettings object.
      }
    }).catch((error) => {
@@ -154,7 +143,7 @@ index f645f42..eeb4fd3 100644
  });
  ```
  
-@@ -144,20 +145,20 @@ with `audioOnly` set to `true` into the constructor:
+@@ -136,20 +137,20 @@ with `audioOnly` set to `true` into the constructor:
  
  ```javascript
  const sessionInfo = {
@@ -179,7 +168,7 @@ index f645f42..eeb4fd3 100644
  });
  ```
  
-@@ -194,25 +195,25 @@ The OTNetworkTest NPM module includes three public methods:
+@@ -186,25 +187,25 @@ The OTNetworkTest NPM module includes three public methods:
  
  The `OTNetworkTest()` constructor includes the following parameters:
  
@@ -212,7 +201,7 @@ index f645f42..eeb4fd3 100644
       Router](https://developer.vonage.com/en/video/guides/create-session#the-media-router-and-media-modes).
  
       To test connectivity
-@@ -249,8 +250,8 @@ The `OTNetworkTest()` constructor includes the following parameters:
+@@ -241,8 +242,8 @@ The `OTNetworkTest()` constructor includes the following parameters:
      to be used by the test publisher. You can obtain a list of available devices,
      including audio input devices, by calling the `OT.getDevices()` method.
  
@@ -223,7 +212,7 @@ index f645f42..eeb4fd3 100644
      to grant permission to the correct device. Note that changing the audio device may not
      influence the quality test score.
  
-@@ -258,8 +259,8 @@ The `OTNetworkTest()` constructor includes the following parameters:
+@@ -250,8 +251,8 @@ The `OTNetworkTest()` constructor includes the following parameters:
      to be used by the test publisher. You can obtain a list of available devices,
      including audio input devices, by calling the `OT.getDevices()` method.
  
@@ -234,7 +223,7 @@ index f645f42..eeb4fd3 100644
      to grant permission to the correct device. Note that changing the video device may not
      influence the quality test score.
    
-@@ -271,14 +272,14 @@ The `OTNetworkTest()` constructor includes the following parameters:
+@@ -263,14 +264,14 @@ The `OTNetworkTest()` constructor includes the following parameters:
  	  * `iceConfig ` (Object) -- This feature is part of the configurable TURN add-on feature.
  
    * `proxyServerUrl` (String) -- (Optional) Set this to the proxy server URL 
@@ -252,7 +241,7 @@ index f645f42..eeb4fd3 100644
  
    * `fullHd` (Boolean) -- (Optional) Allows publishing with a resolution of 1920x1080 (1080p).
      If the camera does not support 1920x1080 resolution, the `OTNetworkTest.testConnectivity()` method
-@@ -291,7 +292,7 @@ the `ErrorNames` object (see [ErrorNames](#errornames)). For example:
+@@ -283,7 +284,7 @@ the `ErrorNames` object (see [ErrorNames](#errornames)). For example:
  
  ```javascript
  try {
@@ -261,7 +250,7 @@ index f645f42..eeb4fd3 100644
  } catch (error) {
    switch (error.name) {
      case ErrorNames.MISSING_OPENTOK_INSTANCE:
-@@ -300,7 +301,7 @@ try {
+@@ -292,7 +293,7 @@ try {
      case ErrorNames.INCOMPLETE_SESSON_CREDENTIALS:
      case ErrorNames.MISSING_SESSON_CREDENTIALS:
      case ErrorNames.INVALID_SESSON_CREDENTIALS:
@@ -270,7 +259,7 @@ index f645f42..eeb4fd3 100644
        break;
      default:
        console.error('Unknown error .');
-@@ -310,11 +311,11 @@ try {
+@@ -302,11 +303,11 @@ try {
  
  ### OTNetworkTest.testConnectivity()
  
@@ -284,7 +273,7 @@ index f645f42..eeb4fd3 100644
    any connectivity test failed.
  
  * `failedTests` (Array) -- If connectivity failed, this array contains an object for each
-@@ -322,22 +323,22 @@ In both cases the promise value is a `results` object that has the following two
+@@ -314,22 +315,22 @@ In both cases the promise value is a `results` object that has the following two
  
    * `type` -- A sting defining the failure type. It will be set to one of the following values:
  
@@ -318,7 +307,7 @@ index f645f42..eeb4fd3 100644
      Inspector](https://tools.vonage.com/video/inspector/).
  
    * `error` -- An object defining the reason for the type of failure. This object includes
-@@ -371,7 +372,7 @@ In both cases the promise value is a `results` object that has the following two
+@@ -363,7 +364,7 @@ In both cases the promise value is a `results` object that has the following two
  
  ### OTNetworkTest.testQuality(updateCallback)
  
@@ -327,7 +316,7 @@ index f645f42..eeb4fd3 100644
  
  * Whether audio and video are supported and a reason why they aren't supported (if they aren't).
  
-@@ -422,7 +423,7 @@ audio-video test), the property is set to `'audio-only'`.
+@@ -414,7 +415,7 @@ audio-video test), the property is set to `'audio-only'`.
  
  Pass in a `null` value if you do not want to register an `updateCallback` function.
  
@@ -336,7 +325,7 @@ index f645f42..eeb4fd3 100644
  
  #### Promise returned
  
-@@ -545,8 +546,8 @@ an error object (against the values defined in `ErrorNames`) to determine the ty
+@@ -537,8 +538,8 @@ an error object (against the values defined in `ErrorNames`) to determine the ty
  
  | Error.name property set to this property of ErrorNames | Description |
  | ------------------------------------------------------------------ | ----------- |
@@ -347,7 +336,7 @@ index f645f42..eeb4fd3 100644
  |   `MISSING_SESSON_CREDENTIALS` | No sessionInfo object was passed into the constructor. | 
  
  #### testConnectivity() errors
-@@ -558,11 +559,11 @@ property set to one of the following:
+@@ -550,11 +551,11 @@ property set to one of the following:
  
  | Error.name property set to this property of ErrorNames | Description |
  | -------------------------------------------------------------- | ----------- |
@@ -364,7 +353,7 @@ index f645f42..eeb4fd3 100644
  |   `FAILED_TO_OBTAIN_MEDIA_DEVICES` | The test failed to obtain media devices (a camera or microphone). | 
  |   `NO_AUDIO_CAPTURE_DEVICES` | The browser cannot access a microphone. | 
  |   `NO_VIDEO_CAPTURE_DEVICES` | The browser cannot access a camera. | 
-@@ -573,8 +574,8 @@ property set to one of the following:
+@@ -565,8 +566,8 @@ property set to one of the following:
  |   `PUBLISH_TO_SESSION_PERMISSION_OR_TIMEOUT_ERROR` | The test failed to publish to the test session due a permissions error or timeout. | 
  |   `PUBLISH_TO_SESSION_NETWORK_ERROR` | The test failed to publish to the test session due a network error. | 
  |   `SUBSCRIBE_TO_SESSION_ERROR` | The test encountered an unknown error while attempting to subscribe to a test stream. | 
@@ -375,7 +364,7 @@ index f645f42..eeb4fd3 100644
  
  #### testQuality() errors
  
-@@ -585,10 +586,10 @@ method has a `name` property set to one of the following:
+@@ -577,10 +578,10 @@ method has a `name` property set to one of the following:
  | -------------------------------------------------------------- | ----------- |
  |   `INVALID_ON_UPDATE_CALLBACK` | The `updateCallback` parameter is invalid. It must be a function that accepts a single parameter. |
  |   `UNSUPPORTED_BROWSER`  | The test is running on an unsupported browser (see [Supported browsers](#supported-browsers)). | 
@@ -390,7 +379,7 @@ index f645f42..eeb4fd3 100644
  |   `FAILED_TO_OBTAIN_MEDIA_DEVICES` | The test failed to obtain media devices (a camera or microphone). | 
  |   `NO_AUDIO_CAPTURE_DEVICES` | The browser cannot access a microphone. | 
  |   `NO_VIDEO_CAPTURE_DEVICES` | The browser cannot access a camera. | 
-@@ -624,8 +625,8 @@ limit the range of scores from 1.0 to 4.5.
+@@ -616,8 +617,8 @@ limit the range of scores from 1.0 to 4.5.
  | 1.7 - 2.39 | Poor      |
  | 1.0 - 1.69 | Bad       |
  
@@ -402,7 +391,7 @@ index f645f42..eeb4fd3 100644
  
  ## Building the module
 diff --git a/lib/js/package.json b/lib/js/package.json
-index f8d2dbd..ea2090f 100644
+index 1509c77..16bcd7c 100644
 --- a/lib/js/package.json
 +++ b/lib/js/package.json
 @@ -1,7 +1,7 @@
@@ -434,7 +423,7 @@ index f8d2dbd..ea2090f 100644
      "network test",
      "connectivity",
      "webrtc"
-@@ -54,9 +54,9 @@
+@@ -54,22 +54,21 @@
    },
    "license": "Apache-2.0",
    "bugs": {
@@ -444,13 +433,15 @@ index f8d2dbd..ea2090f 100644
 -  "homepage": "https://github.com/Vonage/vonage-video-api-network-test#readme",
 +  "homepage": "https://github.com/opentok/network-connectivity-js#readme",
    "dependencies": {
-     "axios": "^1.19.0",
-     "@opentok/opentok-solutions-logging": "^1.1.6"
-@@ -64,12 +64,11 @@
+-    "axios": "^1.19.0",
+-    "@opentok/opentok-solutions-logging": "^1.1.6"
++    "@opentok/opentok-solutions-logging": "^1.1.7",
++    "axios": "^1.21.1"
+   },
    "devDependencies": {
      "@changesets/changelog-github": "^0.5.2",
      "@changesets/cli": "^2.31.1",
-+    "@opentok/client": "^2.35.0",
++    "@opentok/client": "^2.36.0",
      "@types/jasmine": "^6.0.0",
      "@types/node": "^26.6.4",
      "@typescript-eslint/eslint-plugin": "^7.6.0",
@@ -464,7 +455,7 @@ index f8d2dbd..ea2090f 100644
      "karma-safaritechpreview-launcher": "2.0.2",
      "karma-sourcemap-loader": "^0.4.0",
      "karma-webpack": "^5.0.0",
-+    "opentok": "^2.16.0",
++    "opentok": "^2.24.2",
      "terser-webpack-plugin": "^5.3.9",
      "ts-loader": "^9.5.1",
      "typescript": "^6.0.3",
@@ -510,8 +501,17 @@ index 2fefbe9..b5a232d 100644
  import { get } from '../util';
  
  export enum ErrorNames {
+@@ -46,6 +46,7 @@ export enum ErrorNames {
+ 
+ export enum OTErrorType {
+   JS_EXCEPTION = 'JS_EXCEPTION',
++  OT_USER_MEDIA_ACCESS_DENIED = 'OT_USER_MEDIA_ACCESS_DENIED',
+   OT_AUTHENTICATION_ERROR = 'OT_AUTHENTICATION_ERROR',
+   OT_INVALID_HTTP_STATUS = 'OT_INVALID_HTTP_STATUS',
+   OT_CONNECT_FAILED = 'OT_CONNECT_FAILED',
+   OT_INVALID_SESSION_ID = 'OT_INVALID_SESSION_ID',
 diff --git a/lib/js/src/index.ts b/lib/js/src/index.ts
-index f69b7a0..d0a0a92 100644
+index c1c85ea..51f76f1 100644
 --- a/lib/js/src/index.ts
 +++ b/lib/js/src/index.ts
 @@ -49,13 +49,13 @@ export default class NetworkTest {
@@ -585,8 +585,26 @@ index f69b7a0..d0a0a92 100644
     */
    stop() {
      stopConnectivityTest();
+diff --git a/lib/js/src/logging.ts b/lib/js/src/logging.ts
+index 1c89130..d24f66f 100644
+--- a/lib/js/src/logging.ts
++++ b/lib/js/src/logging.ts
+@@ -4,11 +4,11 @@ import { SessionCredentials } from './types/session';
+ export default function addSessionInfo(
+   otLogging: OTKLogger,
+   session: OT.Session,
+-  { applicationId, sessionId }: SessionCredentials,
++  { apiKey, sessionId }: SessionCredentials,
+ ): void {
+   const connectionId = session.connection?.connectionId;
+   if (!connectionId) {
+     return;
+   }
+-  otLogging.addSessionInfo({ sessionId, connectionId, partnerId: applicationId });
++  otLogging.addSessionInfo({ sessionId, connectionId, partnerId: apiKey });
+ }
 diff --git a/lib/js/src/testConnectivity/errors/index.ts b/lib/js/src/testConnectivity/errors/index.ts
-index 1b0f6c9..17139b1 100644
+index 1b0f6c9..4b2cdf1 100644
 --- a/lib/js/src/testConnectivity/errors/index.ts
 +++ b/lib/js/src/testConnectivity/errors/index.ts
 @@ -23,7 +23,7 @@ export class ConnectivityError extends NetworkTestError {
@@ -607,7 +625,21 @@ index 1b0f6c9..17139b1 100644
      super(message || defaultMessage, name || ErrorNames.MEDIA_DEVICE_ERROR);
    }
  }
-@@ -148,7 +148,7 @@ export class SubscribeToSessionError extends ConnectivityError {
+@@ -133,6 +133,13 @@ export class PublishToSessionNetworkError extends PublishToSessionError {
+   }
+ }
+ 
++export class MediaAccessRevokedError extends PublishToSessionError {
++  constructor() {
++    super('Media access was revoked during the connectivity test.',
++      ErrorNames.MEDIA_ACCESS_REVOKED_ERROR);
++  }
++}
++
+ /**
+  * Subscribing Errors
+  */
+@@ -148,7 +155,7 @@ export class SubscribeToSessionError extends ConnectivityError {
   */
  export class LoggingServerConnectionError extends ConnectivityError {
    constructor(){
@@ -617,10 +649,10 @@ index 1b0f6c9..17139b1 100644
  }
  
 diff --git a/lib/js/src/testConnectivity/index.ts b/lib/js/src/testConnectivity/index.ts
-index 23d330b..f2ce18e 100644
+index 33f1bef..43cebe9 100644
 --- a/lib/js/src/testConnectivity/index.ts
 +++ b/lib/js/src/testConnectivity/index.ts
-@@ -146,11 +146,11 @@ export function stopConnectivityTest() {
+@@ -142,11 +142,11 @@ export function stopConnectivityTest() {
  }
  
  /**
@@ -634,7 +666,7 @@ index 23d330b..f2ce18e 100644
    resources: Resources,
    options?: NetworkTestOptions,
  ): Promise<OT.Session> {
-@@ -161,7 +161,7 @@ async function connectToSession(
+@@ -157,7 +157,7 @@ async function connectToSession(
        sessionOptions.proxyUrl = options.proxyServerUrl;
      }
    }
@@ -643,7 +675,30 @@ index 23d330b..f2ce18e 100644
    resources.session = session;
    try {
      await session.connect.promise(token);
-@@ -327,7 +327,7 @@ async function checkSubscribeToSession(
+@@ -254,7 +254,7 @@ async function checkCreateLocalPublisher(
+   return new Promise((resolve, reject) => {
+     const publisher = OTInstance.initPublisher(publisherDiv, publisherOptions, (error?: OT.OTError) => {
+       if (error) {
+-        if (error.name === 'OT_USER_MEDIA_ACCESS_DENIED' ||
++        if (errorHasName(error, OTErrorType.OT_USER_MEDIA_ACCESS_DENIED) ||
+             (error.message && (error.message.toLowerCase().includes('permission') ||
+             error.message.toLowerCase().includes('access denied') ||
+             error.message.toLowerCase().includes('not allowed')))) {
+@@ -268,6 +268,13 @@ async function checkCreateLocalPublisher(
+     });
+     // Track the publisher right away so it is released even if initialization never finishes
+     resources.publisher = publisher;
++    publisher.on('accessDenied', () => reject(new PermissionDeniedError()));
++    publisher.on('mediaStopped', () => reject(new e.MediaAccessRevokedError()));
++    publisher.on('streamDestroyed', (event: OT.Event<'streamDestroyed', OT.Publisher>) => {
++      if ((event as any).reason === 'mediaStopped') {
++        reject(new e.MediaAccessRevokedError());
++      }
++    });
+     publisher.on('streamCreated', () => {
+       publisherDiv.style.visibility = 'hidden';
+     });
+@@ -322,7 +329,7 @@ async function checkSubscribeToSession(
  }
  
  /**
@@ -652,7 +707,7 @@ index 23d330b..f2ce18e 100644
   */
  function checkLoggingServer(OTInstance: typeof OT, options?: NetworkTestOptions): Promise<void> {
    return new Promise((resolve, reject) => {
-@@ -361,7 +361,7 @@ async function runConnectivityChecks(
+@@ -366,7 +373,7 @@ async function runConnectivityChecks({
  }
  
  /**
@@ -675,10 +730,10 @@ index 1cbb201..8cf5432 100644
    }
  }
 diff --git a/lib/js/src/testQuality/index.ts b/lib/js/src/testQuality/index.ts
-index c84ec29..27a9c30 100644
+index 665e722..66303b4 100644
 --- a/lib/js/src/testQuality/index.ts
 +++ b/lib/js/src/testQuality/index.ts
-@@ -59,7 +59,7 @@ let stopTestTimeoutId: number;
+@@ -69,7 +69,7 @@ let stopTestTimeoutId: number;
  let stopTestTimeoutCompleted = false;
  let stopTestCalled = false;
  /**
@@ -687,7 +742,7 @@ index c84ec29..27a9c30 100644
   */
  async function connectToSession(session: OT.Session, token: string): Promise<OT.Session> {
    if (session.connection) {
-@@ -86,7 +86,7 @@ async function connectToSession(session: OT.Session, token: string): Promise<OT.
+@@ -96,7 +96,7 @@ async function connectToSession(session: OT.Session, token: string): Promise<OT.
   * Checks for camera support for a given resolution.
   *
   * See the "API reference" section of the README.md file in the root of the
@@ -696,7 +751,7 @@ index c84ec29..27a9c30 100644
   */
  async function checkCameraSupport(width: number, height: number): Promise<void> {
    try {
-@@ -233,7 +233,7 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
+@@ -243,7 +243,7 @@ function publishAndSubscribe(OTInstance: typeof OT, options?: NetworkTestOptions
      });
  }
  /**
@@ -705,7 +760,7 @@ index c84ec29..27a9c30 100644
   */
  function subscribeToTestStream(
    OTInstance: typeof OT,
-@@ -443,7 +443,7 @@ function validateBrowser(): Promise<void> {
+@@ -463,7 +463,7 @@ function validateBrowser(): Promise<void> {
  }
  
  /**
@@ -714,7 +769,7 @@ index c84ec29..27a9c30 100644
   */
  export function testQuality(
    OTInstance: typeof OT,
-@@ -493,7 +493,7 @@ export function testQuality(
+@@ -513,7 +513,7 @@ export function testQuality(
              sessionOptions.proxyUrl = options.proxyServerUrl;
            }
          }
@@ -723,13 +778,6 @@ index c84ec29..27a9c30 100644
          checkSubscriberQuality({
            OTInstance,
            session,
-           credentials,
-           otLogging,
-           options,
-           onUpdate,
-         })
-           .then(onSuccess)
-           .catch(onError);
 diff --git a/lib/js/src/types/session.ts b/lib/js/src/types/session.ts
 index cfa3017..187525d 100644
 --- a/lib/js/src/types/session.ts
@@ -742,7 +790,7 @@ index cfa3017..187525d 100644
 +  apiKey: string;
  }
 diff --git a/lib/js/test/NetworkTest.spec.ts b/lib/js/test/NetworkTest.spec.ts
-index a1701a5..c61f057 100644
+index 60d3e22..40b5a5f 100644
 --- a/lib/js/test/NetworkTest.spec.ts
 +++ b/lib/js/test/NetworkTest.spec.ts
 @@ -1,4 +1,6 @@
@@ -775,7 +823,100 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(
              Promise.reject(Object.assign(new Error(), { name: errorName })));
            return session;
-@@ -425,8 +427,8 @@ describe('NetworkTest', () => {
+@@ -146,7 +148,7 @@ describe('NetworkTest', () => {
+         destroy: Object.assign(jasmine.createSpy('destroy'), {
+           promise: jasmine.createSpy('destroy.promise').and.returnValue(Promise.resolve()),
+         }),
+-        emit: (event: string) => (handlers[event] || []).forEach(handler => handler()),
++        emit: (event: string, payload?: unknown) => (handlers[event] || []).forEach(handler => handler(payload)),
+       };
+       return mockMedia;
+     };
+@@ -342,6 +344,83 @@ describe('NetworkTest', () => {
+           });
+       }, 15000);
+ 
++      it('reports accessDenied emitted by the connectivity publisher', (done) => {
++        const realInitSession = OT.initSession;
++        const publisher = createMockMedia();
++        let session: any;
++        mockAvailableDevices(OT);
++        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
++          session = realInitSession(applicationId, sessionId);
++          mockSessionFlow(session, createMockMedia());
++          return session;
++        });
++        spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
++          setTimeout(() => {
++            callback(undefined);
++            publisher.emit('accessDenied');
++          }, 0);
++          return publisher;
++        }) as any);
++        createNetworkTest(sessionCredentials).testConnectivity()
++          .then(() => done.fail('Expected testConnectivity to reject'))
++          .catch((results: ConnectivityTestResults) => {
++            expect(results.failedTests.map(f => f.error.name)).toContain(ErrorNames.PERMISSION_DENIED_ERROR);
++            expect(session.disconnect).toHaveBeenCalled();
++            done();
++          });
++      }, 15000);
++
++      it('reports mediaStopped emitted by the connectivity publisher', (done) => {
++        const realInitSession = OT.initSession;
++        const publisher = createMockMedia();
++        let session: any;
++        mockAvailableDevices(OT);
++        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
++          session = realInitSession(applicationId, sessionId);
++          mockSessionFlow(session, createMockMedia());
++          return session;
++        });
++        spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
++          setTimeout(() => {
++            callback(undefined);
++            publisher.emit('mediaStopped');
++          }, 0);
++          return publisher;
++        }) as any);
++        createNetworkTest(sessionCredentials).testConnectivity()
++          .then(() => done.fail('Expected testConnectivity to reject'))
++          .catch((results: ConnectivityTestResults) => {
++            expect(results.failedTests.map(f => f.error.name)).toContain(ErrorNames.MEDIA_ACCESS_REVOKED_ERROR);
++            expect(session.disconnect).toHaveBeenCalled();
++            done();
++          });
++      }, 15000);
++
++      it('reports mediaStopped when the publisher stream is destroyed', (done) => {
++        const realInitSession = OT.initSession;
++        const publisher = createMockMedia();
++        let session: any;
++        mockAvailableDevices(OT);
++        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
++          session = realInitSession(applicationId, sessionId);
++          mockSessionFlow(session, createMockMedia());
++          return session;
++        });
++        spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
++          setTimeout(() => {
++            callback(undefined);
++            publisher.emit('streamDestroyed', { reason: 'mediaStopped' });
++          }, 0);
++          return publisher;
++        }) as any);
++        createNetworkTest(sessionCredentials).testConnectivity()
++          .then(() => done.fail('Expected testConnectivity to reject'))
++          .catch((results: ConnectivityTestResults) => {
++            expect(results.failedTests.map(f => f.error.name)).toContain(ErrorNames.MEDIA_ACCESS_REVOKED_ERROR);
++            expect(session.disconnect).toHaveBeenCalled();
++            done();
++          });
++      }, 15000);
+       it('stop() aborts a running testConnectivity() and releases the session', async () => {
+         const realInitSession = OT.initSession;
+         let session: any;
+@@ -426,8 +505,8 @@ describe('NetworkTest', () => {
  
        it('results in a failed test if OT.getDevices() returns an error', (done) => {
          const realInitSession = OT.initSession;
@@ -786,7 +927,7 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -455,8 +457,8 @@ describe('NetworkTest', () => {
+@@ -456,8 +535,8 @@ describe('NetworkTest', () => {
  
        it('results in a failed test if there are no cameras or mics', (done) => {
          const realInitSession = OT.initSession;
@@ -797,7 +938,7 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -485,8 +487,8 @@ describe('NetworkTest', () => {
+@@ -486,8 +565,8 @@ describe('NetworkTest', () => {
  
        it('results in a failed test if OT.initPublisher() returns an error', (done) => {
          const realInitSession = OT.initSession;
@@ -808,7 +949,7 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -516,8 +518,8 @@ describe('NetworkTest', () => {
+@@ -517,8 +596,8 @@ describe('NetworkTest', () => {
        it('results in a failed test if Session.subscribe() returns an error', (done) => {
          const realInitSession = OT.initSession;
          const realGetDevices = (OT as any).getDevices;
@@ -819,7 +960,7 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session.publish as any, 'promise').and.returnValue(Promise.resolve());
            (session.subscribe as any).promise = jasmine.createSpy().and.callFake(() => Promise.reject(new Error()));
-@@ -575,8 +577,8 @@ describe('NetworkTest', () => {
+@@ -574,8 +653,8 @@ describe('NetworkTest', () => {
        };
        const testConnectFailure = (done: DoneFn, otErrorName: OTErrorType, netTestErrorName: string) => {
          const realInitSession = OT.initSession;
@@ -830,7 +971,7 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(
              Promise.reject(Object.assign(new Error(), { name: otErrorName })));
            // Ensure the session has no prior connection so connectToSession doesn't skip connect()
-@@ -648,8 +650,8 @@ describe('NetworkTest', () => {
+@@ -647,8 +726,8 @@ describe('NetworkTest', () => {
  
        it('results in a failed test if OT.getDevices() returns an error', (done) => {
          const realInitSession = OT.initSession;
@@ -841,7 +982,7 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -674,8 +676,8 @@ describe('NetworkTest', () => {
+@@ -673,8 +752,8 @@ describe('NetworkTest', () => {
        it('results in a failed test if there are no mics', (done) => {
          const realInitSession = OT.initSession;
          const realOTGetDevices = OT.getDevices;
@@ -852,7 +993,7 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -836,8 +838,8 @@ describe('NetworkTest', () => {
+@@ -835,8 +914,8 @@ describe('NetworkTest', () => {
        it('results in a failed test if OT.initPublisher() returns an error', (done) => {
          const realInitSession = OT.initSession;
          const realGetDevices = (OT as any).getDevices;
@@ -863,7 +1004,7 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -866,8 +868,8 @@ describe('NetworkTest', () => {
+@@ -865,8 +944,8 @@ describe('NetworkTest', () => {
        it('results in a PermissionDeniedError if OT.initPublisher() returns OT_USER_MEDIA_ACCESS_DENIED', (done) => {
          const realInitSession = OT.initSession;
          const realGetDevices = (OT as any).getDevices;
@@ -874,7 +1015,7 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -900,8 +902,8 @@ describe('NetworkTest', () => {
+@@ -899,8 +978,8 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
          const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
@@ -885,7 +1026,7 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            sessionDisconnectSpy = spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -938,8 +940,8 @@ describe('NetworkTest', () => {
+@@ -937,8 +1016,8 @@ describe('NetworkTest', () => {
  
        it('results in a failed test if Session.subscribe() returns an error', (done) => {
          const realInitSession = OT.initSession;
@@ -896,7 +1037,7 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session.publish as any, 'promise').and.callFake((publisher: any) => {
              setTimeout(() => {
-@@ -978,8 +980,8 @@ describe('NetworkTest', () => {
+@@ -977,8 +1056,8 @@ describe('NetworkTest', () => {
        it('should disconnect the session when validateDevices fails with getDevices error', (done) => {
          const realInitSession = OT.initSession;
          let sessionDisconnectSpy: jasmine.Spy;
@@ -907,7 +1048,7 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            sessionDisconnectSpy = spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -1005,8 +1007,8 @@ describe('NetworkTest', () => {
+@@ -1004,8 +1083,8 @@ describe('NetworkTest', () => {
        it('should disconnect the session when validateDevices finds no audio devices', (done) => {
          const realInitSession = OT.initSession;
          let sessionDisconnectSpy: jasmine.Spy;
@@ -918,7 +1059,7 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            sessionDisconnectSpy = spyOn(session as any, 'disconnect').and.callFake(() => {
              setTimeout(() => {
-@@ -1036,8 +1038,8 @@ describe('NetworkTest', () => {
+@@ -1035,8 +1114,8 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
          const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
@@ -929,7 +1070,7 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session.publish as any, 'promise').and.returnValue(Promise.resolve());
            // subscribe resolves without a subscriber
-@@ -1086,8 +1088,8 @@ describe('NetworkTest', () => {
+@@ -1085,8 +1164,8 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
          const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
@@ -940,7 +1081,7 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session.publish as any, 'promise').and.callFake(() =>
              Promise.reject(Object.assign(new Error('Publish failed'), { name: 'SOME_UNKNOWN_PUBLISH_ERROR' })));
-@@ -1124,8 +1126,8 @@ describe('NetworkTest', () => {
+@@ -1123,8 +1202,8 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
          const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
@@ -951,7 +1092,7 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session.publish as any, 'promise').and.callFake(() =>
              Promise.reject(Object.assign(new Error('Not connected'), { name: 'NOT_CONNECTED' })));
-@@ -1162,8 +1164,8 @@ describe('NetworkTest', () => {
+@@ -1161,8 +1240,8 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
          const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
@@ -962,7 +1103,7 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            spyOn(session.publish as any, 'promise').and.callFake(() =>
              Promise.reject(Object.assign(new Error('Unable to publish'), { name: 'UNABLE_TO_PUBLISH' })));
-@@ -1199,8 +1201,8 @@ describe('NetworkTest', () => {
+@@ -1198,8 +1277,8 @@ describe('NetworkTest', () => {
        it('connectToSession should not trigger publishAndSubscribe after rejecting on error', (done) => {
          const realInitSession = OT.initSession;
          let publishSpy: jasmine.Spy;
@@ -973,7 +1114,7 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(
              Promise.reject(Object.assign(new Error(), { name: 'OT_AUTHENTICATION_ERROR' })));
            publishSpy = spyOn(session.publish as any, 'promise');
-@@ -1225,8 +1227,8 @@ describe('NetworkTest', () => {
+@@ -1224,8 +1303,8 @@ describe('NetworkTest', () => {
          const realInitSession = OT.initSession;
          const realGetDevices = (OT as any).getDevices;
          let sessionDisconnectSpy: jasmine.Spy;
@@ -984,6 +1125,28 @@ index a1701a5..c61f057 100644
            spyOn(session.connect, 'promise').and.returnValue(Promise.resolve(session));
            // Mock publish to remain pending while media access is revoked
            spyOn(session.publish as any, 'promise').and.returnValue(new Promise(() => {}));
+diff --git a/lib/js/test/logging.spec.ts b/lib/js/test/logging.spec.ts
+index d005891..bd809e9 100644
+--- a/lib/js/test/logging.spec.ts
++++ b/lib/js/test/logging.spec.ts
+@@ -5,7 +5,7 @@ import { InvalidOnUpdateCallback } from '../src/errors';
+ import { SessionCredentials } from '../src/types/session';
+ 
+ const credentials: SessionCredentials = {
+-  applicationId: 'application-id',
++  apiKey: 'application-id',
+   sessionId: 'session-id',
+   token: 'token',
+ };
+@@ -28,7 +28,7 @@ describe('solutions logging integration', () => {
+     expect(logger.addSessionInfo).toHaveBeenCalledWith({
+       sessionId: credentials.sessionId,
+       connectionId: 'connection-id',
+-      partnerId: credentials.applicationId,
++      partnerId: credentials.apiKey,
+     });
+   });
+ 
 diff --git a/lib/js/test/setup/setup.js b/lib/js/test/setup/setup.js
 index 2e717a5..f00b42f 100644
 --- a/lib/js/test/setup/setup.js
@@ -1131,36 +1294,3 @@ index 79a1089..eea38c8 100644
   *
   * The SDK exports its methods via webpack's Object.defineProperty pattern
   * (enumerable: true, configurable: false, writable: false), which prevents
-diff --git a/lib/js/src/logging.ts b/lib/js/src/logging.ts
---- a/lib/js/src/logging.ts
-+++ b/lib/js/src/logging.ts
-@@ -5,10 +5,10 @@ export default function addSessionInfo(
-   otLogging: OTKLogger,
-   session: OT.Session,
--  { applicationId, sessionId }: SessionCredentials,
-+  { apiKey, sessionId }: SessionCredentials,
- ): void {
-   const connectionId = session.connection?.connectionId;
-   if (!connectionId) {
-     return;
-   }
--  otLogging.addSessionInfo({ sessionId, connectionId, partnerId: applicationId });
-+  otLogging.addSessionInfo({ sessionId, connectionId, partnerId: apiKey });
- }
-diff --git a/lib/js/test/logging.spec.ts b/lib/js/test/logging.spec.ts
---- a/lib/js/test/logging.spec.ts
-+++ b/lib/js/test/logging.spec.ts
-@@ -7,4 +7,4 @@ const credentials: SessionCredentials = {
--  applicationId: 'application-id',
-+  apiKey: 'application-id',
-   sessionId: 'session-id',
-   token: 'token',
- };
-@@ -29,6 +29,6 @@ describe('solutions logging integration', () => {
-     expect(logger.addSessionInfo).toHaveBeenCalledWith({
-       sessionId: credentials.sessionId,
-       connectionId: 'connection-id',
--      partnerId: credentials.applicationId,
-+      partnerId: credentials.apiKey,
-     });
-   });

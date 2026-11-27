@@ -133,6 +133,13 @@ export class PublishToSessionNetworkError extends PublishToSessionError {
   }
 }
 
+export class MediaAccessRevokedError extends PublishToSessionError {
+  constructor() {
+    super('Media access was revoked during the connectivity test.',
+      ErrorNames.MEDIA_ACCESS_REVOKED_ERROR);
+  }
+}
+
 /**
  * Subscribing Errors
  */
