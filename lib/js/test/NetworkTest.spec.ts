@@ -354,8 +354,8 @@ describe('NetworkTest', () => {
         });
         spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
           setTimeout(() => {
-            callback(undefined);
             publisher.emit('accessDenied');
+            callback(undefined);
           }, 0);
           return publisher;
         }) as any);
@@ -380,8 +380,8 @@ describe('NetworkTest', () => {
         });
         spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
           setTimeout(() => {
-            callback(undefined);
             publisher.emit('mediaStopped');
+            callback(undefined);
           }, 0);
           return publisher;
         }) as any);
@@ -406,8 +406,9 @@ describe('NetworkTest', () => {
         });
         spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
           setTimeout(() => {
+            publisher.emit('streamDestroyed', { reason: 'networkDisconnected' });
+            publisher.emit('mediaStopped');
             callback(undefined);
-            publisher.emit('streamDestroyed', { reason: 'mediaStopped' });
           }, 0);
           return publisher;
         }) as any);
