@@ -146,7 +146,7 @@ describe('NetworkTest', () => {
         destroy: Object.assign(jasmine.createSpy('destroy'), {
           promise: jasmine.createSpy('destroy.promise').and.returnValue(Promise.resolve()),
         }),
-        emit: (event: string) => (handlers[event] || []).forEach(handler => handler()),
+        emit: (event: string, payload?: unknown) => (handlers[event] || []).forEach(handler => handler(payload)),
       };
       return mockMedia;
     };
@@ -342,6 +342,84 @@ describe('NetworkTest', () => {
           });
       }, 15000);
 
+      it('reports accessDenied emitted by the connectivity publisher', (done) => {
+        const realInitSession = OT.initSession;
+        const publisher = createMockMedia();
+        let session: any;
+        mockAvailableDevices(OT);
+        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+          session = realInitSession(applicationId, sessionId);
+          mockSessionFlow(session, createMockMedia());
+          return session;
+        });
+        spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
+          setTimeout(() => {
+            publisher.emit('accessDenied');
+            callback(undefined);
+          }, 0);
+          return publisher;
+        }) as any);
+        createNetworkTest(sessionCredentials).testConnectivity()
+          .then(() => done.fail('Expected testConnectivity to reject'))
+          .catch((results: ConnectivityTestResults) => {
+            expect(results.failedTests.map(f => f.error.name)).toContain(ErrorNames.PERMISSION_DENIED_ERROR);
+            expect(session.disconnect).toHaveBeenCalled();
+            done();
+          });
+      }, 15000);
+
+      it('reports mediaStopped emitted by the connectivity publisher', (done) => {
+        const realInitSession = OT.initSession;
+        const publisher = createMockMedia();
+        let session: any;
+        mockAvailableDevices(OT);
+        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+          session = realInitSession(applicationId, sessionId);
+          mockSessionFlow(session, createMockMedia());
+          return session;
+        });
+        spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
+          setTimeout(() => {
+            publisher.emit('mediaStopped');
+            callback(undefined);
+          }, 0);
+          return publisher;
+        }) as any);
+        createNetworkTest(sessionCredentials).testConnectivity()
+          .then(() => done.fail('Expected testConnectivity to reject'))
+          .catch((results: ConnectivityTestResults) => {
+            expect(results.failedTests.map(f => f.error.name)).toContain(ErrorNames.MEDIA_ACCESS_REVOKED_ERROR);
+            expect(session.disconnect).toHaveBeenCalled();
+            done();
+          });
+      }, 15000);
+
+      it('reports mediaStopped when the publisher stream is destroyed', (done) => {
+        const realInitSession = OT.initSession;
+        const publisher = createMockMedia();
+        let session: any;
+        mockAvailableDevices(OT);
+        spyOn(OT, 'initSession').and.callFake((applicationId, sessionId) => {
+          session = realInitSession(applicationId, sessionId);
+          mockSessionFlow(session, createMockMedia());
+          return session;
+        });
+        spyOn(OT, 'initPublisher').and.callFake(((target: any, options: any, callback: any) => {
+          setTimeout(() => {
+            publisher.emit('streamDestroyed', { reason: 'networkDisconnected' });
+            publisher.emit('mediaStopped');
+            callback(undefined);
+          }, 0);
+          return publisher;
+        }) as any);
+        createNetworkTest(sessionCredentials).testConnectivity()
+          .then(() => done.fail('Expected testConnectivity to reject'))
+          .catch((results: ConnectivityTestResults) => {
+            expect(results.failedTests.map(f => f.error.name)).toContain(ErrorNames.MEDIA_ACCESS_REVOKED_ERROR);
+            expect(session.disconnect).toHaveBeenCalled();
+            done();
+          });
+      }, 15000);
       it('stop() aborts a running testConnectivity() and releases the session', async () => {
         const realInitSession = OT.initSession;
         let session: any;

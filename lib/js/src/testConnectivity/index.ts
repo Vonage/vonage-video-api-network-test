@@ -254,7 +254,7 @@ async function checkCreateLocalPublisher(
   return new Promise((resolve, reject) => {
     const publisher = OTInstance.initPublisher(publisherDiv, publisherOptions, (error?: OT.OTError) => {
       if (error) {
-        if (error.name === 'OT_USER_MEDIA_ACCESS_DENIED' ||
+        if (errorHasName(error, OTErrorType.OT_USER_MEDIA_ACCESS_DENIED) ||
             (error.message && (error.message.toLowerCase().includes('permission') ||
             error.message.toLowerCase().includes('access denied') ||
             error.message.toLowerCase().includes('not allowed')))) {
@@ -268,6 +268,13 @@ async function checkCreateLocalPublisher(
     });
     // Track the publisher right away so it is released even if initialization never finishes
     resources.publisher = publisher;
+    publisher.on('accessDenied', () => reject(new PermissionDeniedError()));
+    publisher.on('mediaStopped', () => reject(new e.MediaAccessRevokedError()));
+    publisher.on('streamDestroyed', (event: OT.Event<'streamDestroyed', OT.Publisher>) => {
+      if ((event as any).reason === 'mediaStopped') {
+        reject(new e.MediaAccessRevokedError());
+      }
+    });
     publisher.on('streamCreated', () => {
       publisherDiv.style.visibility = 'hidden';
     });
